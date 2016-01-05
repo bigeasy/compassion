@@ -1,0 +1,33 @@
+{
+    "name":         "compassion",
+    "version":      "9.9.9",
+    "description":  "Consensus for web applications.",
+    "author":       "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":     "https://github.com/bigeasy/compassion",
+    "bugs":         "https://github.com/bigeasy/kibitz/compassion",
+    "keywords":
+    [
+                    "consensus", "paxos"
+    ],
+    "contributors":
+    [
+    ],
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                    "proof": "0.0.57"
+    },
+    "main":         "compassion",
+    "scripts":
+    {
+                    "test": "proof platform win32 && proof test */*/*.t.js || t/test"
+    },
+    "license":      "MIT",
+    "repository":
+    {
+                    "type": "git",
+                    "url": "http://github.com/bigeasy/compassion.git"
+    }
+}
