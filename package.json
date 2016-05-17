@@ -2,32 +2,39 @@
     "name":         "compassion",
     "version":      "0.0.0",
     "description":  "Paxos based consensus framework.",
-    "author":       "Alan Gutierrez <alan@prettyrobots.com>",
-    "homepage":     "https://github.com/bigeasy/compassion",
-    "bugs":         "https://github.com/bigeasy/kibitz/compassion",
     "keywords":
     [
                     "consensus", "paxos"
     ],
-    "contributors":
-    [
-    ],
-    "dependencies":
-    {
-    },
-    "devDependencies":
-    {
-                    "proof": "1.x"
-    },
-    "main":         "compassion",
-    "scripts":
-    {
-                    "test": "proof platform win32 && proof test */*/*.t.js || t/test"
-    },
+    "author":       "Alan Gutierrez <alan@prettyrobots.com>",
+    "contributors": [],
+    "homepage":     "https://github.com/bigeasy/compassion",
+    "bugs":         "https://github.com/bigeasy/compassion/issues",
     "license":      "MIT",
     "repository":
     {
                     "type": "git",
                     "url": "http://github.com/bigeasy/compassion.git"
+    },
+    "dependencies":
+    {
+                    "arguable":             "2.x",
+                    "cadence":              "1.x",
+                    "inlet":                "1.x",
+                    "prolific":             "2.x",
+                    "prolific.shuttle":     "2.x"
+    },
+    "devDependencies":
+    {
+                    "proof": "1.x"
+    },
+    "main":         "compassion.bin",
+    "bin":
+    {
+                    "compassion":           "./compassion.bin.js"
+    },
+    "scripts":
+    {
+                    "test": "proof platform win32 && proof test */*/*.t.js || t/test"
     }
 }
