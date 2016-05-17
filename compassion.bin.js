@@ -36,8 +36,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async(function () {
         Shuttle.shuttle(program, 1000, {}, logger, async())
     }, function () {
-        var resolver = new Resolver(program.command.param.name)
-        var dispatcher = resolver.dispatcher.createWrappedDispatcher()
+        var compassion = new Compassion
+        var dispatcher = compassion.dispatcher.createWrappedDispatcher()
         var server = http.createServer(dispatcher)
         server.listen(bind.port, bind.address, async())
         program.on('SIGINT', server.close.bind(server))

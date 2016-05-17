@@ -8,15 +8,11 @@ function Compassion () {
     this.dispatcher = dispatcher
 }
 
-Resolver.prototype.index = cadence(function () {
+Compassion.prototype.index = cadence(function () {
     return 'Compassion API'
 })
 
-Resolver.prototype.discover = cadence(function (async) {
-    resolve(dns, this._name, async())
-})
-
-Resolver.prototype.health = cadence(function () {
+Compassion.prototype.health = cadence(function () {
     return { http: this.dispatcher.turnstile.health }
 })
 
