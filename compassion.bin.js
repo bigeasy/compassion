@@ -1,12 +1,18 @@
 /*
 
     ___ usage ___ en_US ___
-    compassion <options>
+    compassion <options> child <child options>
 
     options:
 
-        -b, --bind      <address:port>  address and port to bind to
-        --help                          display help message
+        -b, --bind <address:port>
+            address and port to bind to
+
+        -m, --module
+            use a Node.js module instead of an executable for the child
+
+        --help
+            display help message
 
     ___ $ ___ en_US ___
 
@@ -33,10 +39,22 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var bind = program.command.bind('bind')
 
+    if (!program.command.param.module) {
+        module = './child'
+    } else {
+        module = program.argv.shift()
+    }
+
+    try {
+        var Delegate = require(module)
+    } catch (e) {
+        throw e
+    }
+
     async(function () {
         Shuttle.shuttle(program, 1000, {}, logger, async())
     }, function () {
-        var compassion = new Compassion
+        var compassion = new Compassion({ Delegate: Delegate })
         var dispatcher = compassion.dispatcher.createWrappedDispatcher()
         var server = http.createServer(dispatcher)
         server.listen(bind.port, bind.address, async())
