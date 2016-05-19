@@ -8,6 +8,7 @@ function Compassion (options) {
     this.kibitzer = null
     this.messages = new events.EventEmitter
     this.id = options.id
+    this.start = Date.now()
     this.location = options.location
     this.ua = options.ua
 // TODO Here's a reason to extract the argument parser from arguable.
@@ -81,6 +82,7 @@ Compassion.prototype.health = cadence(function () {
         government = this.kibitzer.legislator.government
     }
     return {
+        uptime: Date.now() - this.start,
         http: this.dispatcher.turnstile.health,
         islandId: islandId,
         instanceId: this.id,

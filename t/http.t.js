@@ -56,6 +56,7 @@ function prove (async, assert) {
         assert(response, 'Compassion API', 'index')
         compassion.health(async())
     }, function (response) {
+        delete response.uptime
         assert(response, {
             http: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: null,
@@ -78,6 +79,7 @@ function prove (async, assert) {
         assert(response, {}, 'bootstrap')
         compassion.health(async())
     }, function (response) {
+        delete response.uptime
         assert(response, {
             http: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: 'y',
