@@ -1,0 +1,35 @@
+{
+    "name":             "compassion",
+    "version":          "0.0.0",
+    "description":      "Paxos based consensus framework.",
+    "keywords":
+    [
+                        "consensus", "paxos"
+    ],
+    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
+    "contributors":     [],
+    "homepage":         "https://github.com/bigeasy/compassion",
+    "bugs":             "https://github.com/bigeasy/compassion/issues",
+    "license":          "MIT",
+    "repository":
+    {
+                        "type": "git",
+                        "url": "http://github.com/bigeasy/compassion.git"
+    },
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                        "proof": "1.x"
+    },
+    "main":             "compassion.bin",
+    "bin":
+    {
+                        "compassion":           "./compassion.bin.js"
+    },
+    "scripts":
+    {
+                        "test": "proof test t/*.t.js"
+    }
+}
