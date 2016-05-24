@@ -86,7 +86,7 @@ Conduit.prototype.health = cadence(function (async) {
             inquire.push({
                 islandName: islandName,
                 colleagueId: colleagueId,
-                ws: this._islands[islandName][legislatorId]
+                listener: this._islands[islandName][colleagueId]
              })
         }
     }
@@ -95,14 +95,14 @@ Conduit.prototype.health = cadence(function (async) {
             async(function () {
                 async([function () {
                     var cookie = this._cliffhanger.invoke(async())
-                    ws.send({ type: 'health', cookie: cookie, body: null })
+                    inquiry.listener.ws.send(JSON.stringify({ type: 'health', cookie: cookie, body: null }))
                 }, /^expired$/, function () {
                     return [ null ]
                 }])
             }, function (health) {
                 return {
-                    islandName: invoke.islandName,
-                    colleagueId: colleagueId,
+                    islandName: inquiry.islandName,
+                    colleagueId: inquiry.colleagueId,
                     health: health
                 }
             })
@@ -110,7 +110,7 @@ Conduit.prototype.health = cadence(function (async) {
     }, function (health) {
         return {
             instanceId: 0,
-            health: health
+            colleagues: health
         }
     })
 })

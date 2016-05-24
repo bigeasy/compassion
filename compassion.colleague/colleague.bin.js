@@ -1,7 +1,7 @@
 /*
 
     ___ usage ___ en_US ___
-    compassion <options> child <child options>
+    compassion colleague child <child options>
 
     options:
 
@@ -10,6 +10,12 @@
 
         -m, --module
             use a Node.js module instead of an executable for the child
+
+        -I, --island <string>
+            name of the island
+
+        -i, --id <string>
+            colleague id
 
         --help
             display help message
@@ -29,10 +35,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var prolific = require('prolific')
     var Shuttle = require('prolific.shuttle')
+    var abend = require('abend')
 
-    var Compassion = require('./http.js')
+    var Colleague = require('./http.js')
 
-    var logger = prolific.createLogger('bigeasy.compassion.bin')
+    var logger = prolific.createLogger('bigeasy.compassion.colleague.bin')
 
     Shuttle.shuttle(program, 1000, logger)
 
@@ -53,9 +60,17 @@ require('arguable')(module, require('cadence')(function (async, program) {
         throw e
     }
 
-    var compassion = new Compassion({ Delegate: Delegate })
-    var dispatcher = compassion.dispatcher.createWrappedDispatcher()
-    var server = http.createServer(dispatcher)
-    server.listen(bind.port, bind.address, async())
-    program.on('SIGINT', server.close.bind(server))
+
+    var UserAgent = require('./ua')
+    var Vizsla = require('vizsla')
+    console.log(program.command.param.bind)
+
+    var colleague = new Colleague({
+        islandName: program.command.param.island,
+        colleagueId: program.command.param.id,
+        Delegate: Delegate,
+        ua: new UserAgent(new Vizsla)
+    })
+    program.on('SIGINT', colleague.stop.bind(colleague))
+    colleague.listen(program.command.param.bind, abend)
 }))

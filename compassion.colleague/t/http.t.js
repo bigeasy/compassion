@@ -51,9 +51,6 @@ function prove (async, assert) {
     }, function (error) {
         assert(error.message, 'missing', 'kibitzer missing')
     }], function () {
-        compassion.index(async())
-    }, function (response) {
-        assert(response, 'Compassion API', 'index')
         compassion.health(async())
     }, function (response) {
         delete response.uptime

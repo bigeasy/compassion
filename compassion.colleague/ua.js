@@ -6,8 +6,17 @@ function UserAgent (ua) {
 }
 
 UserAgent.prototype.send = cadence(function (async, location, body) {
-    var url = util.format('http://%s/kibitz', location)
-    this._ua.fetch({ url: url, post: body, nullify: true }, async())
+    var url = util.format('http://%s/kibitz', location.location)
+    console.log(url)
+    this._ua.fetch({
+        url: url,
+        post: {
+            islandName: location.islandName,
+            colleagueId: location.colleagueId,
+            kibitz: body
+        },
+        nullify: true
+    }, async())
 })
 
 module.exports = UserAgent

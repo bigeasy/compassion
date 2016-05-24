@@ -1,40 +1,37 @@
 var cadence = require('cadence')
-var Dispatcher = require('inlet/dispatcher')
 var events = require('events')
+var Delta = require('delta')
 var Kibitzer = require('kibitz')
 var abend = require('abend')
+var Reactor = require('reactor')
+var WebSocket = require('faye-websocket')
+var logger = require('prolific').createLogger('bigeasy.compassion.colleague.actor')
 
-function Compassion (options) {
+function Colleague (options) {
     this.kibitzer = null
+    this._requests = new Reactor({ object: this, method: '_request' })
     this.messages = new events.EventEmitter
-    this.id = options.id
+    this._colleagueId = options.colleagueId
+    this._islandName = options.islandName
     this.start = Date.now()
     this.location = options.location
     this.ua = options.ua
 // TODO Here's a reason to extract the argument parser from arguable.
     this.delegate = new (options.Delegate)(this, options.argv)
-    var dispatcher = new Dispatcher(this)
-    dispatcher.dispatch('GET /', 'index')
-    dispatcher.dispatch('GET /health', 'health')
-    this.dispatcher = dispatcher
 }
 
-Compassion.prototype.index = cadence(function () {
-    return 'Compassion API'
-})
-
-Compassion.prototype.shutdown = function () {
+Colleague.prototype.shutdown = function () {
     if (this.kibitzer != null) {
         this.kibitzer.terminate()
         this.kibitzer = null
     }
 }
 
-Compassion.prototype.bootstrap = cadence(function (async, request) {
+Colleague.prototype.bootstrap = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
     this.messages.emit('message', 'reinstate', { bootstrap: true })
-    this.kibitzer = new Kibitzer(body.islandId, this.id, {
+    this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
     })
@@ -43,11 +40,12 @@ Compassion.prototype.bootstrap = cadence(function (async, request) {
     return {}
 })
 
-Compassion.prototype.join = cadence(function (async, request) {
+Colleague.prototype.join = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
     this.messages.emit('message', 'reinstate', { bootstrap: false })
-    this.kibitzer = new Kibitzer(body.islandId, this.id, {
+    console.log('--- join ---', request.body)
+    this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
     })
@@ -56,26 +54,27 @@ Compassion.prototype.join = cadence(function (async, request) {
     return {}
 })
 
-Compassion.prototype._onEntry = function (entry) {
+Colleague.prototype._onEntry = function (entry) {
     this.messages.emit('message', 'entry', entry)
 }
 
-Compassion.prototype.kibitz = cadence(function (async, request) {
+Colleague.prototype.kibitz = cadence(function (async, request) {
     if (this.kibitzer == null) {
-        request.raise(503)
+        return [ null ]
     }
-    this.kibitzer.dispatch(request.body, async())
+    this.kibitzer.dispatch(request.body.kibitz, async())
+    return {}
 })
 
 // TODO Return a unique null cookie? Do cookies need to be ordered?
-Compassion.prototype.publish = function (entry) {
+Colleague.prototype.publish = function (entry) {
     if (this.kibitzer == null) {
         return null
     }
     this.kibitzer.publish(entry)
 }
 
-Compassion.prototype.health = cadence(function () {
+Colleague.prototype.health = cadence(function (async, request) {
     var islandId = null, government = null
     if (this.kibitzer != null) {
         islandId = this.kibitzer.legislator.islandId
@@ -83,12 +82,61 @@ Compassion.prototype.health = cadence(function () {
     }
     return {
         uptime: Date.now() - this.start,
-        http: this.dispatcher.turnstile.health,
+        requests: this._requests.turnstile.health,
         islandId: islandId,
-        instanceId: this.id,
-        legislatorId: this.id,
+        legislatorId: this._colleagueId,
         government: government
     }
 })
 
-module.exports = Compassion
+Colleague.prototype.request = function (message) {
+    this._requests.push(JSON.parse(message.data))
+}
+
+Colleague.prototype._request = cadence(function (async, timeout, request) {
+    if (!~([ 'health', 'kibitz', 'join', 'bootstrap', 'shutdown' ]).indexOf(request.type)) {
+        return [ { cookie: request.cookie, body: null } ]
+    }
+    async(function () {
+        this[request.type](request, async())
+    }, function (body) {
+        this._ws.send(JSON.stringify({ cookie: request.cookie, body: body }))
+        return null
+    })
+})
+
+Colleague.prototype.listen = cadence(function (async, address) {
+    var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
+    var loop = async(function () {
+        if (this._shutdown) {
+            return [ loop.break ]
+        }
+        this._ws = new WebSocket.Client(url)
+        async([function () {
+            async(function () {
+                new Delta(async()).ee(this._ws).on('open')
+            }, function () {
+                new Delta(async()).ee(this._ws)
+                    .on('message', this.request.bind(this))
+                    .on('close')
+            })
+        }, function (error) {
+            console.log(error.message)
+            logger.error('connect', { message: error.message })
+            return [ loop.continue ]
+        }])
+    })()
+})
+
+Colleague.prototype.stop = function () {
+// TODO :(
+    setTimeout(function () { throw new Error }, 1000)
+    if (!this._shutdown) {
+        this._shutdown = true
+        if (this._ws != null) {
+            this._ws.close()
+        }
+    }
+}
+
+module.exports = Colleague
