@@ -44,7 +44,6 @@ Colleague.prototype.join = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
     this.messages.emit('message', 'reinstate', { bootstrap: false })
-    console.log('--- join ---', request.body)
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
@@ -106,26 +105,30 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
 })
 
 Colleague.prototype.listen = cadence(function (async, address) {
-    var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
-    var loop = async(function () {
-        if (this._shutdown) {
-            return [ loop.break ]
-        }
-        this._ws = new WebSocket.Client(url)
-        async([function () {
-            async(function () {
-                new Delta(async()).ee(this._ws).on('open')
-            }, function () {
-                new Delta(async()).ee(this._ws)
-                    .on('message', this.request.bind(this))
-                    .on('close')
-            })
-        }, function (error) {
-            console.log(error.message)
-            logger.error('connect', { message: error.message })
-            return [ loop.continue ]
-        }])
-    })()
+    async(function () {
+        this.delegate.initialize(async())
+    }, function () {
+        var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
+        var loop = async(function () {
+            if (this._shutdown) {
+                return [ loop.break ]
+            }
+            this._ws = new WebSocket.Client(url)
+            async([function () {
+                async(function () {
+                    new Delta(async()).ee(this._ws).on('open')
+                }, function () {
+                    new Delta(async()).ee(this._ws)
+                        .on('message', this.request.bind(this))
+                        .on('close')
+                })
+            }, function (error) {
+                console.log(error.message)
+                logger.error('connect', { message: error.message })
+                return [ loop.continue ]
+            }])
+        })()
+    })
 })
 
 Colleague.prototype.stop = function () {

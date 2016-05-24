@@ -17,6 +17,9 @@
         -i, --id <string>
             colleague id
 
+        --ipc
+            communicate with child using Node IPC instead of socket
+
         --help
             display help message
 
@@ -33,9 +36,11 @@
 require('arguable')(module, require('cadence')(function (async, program) {
     var http = require('http')
 
+    var children = require('child_process')
     var prolific = require('prolific')
     var Shuttle = require('prolific.shuttle')
     var abend = require('abend')
+    var Delta = require('delta')
 
     var Colleague = require('./http.js')
 
@@ -48,10 +53,17 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var bind = program.command.bind('bind')
 
-    if (!program.command.param.module) {
-        module = './child'
-    } else {
+    var stdio = [ 'inherit', 'inherit', 'inherit' ]
+    var exec = true
+    if (program.command.param.ipc) {
+        module = './ipc'
+        stdio.push('ipc')
+    } else if (program.command.param.module) {
         module = program.argv.shift()
+        exec = false
+    } else {
+        module = './child'
+        stdio.push('pipe')
     }
 
     try {
@@ -63,12 +75,22 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var UserAgent = require('./ua')
     var Vizsla = require('vizsla')
-    console.log(program.command.param.bind)
+    if (exec) {
+        var child = children.spawn(program.argv.shift(), program.argv, { stdio: stdio })
+        async(function () {
+            new Delta(async()).ee(child).on('close')
+        }, function (exit, signal) {
+// TODO Want.
+            // return program.exitCode(exit, signal)
+            return exit
+        })
+    }
 
     var colleague = new Colleague({
         islandName: program.command.param.island,
         colleagueId: program.command.param.id,
         Delegate: Delegate,
+        argv: child,
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))

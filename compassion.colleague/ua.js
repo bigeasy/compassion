@@ -7,7 +7,7 @@ function UserAgent (ua) {
 
 UserAgent.prototype.send = cadence(function (async, location, body) {
     var url = util.format('http://%s/kibitz', location.location)
-    console.log(url)
+    console.log(url, body)
     this._ua.fetch({
         url: url,
         post: {
