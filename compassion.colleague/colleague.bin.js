@@ -34,6 +34,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = prolific.createLogger('bigeasy.compassion.bin')
 
+    Shuttle.shuttle(program, 1000, logger)
+
     program.helpIf(program.command.param.help)
     program.command.required('bind')
 
@@ -51,13 +53,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         throw e
     }
 
-    async(function () {
-        Shuttle.shuttle(program, 1000, {}, logger, async())
-    }, function () {
-        var compassion = new Compassion({ Delegate: Delegate })
-        var dispatcher = compassion.dispatcher.createWrappedDispatcher()
-        var server = http.createServer(dispatcher)
-        server.listen(bind.port, bind.address, async())
-        program.on('SIGINT', server.close.bind(server))
-    })
+    var compassion = new Compassion({ Delegate: Delegate })
+    var dispatcher = compassion.dispatcher.createWrappedDispatcher()
+    var server = http.createServer(dispatcher)
+    server.listen(bind.port, bind.address, async())
+    program.on('SIGINT', server.close.bind(server))
 }))

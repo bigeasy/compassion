@@ -1,5 +1,5 @@
 {
-    "name":             "compassion.instance",
+    "name":             "compassion.colleague",
     "version":          "9.9.9",
     "description":      "Paxos based consensus framework.",
     "keywords":
@@ -31,10 +31,10 @@
     {
                         "proof": "1.x"
     },
-    "main":             "compassion.bin",
+    "main":             "colleague.bin",
     "bin":
     {
-                        "compassion":           "./compassion.bin.js"
+                        "compassion-colleague": "./colleague.bin.js"
     },
     "scripts":
     {

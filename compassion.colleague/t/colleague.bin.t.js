@@ -1,7 +1,7 @@
 require('proof')(1, require('cadence')(prove))
 
 function prove (async, assert) {
-    var bin = require('../compassion.bin')
+    var bin = require('../colleague.bin')
     var io
     async(function () {
         io = bin({}, [ '--bind', '127.0.0.1:8888', '--module', './t/child' ], {}, async())
