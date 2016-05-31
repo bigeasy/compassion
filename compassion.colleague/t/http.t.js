@@ -1,7 +1,7 @@
-require('proof')(7, require('cadence')(prove))
+require('proof')(6, require('cadence')(prove))
 
 function prove (async, assert) {
-    var Compassion = require('../http')
+    var Colleague = require('../http')
 
     var cadence = require('cadence')
     var Dispatcher = require('inlet/dispatcher')
@@ -29,12 +29,12 @@ function prove (async, assert) {
 
     function Child (compassion) {
         var initialized = false
-        compassion.messages.on('message', function (name, value) {
-            if (name == 'entry') {
+        compassion.messages.on('message', function (message) {
+            if (message.type == 'entry') {
                 if (initialized) {
-                    assert(value.value.value.number, 0, 'entry')
+                    assert(message.entry.value.number, 0, 'entry')
                     bootstrapped()
-                } else if (value.promise == '1/0') {
+                } else if (message.entry.promise == '1/0') {
                     initialized = true
                     compassion.publish({ number: 0 })
                 }
@@ -42,22 +42,20 @@ function prove (async, assert) {
         })
     }
 
-    var compassion = new Compassion({ id: 'x', Delegate: Child, ua: ua })
+    var compassion = new Colleague({ colleagueId: 'x', Delegate: Child, ua: ua })
 
     compassion.publish({ value: 0 })
 
-    async([function () {
-        compassion.kibitz({ raise: function () { throw new Error('missing') } }, async())
-    }, function (error) {
-        assert(error.message, 'missing', 'kibitzer missing')
-    }], function () {
+    async(function () {
+        compassion.kibitz({}, async())
+    }, function (result) {
+        assert(result, null, 'missing')
         compassion.health(async())
     }, function (response) {
         delete response.uptime
         assert(response, {
-            http: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
+            requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: null,
-            instanceId: 'x',
             legislatorId: 'x',
             government: null
         }, 'health')
@@ -71,16 +69,20 @@ function prove (async, assert) {
     }, function (response) {
         assert(response, {}, 'join')
         bootstrapped = async()
-        compassion.bootstrap({ body: { islandId: 'y' } }, async())
+        compassion.bootstrap({
+            body: {
+                islandId: 'y',
+                location: '127.0.0.1:8080'
+            }
+        }, async())
     }, function (response) {
         assert(response, {}, 'bootstrap')
         compassion.health(async())
     }, function (response) {
         delete response.uptime
         assert(response, {
-            http: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
+            requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: 'y',
-            instanceId: 'x',
             legislatorId: 'x',
             government: {
                 majority: [ 'x' ],

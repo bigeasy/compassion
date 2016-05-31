@@ -5,11 +5,12 @@ var Kibitzer = require('kibitz')
 var abend = require('abend')
 var Reactor = require('reactor')
 var WebSocket = require('faye-websocket')
-var logger = require('prolific').createLogger('bigeasy.compassion.colleague.actor')
+var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.actor')
 
 function Colleague (options) {
     this.kibitzer = null
     this._requests = new Reactor({ object: this, method: '_request' })
+    this._requests.turnstile.health.turnstiles = 24
     this.messages = new events.EventEmitter
     this._colleagueId = options.colleagueId
     this._islandName = options.islandName
@@ -30,7 +31,7 @@ Colleague.prototype.shutdown = function () {
 Colleague.prototype.bootstrap = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
-    this.messages.emit('message', 'reinstate', { bootstrap: true })
+    this.messages.emit('message', { type: 'reinstate', bootstrap: true })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
@@ -43,7 +44,7 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
 Colleague.prototype.join = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
-    this.messages.emit('message', 'reinstate', { bootstrap: false })
+    this.messages.emit('message', { type: 'reinstate', bootstrap: false })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
@@ -54,7 +55,7 @@ Colleague.prototype.join = cadence(function (async, request) {
 })
 
 Colleague.prototype._onEntry = function (entry) {
-    this.messages.emit('message', 'entry', entry)
+    this.messages.emit('message', { type: 'entry', entry: entry })
 }
 
 Colleague.prototype.kibitz = cadence(function (async, request) {

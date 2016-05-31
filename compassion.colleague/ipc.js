@@ -24,8 +24,8 @@ Delegate.prototype._colleagueMessage = cadence(function (async, timeout, message
     this._child.send(message, async())
 })
 
-Delegate.prototype.colleagueMessage = function (type, value) {
-    this._messages.push({ type: type, value: value })
+Delegate.prototype.colleagueMessage = function (message) {
+    this._messages.push(message)
 }
 
 Delegate.prototype.childMessage = function (message) {
