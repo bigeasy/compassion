@@ -1,5 +1,5 @@
 /node_modules/*
 /*/node_modules/*
-!/edify.root/node_modules/compassion.test.js
+!/compassion.root/node_modules/compassion.test.js
 /.proof.out
 /coverage

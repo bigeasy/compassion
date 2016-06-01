@@ -18,10 +18,12 @@
     },
     "dependencies":
     {
+                        "arguable":         "2.x",
+                        "cadence":          "1.x"
     },
     "devDependencies":
     {
-                        "proof": "1.x"
+                        "proof":            "1.x"
     },
     "main":             "compassion.bin",
     "bin":

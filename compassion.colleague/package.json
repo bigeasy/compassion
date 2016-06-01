@@ -23,6 +23,7 @@
                         "cadence":              "1.x",
                         "delta":                "1.x",
                         "faye-websocket":       "0.11.0",
+                        "inlet":                "1.x",
                         "kibitz":               "0.x",
                         "reactor":              "2.x",
                         "prolific.logger":      "0.0.1",

@@ -25,12 +25,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var http = require('http')
     var destroyer = require('server-destroy')
 
-    var prolific = require('prolific')
     var Shuttle = require('prolific.shuttle')
 
     var Conduit = require('./http.js')
 
-    var logger = prolific.createLogger('bigeasy.compassion.conduit.bin')
+    var logger = require('prolific.logger').createLogger('bigeasy.compassion.conduit.bin')
 
     Shuttle.shuttle(program, 1000, logger)
 
