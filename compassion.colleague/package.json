@@ -1,7 +1,7 @@
 {
     "name":             "compassion.colleague",
     "version":          "0.0.0",
-    "description":      "Paxos based consensus framework.",
+    "description":      "Instance of a compassion island participant.",
     "keywords":
     [
                         "consensus", "paxos"
