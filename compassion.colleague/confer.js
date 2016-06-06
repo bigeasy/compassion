@@ -1,9 +1,12 @@
+var abend = require('abend')
+
 var assert = require('assert')
 
 var cadence = require('cadence')
 
 var RBTree = require('bintrees').RBTree
 var Operation = require('operation')
+var Reactor = require('reactor')
 
 function Transaction () {
 }
@@ -12,6 +15,9 @@ function Conference (conduit, self) {
     this._conduit = conduit
     this._self = self || null
     this._particpants = []
+    this._immigrants = []
+    this._operations = {}
+    this._messages = new Reactor({ object: this, method: '_message' })
 }
 
 Conference.prototype._createOperation = function (operation) {
@@ -51,12 +57,26 @@ Conference.prototype._check = cadence(function (async, timeout) {
     }
 })
 
+Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
+    var operation = this._operations[qualifier + '.' + name]
+    if (operation) {
+        operation.apply([], vargs.concact(async()))
+    }
+})
+
 Conference.prototype._message = cadence(function (async, timeout, message) {
-    if (message.government) {
-        if (message.collapsed) {
+    if (message.isGovernment) {
+        var value = message.value
+        if (value.collapsed) {
             this._broadcasts.clear()
             this._naturalizing = {}
             this._exiling = {}
+        } else if (message.promise == '1/0') {
+            this._apply('internal', 'join', [ true ], async())
+            var leader = value.government.majority[0]
+            this._particpants.push(value.citizens[leader].immigrated + ':' + leader)
+            this._isLeader = true
+            return
         }
 
         // TODO For now I don't care about the order in which they where
@@ -66,13 +86,12 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         // Create a list of citizens, but with a unique key that combines the
         // colleague id the promise with which the colleague immigrated.
 
-        var citizens = government.majority.concat(government.minority)
-                                          .concat(government.constituents)
-                                          .map(function (id) {
-// TODO Add immigrated to citizen properties
-// TODO Put id in this object.
-                                                return id + ':' + government.citizens[id].immigrated
-                                          })
+        var citizens = value.government
+                            .majority.concat(value.government.minority)
+                            .concat(value.government.constituents)
+                            .map(function (id) {
+                                return value.citizens[id].immigrated + ':' + id
+                            })
 
         // Alternate unique id is the identifer plus the promise of the
         // government that introduced it and then clocks don't matter.
@@ -87,7 +106,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
 
         // TODO Exile needs to be an object that has the final state. Hmm... No,
         // I believe I left the citizen in there.
-        var exile = government.exile
+        var exile = value.government.exile
         if (exile) {
             exile = exile + ':' + government.citizens[exile].immigrated
             // Remove from the list of naturalizations if it is in there.
@@ -107,9 +126,11 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         // Order matters. Citizens must be naturalized in the same order in
         // which they immigrated. If not, one citizen might be made leader and
         // not know of another citizens immigration.
-        var immigration = government.immigration
+        var immigration = value.government.immigration
         if (immigration) {
-            immigration = immigration.id + ':' + government.citizens[immigration.id].immigrated
+// TODO Add immigrated to citizen properties
+// TODO Put id in this object.
+            immigration = value.citizens[immigration.id].immigrated + ':' + immigration.id
             this._immigrants.push(immigration)
         }
 
@@ -147,15 +168,16 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
 })
 
 Conference.prototype.message = function (message) {
+    this._enqueue(message, abend)
+}
+
+Conference.prototype._enqueue = function (message, callback) {
     switch (message.type) {
     case 'entry':
         if (message.isGovernment || message.entry.value.namespace == 'bigeasy.compassion.confer') {
-            this._messages.push(message)
+            this._messages.push(message, callback)
         }
         break
-    }
-    if (message.government || message.namespace == 'bigeasy.empathy') {
-        this._messages.push(message)
     }
 }
 
