@@ -8,9 +8,6 @@ var RBTree = require('bintrees').RBTree
 var Operation = require('operation')
 var Reactor = require('reactor')
 
-function Transaction () {
-}
-
 function Conference (conduit, self) {
     this._conduit = conduit
     this._self = self || null
