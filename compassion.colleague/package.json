@@ -20,11 +20,13 @@
     {
                         "abend":                "1.x",
                         "arguable":             "2.x",
+                        "bintrees":             "1.0.1",
                         "cadence":              "1.x",
                         "delta":                "1.x",
                         "faye-websocket":       "0.11.0",
                         "inlet":                "1.x",
                         "kibitz":               "0.x",
+                        "operation":            "1.x",
                         "prolific.logger":      "0.0.1",
                         "prolific.main":        "0.0.2",
                         "prolific.shuttle":     "2.x",
