@@ -19,6 +19,8 @@ function prove (async, assert) {
     conference._createOperation({ object: specific, method: 'test' }).apply([], [])
     conference._createOperation('test').apply([], [])
 
+    conference.message({})
+
     async(function () {
         conference._enqueue({
             type: 'entry',
