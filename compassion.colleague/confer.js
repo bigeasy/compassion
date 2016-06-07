@@ -178,11 +178,4 @@ Conference.prototype._enqueue = function (message, callback) {
     }
 }
 
-Conference.prototype.register = function (registration) {
-    this._registrations[registration.name] = registration
-}
-
-Conference.prototype.initiate = function () {
-}
-
 module.exports = Conference
