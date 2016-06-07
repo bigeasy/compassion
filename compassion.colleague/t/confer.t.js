@@ -23,7 +23,7 @@ function prove (async, assert) {
         conference._enqueue({
             type: 'entry',
             promise: '1/0',
-    // TODO Add government flag to message.
+// TODO Add government flag to message.
             isGovernment: true,
             value: {
                 government: {
@@ -41,7 +41,7 @@ function prove (async, assert) {
         conference._enqueue({
             type: 'entry',
             promise: '2/0',
-    // TODO Add government flag to message.
+// TODO Add government flag to message.
             isGovernment: true,
             value: {
                 government: {
