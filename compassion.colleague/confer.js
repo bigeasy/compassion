@@ -11,7 +11,9 @@ var Reactor = require('reactor')
 function Conference (conduit, self) {
     this._conduit = conduit
     this._self = self || null
-    this._particpants = []
+    this._participants = []
+    this._colleagueId = null
+    this._participantIds = null
     this._immigrants = []
     this._operations = {}
     this._messages = new Reactor({ object: this, method: '_message' })
@@ -62,8 +64,20 @@ Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
 })
 
 Conference.prototype._message = cadence(function (async, timeout, message) {
-    if (message.isGovernment) {
+    if (message.type == 'reinstate') {
+        this._colleagueId = message.colleagueId
+    } else if (message.isGovernment) {
         var value = message.value
+
+        this._participantIds = {}
+        value
+            .government
+            .majority.concat(value.government.minority)
+            .concat(value.government.constituents)
+            .forEach(function (id) {
+                this._participantIds[id] = value.citizens[id].immigrated + ':' + id
+            }, this)
+
         if (value.collapsed) {
             this._broadcasts.clear()
             this._naturalizing = {}
@@ -71,7 +85,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         } else if (message.promise == '1/0') {
             this._apply('internal', 'join', [ true ], async())
             var leader = value.government.majority[0]
-            this._particpants.push(value.citizens[leader].immigrated + ':' + leader)
+            this._participants.push(this._participantIds[leader])
             this._isLeader = true
             return
         }
@@ -83,19 +97,13 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         // Create a list of citizens, but with a unique key that combines the
         // colleague id the promise with which the colleague immigrated.
 
-        var citizens = value.government
-                            .majority.concat(value.government.minority)
-                            .concat(value.government.constituents)
-                            .map(function (id) {
-                                return value.citizens[id].immigrated + ':' + id
-                            })
 
         // Alternate unique id is the identifer plus the promise of the
         // government that introduced it and then clocks don't matter.
 
         // Diff exiles from participants.
         /*
-        this._particpants.filter(function (participant) {
+        this._participants.filter(function (participant) {
             return citizens.indexOf(participant) == -1
         }).forEach(function (exile) {
         }, this)
@@ -105,7 +113,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         // I believe I left the citizen in there.
         var exile = value.government.exile
         if (exile) {
-            exile = exile + ':' + government.citizens[exile].immigrated
+            exile = this._participantIds[exile]
             // Remove from the list of naturalizations if it is in there.
             this._immigrants = this._immigrants.filter(function (immigrant) {
                 return immigrant != exile
@@ -115,7 +123,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
             if (consensus) {
                 consensus.cancel()
             }
-            if (this._particpants.indexOf(exile) != -1) {
+            if (this._participants.indexOf(exile) != -1) {
                 this._exiles.push({ colleagueId: exile })
             }
         }
@@ -127,8 +135,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         if (immigration) {
 // TODO Add immigrated to citizen properties
 // TODO Put id in this object.
-            immigration = value.citizens[immigration.id].immigrated + ':' + immigration.id
-            this._immigrants.push(immigration)
+            this._immigrants.push(this._participantIds[immigration.id])
         }
 
         // Some notes that belong somewhere else.
