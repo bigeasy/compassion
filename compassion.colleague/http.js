@@ -31,7 +31,12 @@ Colleague.prototype.shutdown = function () {
 Colleague.prototype.bootstrap = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
-    this.messages.emit('message', { type: 'reinstate', bootstrap: true })
+    this.messages.emit('message', {
+        type: 'reinstate',
+        bootstrap: true,
+        islandId: body.islandId,
+        colleagueId: this._colleagueId
+    })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
@@ -44,7 +49,12 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
 Colleague.prototype.join = cadence(function (async, request) {
     var body = request.body
     this.shutdown()
-    this.messages.emit('message', { type: 'reinstate', bootstrap: false })
+    this.messages.emit('message', {
+        type: 'reinstate',
+        bootstrap: false,
+        islandId: body.islandId,
+        colleagueId: this._colleagueId
+    })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         location: body.location
