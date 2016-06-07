@@ -1,6 +1,8 @@
 var abend = require('abend')
 
 var assert = require('assert')
+var recover = require('recover')
+var interrupt = require('interrupt').createInterrupter('bigeasy.compassion.confer')
 
 var cadence = require('cadence')
 
@@ -16,6 +18,7 @@ function Conference (conduit, self) {
     this._participantIds = null
     this._immigrants = []
     this._operations = {}
+    this._operating = new Reactor({ object: this, method: '_operate' })
     this._messages = new Reactor({ object: this, method: '_message' })
 }
 
@@ -31,6 +34,10 @@ Conference.prototype._setOperation = function (qualifier, name, operation) {
     var key = qualifier + ':' + name
     assert(!this._operations[key], 'operation already assinged')
     this._operations[key] = this._createOperation(operation)
+}
+
+Conference.prototype._getOperation = function (qualifier, name) {
+    return this._operations[qualifier + ':' + name]
 }
 
 Conference.prototype.join = function (operation) {
@@ -63,6 +70,19 @@ Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
     }
 })
 
+// TODO Should this be parallel with how ever many turnstiles?
+Conference.prototype._operate = cadence(function (async, timeout, message) {
+    async(recover(function () {
+        var operation = this._getOperation(message.qualifier, message.method)
+        if (operation == null) {
+            return
+        }
+        operation.apply([], message.vargs.concat(async()))
+    }, /^interrupt:bigeasy.compassion.colleage.confer:cancelled$/, function () {
+        return [ async.break ]
+    }))
+})
+
 Conference.prototype._message = cadence(function (async, timeout, message) {
     if (message.type == 'reinstate') {
         this._colleagueId = message.colleagueId
@@ -87,6 +107,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
             var leader = value.government.majority[0]
             this._participants.push(this._participantIds[leader])
             this._isLeader = true
+            this._operating.push({ qualifier: 'internal', method: 'join', vargs: [] })
             return
         }
 

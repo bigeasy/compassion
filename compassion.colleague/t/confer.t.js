@@ -1,23 +1,33 @@
 require('proof')(6, require('cadence')(prove))
 
 function prove (async, assert) {
+    var cadence = require('cadence')
     var Conference = require('../confer')
     assert(Conference, 'require')
+
+    var wait
     var object = {
-        'test': function () {
+        test: function () {
             assert(this === object, 'object this')
-        }
+        },
+        join: cadence(function (async) {
+            console.log('called')
+            wait()
+            return {}
+        })
     }
     var conference = new Conference({}, object)
 
     var specific = {
-        'test': function () {
+        test: function () {
             assert(this === specific, 'specific object')
         }
     }
 
     conference._createOperation({ object: specific, method: 'test' }).apply([], [])
     conference._createOperation('test').apply([], [])
+
+    conference.join('join')
 
     conference.message({})
 
@@ -44,6 +54,7 @@ function prove (async, assert) {
                 }
             }
         }, async())
+        wait = async()
     }, function () {
         assert(conference._participants, [ '1/0:0' ], 'participants')
         conference._enqueue({
