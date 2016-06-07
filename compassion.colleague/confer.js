@@ -177,6 +177,9 @@ Conference.prototype.message = function (message) {
 
 Conference.prototype._enqueue = function (message, callback) {
     switch (message.type) {
+    case 'reinstate':
+        this._messages.push(message, callback)
+        break
     case 'entry':
         if (message.isGovernment || message.entry.value.namespace == 'bigeasy.compassion.confer') {
             this._messages.push(message, callback)

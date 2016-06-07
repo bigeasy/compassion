@@ -1,4 +1,4 @@
-require('proof')(5, require('cadence')(prove))
+require('proof')(6, require('cadence')(prove))
 
 function prove (async, assert) {
     var Conference = require('../confer')
@@ -22,6 +22,12 @@ function prove (async, assert) {
     conference.message({})
 
     async(function () {
+        conference._enqueue({
+            type: 'reinstate',
+            colleagueId: '0'
+        }, async())
+    }, function () {
+        assert(conference._colleagueId, '0', 'set colleague id')
         conference._enqueue({
             type: 'entry',
             promise: '1/0',
