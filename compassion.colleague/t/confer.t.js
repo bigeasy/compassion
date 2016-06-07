@@ -37,7 +37,7 @@ function prove (async, assert) {
             }
         }, async())
     }, function () {
-        assert(conference._particpants, [ '1/0:0' ], 'foo')
+        assert(conference._particpants, [ '1/0:0' ], 'participants')
         conference._enqueue({
             type: 'entry',
             promise: '2/0',
@@ -57,6 +57,6 @@ function prove (async, assert) {
             }
         }, async())
     }, function () {
-        assert(conference._immigrants, [ '2/0:1' ], 'foo')
+        assert(conference._immigrants, [ '2/0:1' ], 'immigrants')
     })
 }
