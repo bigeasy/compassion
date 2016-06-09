@@ -98,12 +98,12 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
                 this._participantIds[id] = value.citizens[id].immigrated + ':' + id
             }, this)
 
+        // Send a collapse message either here or from conduit.
         if (value.collapsed) {
             this._broadcasts.clear()
             this._naturalizing = {}
             this._exiling = {}
         } else if (message.promise == '1/0') {
-            this._apply('internal', 'join', [ true ], async())
             var leader = value.government.majority[0]
             this._participants.push(this._participantIds[leader])
             this._isLeader = true
