@@ -10,13 +10,18 @@ var RBTree = require('bintrees').RBTree
 var Operation = require('operation')
 var Reactor = require('reactor')
 
+var Cliffhanger = require('cliffhanger')
+
 function Conference (conduit, self) {
+    this.isLeader = false
+    this._cliffhanger = new Cliffhanger
     this._conduit = conduit
     this._self = self || null
     this._participants = []
     this._colleagueId = null
     this._participantIds = null
     this._immigrants = []
+    this._exiles = []
     this._operations = {}
     this._operating = new Reactor({ object: this, method: '_operate' })
     this._messages = new Reactor({ object: this, method: '_message' })
@@ -32,7 +37,6 @@ Conference.prototype._createOperation = function (operation) {
 
 Conference.prototype._setOperation = function (qualifier, name, operation) {
     var key = qualifier + ':' + name
-    assert(!this._operations[key], 'operation already assinged')
     this._operations[key] = this._createOperation(operation)
 }
 
@@ -53,7 +57,7 @@ Conference.prototype.naturalize = function () {
 }
 
 Conference.prototype._check = cadence(function (async, timeout) {
-    if (this._isLeader) {
+    if (this.isLeader) {
         if (this._exiles.length) {
             if (!this._exiles[0].exiling) {
                 this.conduit.publish({ type: 'exile' }, async())
@@ -106,7 +110,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         } else if (message.promise == '1/0') {
             var leader = value.government.majority[0]
             this._participants.push(this._participantIds[leader])
-            this._isLeader = true
+            this.isLeader = true
             this._operating.push({ qualifier: 'internal', method: 'join', vargs: [] })
             return
         }
@@ -139,13 +143,29 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
         }
-
-        if (message.namespace != 'bigeasy.compassion.confer') {
-            return
+        if (this.isLeader && this._naturalizing == null && this._exiling == null) {
+            if (this._exiles.length != 0) {
+                this._exiling = this._exiles.shift()
+                this._operating.push({ qualifier: 'internal', method: 'exile', vargs: [] })
+            } else if (this._immigrants.length != 0) {
+                this._exiling = this._exiles.shift()
+                this._operating.push({ qualifier: 'internal', method: 'naturalize', vargs: [] })
+            }
         }
-
     } else {
     }
+})
+
+Conference.prototype.send = cadence(function (async, method, colleagueId, message) {
+    this._send(false, method, colleagueId, message, async())
+})
+
+Conference.prototype.broadcast = cadence(function (async, method, colleagueId, message) {
+    this._send(false, method, colleagueId, message, async())
+})
+
+Conference.prototype.reduce = cadence(function (async, method, colleagueId, message) {
+    this._send(false, method, colleagueId, message, async())
 })
 
 Conference.prototype.message = function (message) {
@@ -163,6 +183,58 @@ Conference.prototype._enqueue = function (message, callback) {
         }
         break
     }
+}
+
+Conference.prototype._resolve = function (message) {
+    this._cliffhanger.resolve(message.cliffhanger.cookie, value.message)
+}
+
+Conference.prototype._send = cadence(function (async, cancelable, method, colleagueId, message) {
+    async(function () {
+        var cookie = this._cliffhanger.invoke(async())
+        if (cancelable) {
+            this._cookie[cancelable] = true
+        }
+        this._conduit.send({
+            cliffhanger: {
+                type: 'send',
+                from: this._colleagueId,
+                to: colleagueId,
+                cancelable: this._cancelable,
+                cookie: cookie
+            },
+            value: message
+        }, async())
+    }, function (message) {
+        return [ message ]
+    })
+})
+
+Conference.prototype._broadcast = cadence(function (async, cancelable, method, message) {
+    async(function () {
+        var cookie = this._cliffhanger.invoke(async())
+        if (cancelable) {
+            this._cookie[cancelable] = true
+        }
+        this._conduit.send({
+            header: {
+                type: 'broadcast',
+                from: this._colleagueId,
+                cancelable: this._cancelable,
+                cookie: cookie
+            },
+            value: message
+        }, async())
+    }, function (messages) {
+        return [ messages ]
+    })
+})
+
+Conference.prototype._cancel = function () {
+    this._cliffhanger.cancel(function (cookie) {
+        return this._cancelable[cookie]
+    })
+    this._cancelable = {}
 }
 
 module.exports = Conference

@@ -22,6 +22,7 @@
                         "arguable":             "2.x",
                         "bintrees":             "1.0.1",
                         "cadence":              "1.x",
+                        "cliffhanger":          "1.1.x",
                         "delta":                "1.x",
                         "faye-websocket":       "0.11.0",
                         "inlet":                "1.x",
