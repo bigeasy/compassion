@@ -161,11 +161,11 @@ Conference.prototype.send = cadence(function (async, method, colleagueId, messag
 })
 
 Conference.prototype.broadcast = cadence(function (async, method, colleagueId, message) {
-    this._send(false, method, colleagueId, message, async())
+    this._broadcast(false, method, colleagueId, message, async())
 })
 
 Conference.prototype.reduce = cadence(function (async, method, colleagueId, message) {
-    this._send(false, method, colleagueId, message, async())
+    this._reduce(false, method, colleagueId, message, async())
 })
 
 Conference.prototype.message = function (message) {
