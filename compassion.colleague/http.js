@@ -9,6 +9,7 @@ var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleag
 
 function Colleague (options) {
     this.kibitzer = null
+    this._reinstatementId = 0
     this._requests = new Reactor({ object: this, method: '_request' })
     this._requests.turnstile.health.turnstiles = 24
     this.messages = new events.EventEmitter
@@ -34,6 +35,7 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
     this.messages.emit('message', {
         type: 'reinstate',
         bootstrap: true,
+        reinstatementId: ++this._reinstatementId,
         islandId: body.islandId,
         colleagueId: this._colleagueId
     })
@@ -52,9 +54,14 @@ Colleague.prototype.join = cadence(function (async, request) {
     this.messages.emit('message', {
         type: 'reinstate',
         bootstrap: false,
+        reinstatementId: ++this._reinstatementId,
         islandId: body.islandId,
         colleagueId: this._colleagueId
     })
+    if (!body.properties) {
+        console.log(body)
+        throw new Error
+    }
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
         properties: body.properties
@@ -77,7 +84,10 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
 })
 
 // TODO Return a unique null cookie? Do cookies need to be ordered?
-Colleague.prototype.publish = function (entry) {
+Colleague.prototype.publish = function (reinstatementId, entry) {
+    if (reinstatementId != this._reinstatementId) {
+        return null
+    }
     if (this.kibitzer == null) {
         return null
     }
@@ -134,7 +144,6 @@ Colleague.prototype.listen = cadence(function (async, address) {
                         .on('close')
                 })
             }, function (error) {
-                console.log(error.message)
                 logger.error('connect', { message: error.message })
                 return [ loop.continue ]
             }])

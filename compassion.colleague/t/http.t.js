@@ -36,7 +36,7 @@ function prove (async, assert) {
                     bootstrapped()
                 } else if (message.entry.promise == '1/0') {
                     initialized = true
-                    compassion.publish({ number: 0 })
+                    compassion.publish(2, { number: 0 })
                 }
             }
         })
@@ -44,7 +44,7 @@ function prove (async, assert) {
 
     var compassion = new Colleague({ colleagueId: 'x', Delegate: Child, ua: ua })
 
-    compassion.publish({ value: 0 })
+    compassion.publish(0, { value: 0 })
 
     async(function () {
         compassion.kibitz({}, async())

@@ -37,7 +37,7 @@ Delegate.prototype.childMessage = function (message) {
         }
         break
     case 'publish':
-        this._colleague.publish(message.entry)
+        this._colleague.publish(message.reinstatementId, message.entry)
         break
     }
 }
