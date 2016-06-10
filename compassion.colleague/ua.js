@@ -5,13 +5,14 @@ function UserAgent (ua) {
     this._ua = ua
 }
 
-UserAgent.prototype.send = cadence(function (async, location, body) {
-    var url = util.format('http://%s/kibitz', location.location)
+UserAgent.prototype.send = cadence(function (async, properties, body) {
+    console.log(properties, body)
+    var url = util.format('http://%s/kibitz', properties.location)
     this._ua.fetch({
         url: url,
         post: {
-            islandName: location.islandName,
-            colleagueId: location.colleagueId,
+            islandName: properties.islandName,
+            colleagueId: properties.colleagueId,
             kibitz: body
         },
         nullify: true

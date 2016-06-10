@@ -61,9 +61,9 @@ function prove (async, assert) {
         }, 'health')
         compassion.join({
             body: {
-                location: '127.0.0.1:8080',
+                properties: { location: '127.0.0.1:8080' },
                 islandId: 'y',
-                liaison: '127.0.0.1:8888'
+                liaison: { location: '127.0.0.1:8888' }
             }
         }, async())
     }, function (response) {
@@ -72,7 +72,7 @@ function prove (async, assert) {
         compassion.bootstrap({
             body: {
                 islandId: 'y',
-                location: '127.0.0.1:8080'
+                properties: { location: '127.0.0.1:8080' }
             }
         }, async())
     }, function (response) {

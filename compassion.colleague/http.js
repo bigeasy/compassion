@@ -15,7 +15,7 @@ function Colleague (options) {
     this._colleagueId = options.colleagueId
     this._islandName = options.islandName
     this.start = Date.now()
-    this.location = options.location
+    this.properties = options.properties
     this.ua = options.ua
 // TODO Here's a reason to extract the argument parser from arguable.
     this.delegate = new (options.Delegate)(this, options.argv)
@@ -39,7 +39,7 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
     })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
-        location: body.location
+        properties: body.properties
     })
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.bootstrap(abend)
@@ -57,7 +57,7 @@ Colleague.prototype.join = cadence(function (async, request) {
     })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
-        location: body.location
+        properties: body.properties
     })
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.join(body.liaison, abend)
