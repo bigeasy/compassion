@@ -15,6 +15,10 @@ function Conduit () {
     dispatcher.dispatch('GET /health', 'health')
     this.dispatcher = dispatcher
     this.onupgrade = this.upgrade.bind(this)
+// TODO Should be able to time out explicitly on socket close.
+    setInterval(function () {
+        this._cliffhanger.expire(Date.now() - 5000)
+    }.bind(this), 1000).unref()
 }
 
 
