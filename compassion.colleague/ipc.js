@@ -43,7 +43,7 @@ Delegate.prototype.childMessage = function (message) {
 }
 
 Delegate.prototype.stop = function () {
-    this._child.kill()
+    this._child.kill('SIGINT')
 }
 
 module.exports = Delegate

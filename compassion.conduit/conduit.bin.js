@@ -38,11 +38,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var bind = program.command.bind('bind')
 
+    var ws = require('ws')
     var conduit = new Conduit
-    var dispatcher = conduit.dispatcher.createWrappedDispatcher()
-    var server = http.createServer(dispatcher)
+    var server = http.createServer(conduit.dispatcher.createWrappedDispatcher())
+    new ws.Server({ server: server }).on('connection', conduit.connection.bind(conduit))
     destroyer(server)
-    server.on('upgrade', conduit.onupgrade)
     server.listen(bind.port, bind.address, async())
     program.on('SIGINT', server.destroy.bind(server))
 }))

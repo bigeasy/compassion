@@ -1,7 +1,6 @@
 var cadence = require('cadence')
 var Cliffhanger = require('cliffhanger')
 var Dispatcher = require('inlet/dispatcher')
-var WebSocket = require('faye-websocket')
 var url = require('url')
 
 function Conduit () {
@@ -14,7 +13,6 @@ function Conduit () {
     dispatcher.dispatch('POST /kibitz', 'kibitz')
     dispatcher.dispatch('GET /health', 'health')
     this.dispatcher = dispatcher
-    this.onupgrade = this.upgrade.bind(this)
 // TODO Should be able to time out explicitly on socket close.
     setInterval(function () {
         this._cliffhanger.expire(Date.now() - 5000)
@@ -22,15 +20,10 @@ function Conduit () {
 }
 
 
-Conduit.prototype.upgrade = function (request, socket, body) {
-    var path = (url.parse(request.url).path || '').split('/')
-    if (WebSocket.isWebSocket(request) && path.length == 3) {
+Conduit.prototype.connection = function (ws) {
+    var path = (url.parse(ws.upgradeReq.url).path || '').split('/')
+    if (path.length == 3) {
         var islandName = path[1], colleagueId = path[2]
-        var ws = new WebSocket(request, socket, body)
-        ws.on('message', function (event) {
-// TODO How does `_cliffhanger` do a timeout?
-        })
-
         var islands = this._islands, cliffhanger = this._cliffhanger
 
         var island = islands[islandName]
@@ -44,7 +37,7 @@ Conduit.prototype.upgrade = function (request, socket, body) {
         listener = island[colleagueId] = { close: close, ws: ws }
 
         function message (event) {
-            var message = JSON.parse(event.data)
+            var message = JSON.parse(event)
             cliffhanger.resolve(message.cookie, [ null, message.body ])
         }
 
@@ -56,6 +49,7 @@ Conduit.prototype.upgrade = function (request, socket, body) {
                 delete islands[islandName]
             }
             ws.close()
+            ws.terminate()
         }
 
         ws.on('message', message)

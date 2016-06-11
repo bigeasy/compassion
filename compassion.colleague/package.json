@@ -24,7 +24,6 @@
                         "cadence":              "1.x",
                         "cliffhanger":          "1.1.x",
                         "delta":                "1.x",
-                        "faye-websocket":       "0.11.0",
                         "inlet":                "1.x",
                         "interrupt":            "1.x",
                         "kibitz":               "0.0.28",
@@ -35,7 +34,8 @@
                         "reactor":              "2.x",
                         "recover":              "0.0.0",
                         "vestibule":            "1.x",
-                        "vizsla":               "1.4.x"
+                        "vizsla":               "1.4.x",
+                        "ws":                   "1.1.0"
     },
     "devDependencies":
     {

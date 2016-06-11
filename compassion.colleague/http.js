@@ -4,7 +4,7 @@ var Delta = require('delta')
 var Kibitzer = require('kibitz')
 var abend = require('abend')
 var Reactor = require('reactor')
-var WebSocket = require('faye-websocket')
+var WebSocket = require('ws')
 var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.actor')
 
 function Colleague (options) {
@@ -110,7 +110,7 @@ Colleague.prototype.health = cadence(function (async, request) {
 })
 
 Colleague.prototype.request = function (message) {
-    this._requests.push(JSON.parse(message.data))
+    this._requests.push(JSON.parse(message))
 }
 
 Colleague.prototype._request = cadence(function (async, timeout, request) {
@@ -134,7 +134,7 @@ Colleague.prototype.listen = cadence(function (async, address) {
             if (this._shutdown) {
                 return [ loop.break ]
             }
-            this._ws = new WebSocket.Client(url)
+            this._ws = new WebSocket(url)
             async([function () {
                 async(function () {
                     new Delta(async()).ee(this._ws).on('open')
@@ -146,16 +146,15 @@ Colleague.prototype.listen = cadence(function (async, address) {
             }, function (error) {
                 logger.error('connect', { message: error.message })
                 return [ loop.continue ]
-            }], function () {
-                console.log('closed')
-            })
+            }])
         })()
     })
 })
 
 Colleague.prototype.stop = function () {
-    setTimeout(function () { throw new Error }, 15000).unref()
+    setTimeout(function () { throw new Error }, 3000).unref()
     if (!this._shutdown) {
+        this.shutdown()
         this._shutdown = true
         this.delegate.stop()
         if (this._ws != null) {

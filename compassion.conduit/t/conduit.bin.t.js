@@ -3,14 +3,14 @@ require('proof')(2, require('cadence')(prove))
 function prove (async, assert) {
     var bin = require('../conduit.bin')
     var Vizsla = require('vizsla')
-    var WebSocket = require('faye-websocket')
+    var WebSocket = require('ws')
     var Delta = require('delta')
     var ua = new Vizsla
     var io
     async(function () {
         io = bin({}, [ '--bind', '127.0.0.1:8888' ], {}, async())
     }, function () {
-        var ws = new WebSocket.Client('ws://127.0.0.1:8888/island/1')
+        var ws = new WebSocket('ws://127.0.0.1:8888/island/1')
         async(function () {
             new Delta(async()).ee(ws).on('open')
         }, function () {
@@ -25,7 +25,7 @@ function prove (async, assert) {
             async(function () {
                 new Delta(async()).ee(ws).on('message')
             }, function (message) {
-                var message = JSON.parse(message.data)
+                var message = JSON.parse(message)
                 ws.send(JSON.stringify({
                     cookie: message.cookie,
                     body: { hello: 'world' }
