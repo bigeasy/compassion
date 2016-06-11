@@ -146,16 +146,18 @@ Colleague.prototype.listen = cadence(function (async, address) {
             }, function (error) {
                 logger.error('connect', { message: error.message })
                 return [ loop.continue ]
-            }])
+            }], function () {
+                console.log('closed')
+            })
         })()
     })
 })
 
 Colleague.prototype.stop = function () {
-// TODO :(
-    setTimeout(function () { throw new Error }, 1000)
+    setTimeout(function () { throw new Error }, 15000).unref()
     if (!this._shutdown) {
         this._shutdown = true
+        this.delegate.stop()
         if (this._ws != null) {
             this._ws.close()
         }

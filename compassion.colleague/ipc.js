@@ -42,4 +42,8 @@ Delegate.prototype.childMessage = function (message) {
     }
 }
 
+Delegate.prototype.stop = function () {
+    this._child.kill()
+}
+
 module.exports = Delegate

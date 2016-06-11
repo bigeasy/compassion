@@ -45,7 +45,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.bin')
 
-    Shuttle.shuttle(program, 1000, logger)
+//    Shuttle.shuttle(program, 1000, logger)
 
     program.helpIf(program.command.param.help)
     program.command.required('bind')
@@ -71,7 +71,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         throw e
     }
 
-
     var UserAgent = require('./ua')
     var Vizsla = require('vizsla')
     if (exec) {
@@ -79,6 +78,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
         async(function () {
             new Delta(async()).ee(child).on('close')
         }, function (exit, signal) {
+            console.log(exit, signal)
+            colleague.stop()
 // TODO Want.
             // return program.exitCode(exit, signal)
             return exit

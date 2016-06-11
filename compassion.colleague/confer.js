@@ -15,6 +15,7 @@ var Cliffhanger = require('cliffhanger')
 function Conference (conduit, self) {
     this.isLeader = false
     this._cliffhanger = new Cliffhanger
+    this._colleague = null
     this._conduit = conduit
     this._self = self || null
     this._participants = []
@@ -46,6 +47,26 @@ Conference.prototype._getOperation = function (qualifier, name) {
 
 Conference.prototype.join = function (operation) {
     this._setOperation('internal', 'join', operation)
+}
+
+Conference.prototype.immigrate = function (operation) {
+    this._setOperation('internal', 'immigrate', operation)
+}
+
+Conference.prototype.exile = function (operation) {
+    this._setOperation('internal', 'exile', operation)
+}
+
+Conference.prototype.receive = function (name, operation) {
+    this._setOperation('receive', name, operation)
+}
+
+Conference.prototype.commit = function (name, operation) {
+    this._setOperation('commit', name, operation)
+}
+
+Conference.prototype.reduced = function (name, operation) {
+    this._setOperation('reduced', name, operation)
 }
 
 Conference.prototype.naturalize = function () {
@@ -88,10 +109,15 @@ Conference.prototype._operate = cadence(function (async, timeout, message) {
 })
 
 Conference.prototype._message = cadence(function (async, timeout, message) {
+    console.log('!', message)
     if (message.type == 'reinstate') {
-        this._colleagueId = message.colleagueId
-    } else if (message.isGovernment) {
-        var value = message.value
+        this._colleague = {
+            islandId: message.islandId,
+            reinstatementId: message.reinstatementId,
+            colleagueId: message.colleagueId
+        }
+    } else if (message.entry.value.government) {
+        var value = message.entry.value
 
         this._participantIds = {}
         value
@@ -99,19 +125,25 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
             .majority.concat(value.government.minority)
             .concat(value.government.constituents)
             .forEach(function (id) {
-                this._participantIds[id] = value.citizens[id].immigrated + ':' + id
+                this._participantIds[id] = value.properties[id].immigrated + ':' + id
             }, this)
+// TODO Losing sight of why I need these special aggregate ids.
+        console.log(this._participantIds)
 
         // Send a collapse message either here or from conduit.
         if (value.collapsed) {
             this._broadcasts.clear()
             this._naturalizing = {}
             this._exiling = {}
-        } else if (message.promise == '1/0') {
+        } else if (value.government.promise == '1/0') {
             var leader = value.government.majority[0]
+// TODO What is all this?
+// TODO Come back and think hard about about rejoining.
             this._participants.push(this._participantIds[leader])
             this.isLeader = true
-            this._operating.push({ qualifier: 'internal', method: 'join', vargs: [] })
+            this._operating.push({ qualifier: 'internal', method: 'join', vargs: [
+                true, this._colleague, value.properties[leader]
+            ] })
             return
         }
 
@@ -137,10 +169,11 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         // Order matters. Citizens must be naturalized in the same order in
         // which they immigrated. If not, one citizen might be made leader and
         // not know of another citizens immigration.
-        var immigration = value.government.immigration
+        var immigration = value.government.immigrate
         if (immigration) {
 // TODO Add immigrated to citizen properties
 // TODO Put id in this object.
+    throw new Error
             this._immigrants.push(this._participantIds[immigration.id])
         }
         if (this.isLeader && this._naturalizing == null && this._exiling == null) {
@@ -154,6 +187,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         }
     } else {
     }
+    console.log('done')
 })
 
 Conference.prototype.send = cadence(function (async, method, colleagueId, message) {
@@ -169,6 +203,7 @@ Conference.prototype.reduce = cadence(function (async, method, colleagueId, mess
 })
 
 Conference.prototype.message = function (message) {
+    console.log('?', message, this._messages.turnstile.health)
     this._enqueue(message, abend)
 }
 
@@ -178,7 +213,7 @@ Conference.prototype._enqueue = function (message, callback) {
         this._messages.push(message, callback)
         break
     case 'entry':
-        if (message.isGovernment || message.entry.value.namespace == 'bigeasy.compassion.confer') {
+        if (message.entry.value.government || message.entry.value.namespace == 'bigeasy.compassion.confer') {
             this._messages.push(message, callback)
         }
         break

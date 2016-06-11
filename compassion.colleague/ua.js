@@ -6,7 +6,6 @@ function UserAgent (ua) {
 }
 
 UserAgent.prototype.send = cadence(function (async, properties, body) {
-    console.log(properties, body)
     var url = util.format('http://%s/kibitz', properties.location)
     this._ua.fetch({
         url: url,
