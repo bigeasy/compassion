@@ -94,5 +94,5 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))
-    colleague.listen(program.command.param.bind, abend)
+    colleague.listen(program.command.param.bind, program.argv, abend)
 }))

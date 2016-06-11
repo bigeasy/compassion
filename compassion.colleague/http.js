@@ -18,8 +18,7 @@ function Colleague (options) {
     this.start = Date.now()
     this.properties = options.properties
     this.ua = options.ua
-// TODO Here's a reason to extract the argument parser from arguable.
-    this.delegate = new (options.Delegate)(this, options.argv)
+    this.delegate = new (options.Delegate)(this)
 }
 
 Colleague.prototype.shutdown = function () {
@@ -125,9 +124,9 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
     })
 })
 
-Colleague.prototype.listen = cadence(function (async, address) {
+Colleague.prototype.listen = cadence(function (async, address, argv) {
     async(function () {
-        this.delegate.initialize(async())
+        this.delegate.initialize(argv, async())
     }, function () {
         var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
         var loop = async(function () {
