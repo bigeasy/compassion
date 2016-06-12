@@ -109,7 +109,6 @@ Conference.prototype._operate = cadence(function (async, timeout, message) {
 })
 
 Conference.prototype._message = cadence(function (async, timeout, message) {
-    console.log('!', message)
     if (message.type == 'reinstate') {
         this._colleague = {
             islandId: message.islandId,
@@ -128,7 +127,6 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
                 this._participantIds[id] = value.properties[id].immigrated + ':' + id
             }, this)
 // TODO Losing sight of why I need these special aggregate ids.
-        console.log(this._participantIds)
 
         // Send a collapse message either here or from conduit.
         if (value.collapsed) {
@@ -136,6 +134,7 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
             this._naturalizing = {}
             this._exiling = {}
         } else if (value.government.promise == '1/0') {
+
             var leader = value.government.majority[0]
 // TODO What is all this?
 // TODO Come back and think hard about about rejoining.
@@ -173,7 +172,6 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         if (immigration) {
 // TODO Add immigrated to citizen properties
 // TODO Put id in this object.
-    throw new Error
             this._immigrants.push(this._participantIds[immigration.id])
         }
         if (this.isLeader && this._naturalizing == null && this._exiling == null) {
@@ -187,7 +185,6 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
         }
     } else {
     }
-    console.log('done')
 })
 
 Conference.prototype.send = cadence(function (async, method, colleagueId, message) {
@@ -203,7 +200,6 @@ Conference.prototype.reduce = cadence(function (async, method, colleagueId, mess
 })
 
 Conference.prototype.message = function (message) {
-    console.log('?', message, this._messages.turnstile.health)
     this._enqueue(message, abend)
 }
 
