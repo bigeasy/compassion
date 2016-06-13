@@ -35,11 +35,11 @@ Colleague.prototype.replay = function (entry) {
         switch (entry.name) {
         case 'bootstrap':
             logger.trace('bootstrap', { body: entry.specific.body })
-            this._createKibitzer(request.body, true)
+            this._createKibitzer(entry.specific.body, true)
             return this.kibitzer.createReplay(this)
         case 'join':
             logger.trace('join', { body: entry.specific.body })
-            this._createKibitzer(request.body, false)
+            this._createKibitzer(entry.specific.body, false)
             return this.kibitzer.createReplay(this)
         }
     }

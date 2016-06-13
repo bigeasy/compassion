@@ -24,6 +24,9 @@
             milliseconds before a participant is considered unreachable
                 (defualt 1000)
 
+        -r, --replay <string>
+            replay a log
+
         --ipc
             communicate with child using Node IPC instead of socket
 
@@ -104,5 +107,15 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))
-    colleague.listen(program.command.param.bind, program.argv, abend)
+    var fs = require('fs')
+    var byline = require('byline')
+    var player = colleague
+    if (program.command.param.replay) {
+        var stream = fs.createReadStream(program.command.param.replay)
+        byline(stream).on('data', function (line) {
+            player = player.replay(JSON.parse(line))
+        })
+    } else {
+        colleague.listen(program.command.param.bind, program.argv, abend)
+    }
 }))
