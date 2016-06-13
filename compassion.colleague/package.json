@@ -32,7 +32,7 @@
                         "prolific.main":        "0.0.2",
                         "prolific.shuttle":     "2.x",
                         "reactor":              "2.x",
-                        "recover":              "0.0.0",
+                        "recover":              "0.0.1",
                         "vestibule":            "1.x",
                         "vizsla":               "1.4.x",
                         "ws":                   "1.1.0"
