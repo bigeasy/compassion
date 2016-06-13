@@ -60,7 +60,7 @@ Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
         properties: body.properties,
         timeout: this._timeout,
         ping: this._ping,
-        scheduler: { timerless: timerless }
+        timerless: timerless
     })
 }
 
