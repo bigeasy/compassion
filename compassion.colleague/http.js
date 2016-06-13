@@ -62,12 +62,12 @@ Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
         ping: this._ping,
         timerless: timerless
     })
+    this.kibitzer.log.on('entry', this._onEntry.bind(this))
 }
 
 Colleague.prototype.bootstrap = cadence(function (async, request) {
     logger.trace('bootstrap', { body: request.body })
     this._createKibitzer(request.body, false, true)
-    this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.bootstrap(abend)
     return {}
 })
@@ -75,7 +75,6 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
 Colleague.prototype.join = cadence(function (async, request) {
     logger.trace('join', { body: request.body })
     this._createKibitzer(request.body, false, false)
-    this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.join(request.body.liaison, abend)
     return {}
 })

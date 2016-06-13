@@ -111,9 +111,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var byline = require('byline')
     var player = colleague
     if (program.command.param.replay) {
-        var stream = fs.createReadStream(program.command.param.replay)
-        byline(stream).on('data', function (line) {
-            player = player.replay(JSON.parse(line))
+        async(function () {
+            colleague.delegate.initialize(program.argv, async())
+        }, function () {
+            var stream = fs.createReadStream(program.command.param.replay)
+            byline(stream).on('data', function (line) {
+                player = player.replay(JSON.parse(line))
+            })
         })
     } else {
         colleague.listen(program.command.param.bind, program.argv, abend)
