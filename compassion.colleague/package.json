@@ -26,7 +26,7 @@
                         "delta":                "1.x",
                         "inlet":                "1.x",
                         "interrupt":            "1.x",
-                        "kibitz":               "0.0.29",
+                        "kibitz":               "0.0.30",
                         "operation":            "1.x",
                         "prolific.logger":      "0.0.1",
                         "prolific.main":        "0.0.2",
