@@ -45,7 +45,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.bin')
 
-//    Shuttle.shuttle(program, 1000, logger)
+   Shuttle.shuttle(program, 1000, logger)
 
     program.helpIf(program.command.param.help)
     program.command.required('bind')
