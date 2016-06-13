@@ -15,6 +15,8 @@ function Colleague (options) {
     this.messages = new events.EventEmitter
     this._colleagueId = options.colleagueId
     this._islandName = options.islandName
+    this._timeout = options.timeout
+    this._ping = options.ping
     this.start = Date.now()
     this.properties = options.properties
     this.ua = options.ua
@@ -40,7 +42,9 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
     })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
-        properties: body.properties
+        properties: body.properties,
+        timeout: this._timeout,
+        ping: this._ping
     })
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.bootstrap(abend)
@@ -63,7 +67,9 @@ Colleague.prototype.join = cadence(function (async, request) {
     }
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
-        properties: body.properties
+        properties: body.properties,
+        timeout: this._timeout,
+        ping: this._ping
     })
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.join(body.liaison, abend)

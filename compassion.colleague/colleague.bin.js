@@ -17,6 +17,13 @@
         -i, --id <string>
             colleague id
 
+        -p, --ping <integer>
+            milliseconds between keep alive pings (defualt 250)
+
+        -t, --timeout <integer>
+            milliseconds before a participant is considered unreachable
+                (defualt 1000)
+
         --ipc
             communicate with child using Node IPC instead of socket
 
@@ -45,7 +52,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.bin')
 
-   Shuttle.shuttle(program, 1000, logger)
+    Shuttle.shuttle(program, 1000, logger)
 
     program.helpIf(program.command.param.help)
     program.command.required('bind')
@@ -91,6 +98,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         colleagueId: program.command.param.id,
         Delegate: Delegate,
         argv: child,
+// TODO Assert that these are integers.
+        timeout: program.command.param.timeout,
+        ping: program.command.param.ping,
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))
