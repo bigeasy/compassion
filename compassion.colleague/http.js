@@ -5,7 +5,7 @@ var Kibitzer = require('kibitz')
 var abend = require('abend')
 var Reactor = require('reactor')
 var WebSocket = require('ws')
-var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.actor')
+var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.http')
 
 function Colleague (options) {
     this.kibitzer = null
@@ -30,12 +30,27 @@ Colleague.prototype.shutdown = function () {
     }
 }
 
-Colleague.prototype.bootstrap = cadence(function (async, request) {
-    var body = request.body
+Colleague.prototype.replay = function (entry) {
+    if (entry.context == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
+        switch (entry.name) {
+        case 'bootstrap':
+            logger.trace('bootstrap', { body: entry.specific.body })
+            this._createKibitzer(request.body, true)
+            return this.kibitzer.createReplay(this)
+        case 'join':
+            logger.trace('join', { body: entry.specific.body })
+            this._createKibitzer(request.body, false)
+            return this.kibitzer.createReplay(this)
+        }
+    }
+    return this
+}
+
+Colleague.prototype._createKibitzer = function (body, bootstrap) {
     this.shutdown()
     this.messages.emit('message', {
         type: 'reinstate',
-        bootstrap: true,
+        bootstrap: bootstrap,
         reinstatementId: ++this._reinstatementId,
         islandId: body.islandId,
         colleagueId: this._colleagueId
@@ -46,33 +61,21 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
         timeout: this._timeout,
         ping: this._ping
     })
+}
+
+Colleague.prototype.bootstrap = cadence(function (async, request) {
+    logger.trace('bootstrap', { body: request.body })
+    this._createKibitzer(request.body, true)
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.bootstrap(abend)
     return {}
 })
 
 Colleague.prototype.join = cadence(function (async, request) {
-    var body = request.body
-    this.shutdown()
-    this.messages.emit('message', {
-        type: 'reinstate',
-        bootstrap: false,
-        reinstatementId: ++this._reinstatementId,
-        islandId: body.islandId,
-        colleagueId: this._colleagueId
-    })
-    if (!body.properties) {
-        console.log(body)
-        throw new Error
-    }
-    this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
-        ua: this.ua,
-        properties: body.properties,
-        timeout: this._timeout,
-        ping: this._ping
-    })
+    logger.trace('join', { body: request.body })
+    this._createKibitzer(request.body, false)
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
-    this.kibitzer.join(body.liaison, abend)
+    this.kibitzer.join(request.body.liaison, abend)
     return {}
 })
 
