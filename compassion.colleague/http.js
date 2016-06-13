@@ -35,18 +35,18 @@ Colleague.prototype.replay = function (entry) {
         switch (entry.name) {
         case 'bootstrap':
             logger.trace('bootstrap', { body: entry.specific.body })
-            this._createKibitzer(entry.specific.body, true)
+            this._createKibitzer(entry.specific.body, true, true)
             return this.kibitzer.createReplay(this)
         case 'join':
             logger.trace('join', { body: entry.specific.body })
-            this._createKibitzer(entry.specific.body, false)
+            this._createKibitzer(entry.specific.body, true, false)
             return this.kibitzer.createReplay(this)
         }
     }
     return this
 }
 
-Colleague.prototype._createKibitzer = function (body, bootstrap) {
+Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
     this.shutdown()
     this.messages.emit('message', {
         type: 'reinstate',
@@ -59,13 +59,14 @@ Colleague.prototype._createKibitzer = function (body, bootstrap) {
         ua: this.ua,
         properties: body.properties,
         timeout: this._timeout,
-        ping: this._ping
+        ping: this._ping,
+        scheduler: { timerless: timerless }
     })
 }
 
 Colleague.prototype.bootstrap = cadence(function (async, request) {
     logger.trace('bootstrap', { body: request.body })
-    this._createKibitzer(request.body, true)
+    this._createKibitzer(request.body, false, true)
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.bootstrap(abend)
     return {}
@@ -73,7 +74,7 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
 
 Colleague.prototype.join = cadence(function (async, request) {
     logger.trace('join', { body: request.body })
-    this._createKibitzer(request.body, false)
+    this._createKibitzer(request.body, false, false)
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
     this.kibitzer.join(request.body.liaison, abend)
     return {}
