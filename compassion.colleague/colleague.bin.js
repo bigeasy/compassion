@@ -99,8 +99,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
         Delegate: Delegate,
         argv: child,
 // TODO Assert that these are integers.
-        timeout: program.command.param.timeout,
-        ping: program.command.param.ping,
+        timeout: +(program.command.param.timeout || 60000),
+        ping: +(program.command.param.ping || 10000),
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))
