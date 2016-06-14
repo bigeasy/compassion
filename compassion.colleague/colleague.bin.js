@@ -118,6 +118,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
             byline(stream).on('data', function (line) {
                 player = player.replay(JSON.parse(line))
             })
+            stream.on('end', function () { program.emit('SIGINT') })
         })
     } else {
         colleague.listen(program.command.param.bind, program.argv, abend)
