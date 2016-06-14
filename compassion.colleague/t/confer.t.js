@@ -43,7 +43,8 @@ function prove (async, assert) {
         assert(conference._colleague, {
             islandId: '0',
             reinstatementId: 0,
-            colleagueId: '0'
+            colleagueId: '0',
+            participantId: null
         }, 'set colleague id')
         conference._enqueue({
             type: 'entry',
