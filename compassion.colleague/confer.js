@@ -11,6 +11,7 @@ var Operation = require('operation')
 var Reactor = require('reactor')
 
 var Cliffhanger = require('cliffhanger')
+var Cancelable = require('./cancelable')
 
 function Conference (conduit, self) {
     this.isLeader = false
@@ -22,10 +23,11 @@ function Conference (conduit, self) {
     this._colleagueId = null
     this._participantIds = null
     this._immigrants = []
+    this.cancelable = new Cancelable(this)
+    this._cancelable = {}
     this._exiles = []
     this._operations = {}
     this._operating = new Reactor({ object: this, method: '_operate' })
-    this._messages = new Reactor({ object: this, method: '_message' })
 }
 
 Conference.prototype._createOperation = function (operation) {
@@ -96,7 +98,7 @@ Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
 })
 
 // TODO Should this be parallel with how ever many turnstiles?
-Conference.prototype._operate = cadence(function (async, timeout, message) {
+Conference.prototype._operate = cadence(function (async, message) {
     async(recover(function () {
         var operation = this._getOperation(message.qualifier, message.method)
         if (operation == null) {
@@ -108,7 +110,7 @@ Conference.prototype._operate = cadence(function (async, timeout, message) {
     }))
 })
 
-Conference.prototype._message = cadence(function (async, timeout, message) {
+Conference.prototype._message = cadence(function (async, message) {
     if (message.type == 'reinstate') {
         this._colleague = {
             islandId: message.islandId,
@@ -140,9 +142,9 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
 // TODO Come back and think hard about about rejoining.
             this._participants.push(this._participantIds[leader])
             this.isLeader = true
-            this._operating.push({ qualifier: 'internal', method: 'join', vargs: [
+            this._operate({ qualifier: 'internal', method: 'join', vargs: [
                 true, this._colleague, value.properties[leader]
-            ] })
+            ] }, abend)
             return
         }
 
@@ -174,16 +176,20 @@ Conference.prototype._message = cadence(function (async, timeout, message) {
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
         }
-        if (this.isLeader && this._naturalizing == null && this._exiling == null) {
-            if (this._exiles.length != 0) {
-                this._exiling = this._exiles.shift()
-                this._operating.push({ qualifier: 'internal', method: 'exile', vargs: [] })
-            } else if (this._immigrants.length != 0) {
-                this._exiling = this._exiles.shift()
-                this._operating.push({ qualifier: 'internal', method: 'naturalize', vargs: [] })
-            }
-        }
     } else {
+    }
+    if (this.isLeader && this._transition == null) {
+        if (this._exiles.length != 0) {
+            this._transition = 'exile'
+            this._operate({ qualifier: 'internal', method: 'exile', vargs: [] }, abend)
+        } else if (this._immigrants.length != 0) {
+            this._transition = 'naturalize'
+            this._operate({
+                qualifier: 'internal',
+                method: 'immigrate',
+                vargs: [ this._immigrants[0] ]
+            }, abend)
+        }
     }
 })
 
@@ -206,11 +212,11 @@ Conference.prototype.message = function (message) {
 Conference.prototype._enqueue = function (message, callback) {
     switch (message.type) {
     case 'reinstate':
-        this._messages.push(message, callback)
+        this._message(message, callback)
         break
     case 'entry':
         if (message.entry.value.government || message.entry.value.namespace == 'bigeasy.compassion.confer') {
-            this._messages.push(message, callback)
+            this._message(message, callback)
         }
         break
     }
@@ -224,14 +230,14 @@ Conference.prototype._send = cadence(function (async, cancelable, method, collea
     async(function () {
         var cookie = this._cliffhanger.invoke(async())
         if (cancelable) {
-            this._cookie[cancelable] = true
+            this._cancelable[cookie] = true
         }
-        this._conduit.send({
+        this._conduit.send(this._colleague.reinstatementId, {
             cliffhanger: {
                 type: 'send',
                 from: this._colleagueId,
                 to: colleagueId,
-                cancelable: this._cancelable,
+                cancelable: cancelable,
                 cookie: cookie
             },
             value: message
@@ -245,7 +251,7 @@ Conference.prototype._broadcast = cadence(function (async, cancelable, method, m
     async(function () {
         var cookie = this._cliffhanger.invoke(async())
         if (cancelable) {
-            this._cookie[cancelable] = true
+            this._cancelable[cookie] = true
         }
         this._conduit.send({
             header: {
