@@ -28,6 +28,7 @@
                         "inlet":                "1.x",
                         "interrupt":            "1.x",
                         "kibitz":               "0.x",
+                        "magazine":             "1.x",
                         "operation":            "1.x",
                         "prolific.logger":      "0.0.1",
                         "prolific.main":        "0.0.2",
