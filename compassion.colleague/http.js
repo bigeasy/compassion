@@ -32,7 +32,6 @@ Colleague.prototype.shutdown = function () {
     }
 }
 
-
 Colleague.prototype.replay = function (entry) {
     this._recording = []
 }
@@ -42,13 +41,13 @@ Colleague.prototype.play = function (entry) {
     if (entry.context == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
-            logger.trace('bootstrap', { body: entry.specific.body })
-            this._createKibitzer(entry.specific.body, true, true)
+            logger.trace('bootstrap', { body: entry.specific.body, cookie: entry.specific.cookie })
+            this._createKibitzer(entry.specific.body, entry.specific.cookie, true, true)
             this.kibitzer.replay()
             break
         case 'join':
-            logger.trace('join', { body: entry.specific.body })
-            this._createKibitzer(entry.specific.body, true, false)
+            logger.trace('join', { body: entry.specific.body, cookie: entry.specific.cookie })
+            this._createKibitzer(entry.specific.body, entry.specific.cookie, true, false)
             this.kibitzer.replay()
             break
         case 'publish':
@@ -61,7 +60,7 @@ Colleague.prototype.play = function (entry) {
     return this
 }
 
-Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
+Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstrap) {
     this.shutdown()
     this.messages.emit('message', {
         type: 'reinstate',
@@ -72,6 +71,7 @@ Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
     })
     this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
         ua: this.ua,
+        cookie: cookie,
         properties: body.properties,
         timeout: this._timeout,
         ping: this._ping,
@@ -81,15 +81,15 @@ Colleague.prototype._createKibitzer = function (body, timerless, bootstrap) {
 }
 
 Colleague.prototype.bootstrap = cadence(function (async, request) {
-    logger.trace('bootstrap', { body: request.body })
-    this._createKibitzer(request.body, false, true)
+    logger.trace('bootstrap', { body: request.body, cookie: this.start })
+    this._createKibitzer(request.body, this.start, false, true)
     this.kibitzer.bootstrap(abend)
     return {}
 })
 
 Colleague.prototype.join = cadence(function (async, request) {
-    logger.trace('join', { body: request.body })
-    this._createKibitzer(request.body, false, false)
+    logger.trace('join', { body: request.body, cookie: this.start })
+    this._createKibitzer(request.body, this.start, false, false)
     this.kibitzer.join(request.body.liaison, abend)
     return {}
 })
