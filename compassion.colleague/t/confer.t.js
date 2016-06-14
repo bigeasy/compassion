@@ -39,6 +39,7 @@ function prove (async, assert) {
             colleagueId: '0'
         }, async())
     }, function () {
+        wait = async()
         assert(conference._colleague, {
             islandId: '0',
             reinstatementId: 0,
@@ -62,7 +63,6 @@ function prove (async, assert) {
                 }
             }
         }, async())
-        wait = async()
     }, function () {
         assert(conference._participants, [ '1/0:0' ], 'participants')
         conference._enqueue({
