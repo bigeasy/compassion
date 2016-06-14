@@ -110,13 +110,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var fs = require('fs')
     var byline = require('byline')
     var player = colleague
+    colleague.replay()
     if (program.command.param.replay) {
         async(function () {
             colleague.delegate.initialize(program.argv, async())
         }, function () {
             var stream = fs.createReadStream(program.command.param.replay)
             byline(stream).on('data', function (line) {
-                player = player.replay(JSON.parse(line))
+                colleague.play(JSON.parse(line))
             })
             stream.on('end', function () { program.emit('SIGINT') })
         })
