@@ -6,6 +6,7 @@ var abend = require('abend')
 var Reactor = require('reactor')
 var WebSocket = require('ws')
 var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.http')
+var assert = require('assert')
 
 function Colleague (options) {
     this.kibitzer = null
@@ -17,6 +18,7 @@ function Colleague (options) {
     this._islandName = options.islandName
     this._timeout = options.timeout
     this._ping = options.ping
+    this._recording = null
     this.start = Date.now()
     this.properties = options.properties
     this.ua = options.ua
@@ -30,18 +32,31 @@ Colleague.prototype.shutdown = function () {
     }
 }
 
+
 Colleague.prototype.replay = function (entry) {
+    this._recording = []
+}
+
+// TODO Break this up somehow, really crufty.
+Colleague.prototype.play = function (entry) {
     if (entry.context == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
             logger.trace('bootstrap', { body: entry.specific.body })
             this._createKibitzer(entry.specific.body, true, true)
-            return this.kibitzer.createReplay(this)
+            this.kibitzer.replay()
+            break
         case 'join':
             logger.trace('join', { body: entry.specific.body })
             this._createKibitzer(entry.specific.body, true, false)
-            return this.kibitzer.createReplay(this)
+            this.kibitzer.replay()
+            break
+        case 'publish':
+            assert.deepEqual(this._recording.shift(), entry.specific)
+            break
         }
+    } else if (this.kibitzer != null) {
+        this.kibitzer.play(entry)
     }
     return this
 }
@@ -93,13 +108,18 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
 
 // TODO Return a unique null cookie? Do cookies need to be ordered?
 Colleague.prototype.publish = function (reinstatementId, entry) {
+    logger.trace('publish', { reinstatementId: reinstatementId, entry: entry })
     if (reinstatementId != this._reinstatementId) {
         return null
     }
     if (this.kibitzer == null) {
         return null
     }
-    this.kibitzer.publish(entry)
+    if (this._recording == null) {
+        this.kibitzer.publish(entry)
+    } else {
+        this._recording.push({ reinstatementId: reinstatementId, entry: entry })
+    }
 }
 
 Colleague.prototype.health = cadence(function (async, request) {
