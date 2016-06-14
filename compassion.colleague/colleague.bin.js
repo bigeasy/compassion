@@ -110,8 +110,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var fs = require('fs')
     var byline = require('byline')
     var player = colleague
-    colleague.replay()
     if (program.command.param.replay) {
+        colleague.replay()
         async(function () {
             colleague.delegate.initialize(program.argv, async())
         }, function () {

@@ -116,8 +116,10 @@ Colleague.prototype.publish = function (reinstatementId, entry) {
         return null
     }
     if (this._recording == null) {
+        logger.trace('bargle')
         this.kibitzer.publish(entry)
     } else {
+        logger.trace('argle', { recording: this._recording })
         this._recording.push({ reinstatementId: reinstatementId, entry: entry })
     }
 }

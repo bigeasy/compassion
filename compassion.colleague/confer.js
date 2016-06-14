@@ -102,7 +102,7 @@ Conference.prototype._operate = cadence(function (async, message) {
     async(recover(function () {
         var operation = this._getOperation(message.qualifier, message.method)
         if (operation == null) {
-            return
+            return null
         }
         operation.apply([], message.vargs.concat(async()))
     }, /^interrupt:bigeasy.compassion.colleage.confer:cancelled$/, function () {
@@ -115,7 +115,8 @@ Conference.prototype._message = cadence(function (async, message) {
         this._colleague = {
             islandId: message.islandId,
             reinstatementId: message.reinstatementId,
-            colleagueId: message.colleagueId
+            colleagueId: message.colleagueId,
+            participantId: null
         }
     } else if (message.entry.value.government) {
         var value = message.entry.value
@@ -129,6 +130,9 @@ Conference.prototype._message = cadence(function (async, message) {
                 this._participantIds[id] = value.properties[id].immigrated + ':' + id
             }, this)
 // TODO Losing sight of why I need these special aggregate ids.
+
+
+        this._colleague.participantId = this._participantIds[this._colleague.colleagueId]
 
         // Send a collapse message either here or from conduit.
         if (value.collapsed) {
@@ -176,7 +180,34 @@ Conference.prototype._message = cadence(function (async, message) {
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
         }
-    } else {
+    } else if (message.entry.value.to == this._colleague.participantId) {
+        var value = message.entry.value
+        var participantId = this._colleague.participantId
+        switch (value.type) {
+        case 'send':
+            if (participantId == value.to) {
+                async(function () {
+                    this._operate({
+                        qualifier: 'receive',
+                        method: value.method,
+                        vargs: [ value.value ]
+                    }, async())
+                }, function (response) {
+                    this._conduit.send(this._colleague.reinstatementId, {
+                        namespace: 'bigeasy.compassion.colleague.conference',
+                        type: 'respond',
+                        from: participantId,
+                        to: value.from,
+                        response: response,
+                        cookie: value.cookie
+                    }, async())
+                })
+            }
+            break
+        case 'respond':
+            this._cliffhanger.resolve(value.cookie, [ null, value.response ])
+            break
+        }
     }
     if (this.isLeader && this._transition == null) {
         if (this._exiles.length != 0) {
@@ -215,7 +246,7 @@ Conference.prototype._enqueue = function (message, callback) {
         this._message(message, callback)
         break
     case 'entry':
-        if (message.entry.value.government || message.entry.value.namespace == 'bigeasy.compassion.confer') {
+        if (message.entry.value.government || message.entry.value.namespace == 'bigeasy.compassion.colleague.conference') {
             this._message(message, callback)
         }
         break
@@ -233,14 +264,14 @@ Conference.prototype._send = cadence(function (async, cancelable, method, collea
             this._cancelable[cookie] = true
         }
         this._conduit.send(this._colleague.reinstatementId, {
-            cliffhanger: {
-                type: 'send',
-                from: this._colleagueId,
-                to: colleagueId,
-                cancelable: cancelable,
-                cookie: cookie
-            },
-            value: message
+            namespace: 'bigeasy.compassion.colleague.conference',
+            type: 'send',
+            cancelable: cancelable,
+            from: this._participantIds[this._colleague.colleagueId],
+            to: colleagueId,
+            method: method,
+            value: message,
+            cookie: cookie
         }, async())
     }, function (message) {
         return [ message ]
