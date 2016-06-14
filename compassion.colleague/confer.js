@@ -13,6 +13,8 @@ var Reactor = require('reactor')
 var Cliffhanger = require('cliffhanger')
 var Cancelable = require('./cancelable')
 
+var Cache = require('magazine')
+
 function Conference (conduit, self) {
     this.isLeader = false
     this._cliffhanger = new Cliffhanger
@@ -22,6 +24,7 @@ function Conference (conduit, self) {
     this._participants = []
     this._colleagueId = null
     this._participantIds = null
+    this._broadcasts = new Cache().createMagazine()
     this._immigrants = []
     this.cancelable = new Cancelable(this)
     this._cancelable = {}
@@ -180,6 +183,55 @@ Conference.prototype._message = cadence(function (async, message) {
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
         }
+    } else if (message.entry.value.type == 'broadcast') {
+        var value = message.entry.value
+        async(function () {
+            this._operate({
+                qualifier: 'recieve',
+                method: value.method,
+                vargs: [ value.body ]
+            }, async())
+        }, function (response) {
+            this._conduit.send(this._colleague.reinstatementId, {
+                namespace: 'bigeasy.compassion.colleague.conference',
+                type: 'converge',
+                from: participantId,
+                converganceKey: value.converganceKey,
+                cookie: value.cookie,
+                method: value.method,
+                body: response
+            }, async())
+        })
+    } else if (message.entry.value.type == 'converge') {
+        var value = message.entry.value
+        // TODO Use Magazine.
+        var convergance = this._convergances.hold(value.converganceKey, {})
+        var complete = true
+        convergance.value[value.from] = value.body
+        for (var id in this._participantIds) {
+            if (!convergance.value[this._participantIds[id]]) {
+                complete = false
+                break
+            }
+        }
+        if (complete) {
+            convergance.remove()
+            async(function () {
+                this._operate({
+                    qualifier: 'commit',
+                    method: value.method,
+                    vargs: [ convergance ]
+                }, async())
+            }, function () {
+                var cartridge = this._broadcasts.hold(value.converganceKey, null)
+                if (cartridge.value != null) {
+                    this._cliffhanger.resolve(cartridge.value.cookie, [ null, convergance ])
+                }
+                cartridge.release()
+            })
+        } else {
+            convergance.release()
+        }
     } else if (message.entry.value.to == this._colleague.participantId) {
         var value = message.entry.value
         var participantId = this._colleague.participantId
@@ -261,7 +313,7 @@ Conference.prototype._send = cadence(function (async, cancelable, method, collea
     async(function () {
         var cookie = this._cliffhanger.invoke(async())
         if (cancelable) {
-            this._cancelable[cookie] = true
+            this._cancelable[cookie] = cancelable
         }
         this._conduit.send(this._colleague.reinstatementId, {
             namespace: 'bigeasy.compassion.colleague.conference',
@@ -282,16 +334,35 @@ Conference.prototype._broadcast = cadence(function (async, cancelable, method, m
     async(function () {
         var cookie = this._cliffhanger.invoke(async())
         if (cancelable) {
-            this._cancelable[cookie] = true
+            this._cancelable[cookie] = cancelable
         }
+        var participantId = this._participantIds[this._colleague.colleagueId]
+        var converganceKey = '!' + method + '/' + participantId + '/' + cookie
+        this._broadcasts.hold(converganceKey, { cookie: cookie }).release()
+        this._conduit.send(this._colleague.reinstatementId, {
+            namespace: 'bigeasy.compassion.colleague.conference',
+            type: 'broadcast',
+            converganceKey: converganceKey,
+            cookie: cookie,
+            method: method,
+            body: message
+        }, async())
+    }, function (messages) {
+        return [ messages ]
+    })
+})
+
+Conference.prototype._reduce = cadence(function (async, cancelable, method, converanceId, message) {
+    async(function () {
+        var participantId = this._participantIds[this._colleague.colleagueId]
+        var converganceKey = '.' + method + '/' + participantId + '/' + converanceId
         this._conduit.send({
-            header: {
-                type: 'broadcast',
-                from: this._colleagueId,
-                cancelable: this._cancelable,
-                cookie: cookie
-            },
-            value: message
+            namespace: 'bigeasy.compassion.colleague.conference',
+            type: 'converge',
+            converganceKey: converganceKey,
+            cookie: cookie,
+            method: method,
+            body: body
         }, async())
     }, function (messages) {
         return [ messages ]
