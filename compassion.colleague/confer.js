@@ -25,6 +25,7 @@ function Conference (conduit, self) {
     this._colleagueId = null
     this._participantIds = null
     this._broadcasts = new Cache().createMagazine()
+    this._reductions = new Cache().createMagazine()
     this._immigrants = []
     this.cancelable = new Cancelable(this)
     this._cancelable = {}
@@ -64,10 +65,6 @@ Conference.prototype.exile = function (operation) {
 
 Conference.prototype.receive = function (name, operation) {
     this._setOperation('receive', name, operation)
-}
-
-Conference.prototype.commit = function (name, operation) {
-    this._setOperation('commit', name, operation)
 }
 
 Conference.prototype.reduced = function (name, operation) {
@@ -194,43 +191,45 @@ Conference.prototype._message = cadence(function (async, message) {
         }, function (response) {
             this._conduit.send(this._colleague.reinstatementId, {
                 namespace: 'bigeasy.compassion.colleague.conference',
-                type: 'converge',
-                from: participantId,
-                converganceKey: value.converganceKey,
+                type: 'reduce',
+                from: this._colleague.participantId,
+                reductionKey: value.reductionKey,
                 cookie: value.cookie,
                 method: value.method,
-                body: response
+                request: value.request,
+                response: response
             }, async())
         })
-    } else if (message.entry.value.type == 'converge') {
+    } else if (message.entry.value.type == 'reduce') {
         var value = message.entry.value
         // TODO Use Magazine.
-        var convergance = this._convergances.hold(value.converganceKey, {})
+        var reduction = this._reductions.hold(value.reductionKey, {})
         var complete = true
-        convergance.value[value.from] = value.body
+        reduction.value[value.from] = value.response
         for (var id in this._participantIds) {
-            if (!convergance.value[this._participantIds[id]]) {
+            if (!(this._participantIds[id] in reduction.value)) {
                 complete = false
                 break
             }
         }
         if (complete) {
-            convergance.remove()
+            reduction.remove()
             async(function () {
                 this._operate({
-                    qualifier: 'commit',
+                    qualifier: 'reduced',
                     method: value.method,
-                    vargs: [ convergance ]
+                    vargs: [ reduction.value, value.request ]
                 }, async())
             }, function () {
-                var cartridge = this._broadcasts.hold(value.converganceKey, null)
+                var cartridge = this._broadcasts.hold(value.reductionKey, null)
                 if (cartridge.value != null) {
-                    this._cliffhanger.resolve(cartridge.value.cookie, [ null, convergance ])
+                    this._cliffhanger.resolve(cartridge.value.cookie, [ null, reduction.value ])
                 }
+                // TODO Might leak? Use Cadence finally.
                 cartridge.release()
             })
         } else {
-            convergance.release()
+            reduction.release()
         }
     } else if (message.entry.value.to == this._colleague.participantId) {
         var value = message.entry.value
@@ -242,13 +241,12 @@ Conference.prototype._message = cadence(function (async, message) {
                     this._operate({
                         qualifier: 'receive',
                         method: value.method,
-                        vargs: [ value.value ]
+                        vargs: [ value.request ]
                     }, async())
                 }, function (response) {
                     this._conduit.send(this._colleague.reinstatementId, {
                         namespace: 'bigeasy.compassion.colleague.conference',
                         type: 'respond',
-                        from: participantId,
                         to: value.from,
                         response: response,
                         cookie: value.cookie
@@ -304,69 +302,53 @@ Conference.prototype._enqueue = function (message, callback) {
         break
     }
 }
-
-Conference.prototype._resolve = function (message) {
-    this._cliffhanger.resolve(message.cliffhanger.cookie, value.message)
-}
-
 Conference.prototype._send = cadence(function (async, cancelable, method, colleagueId, message) {
-    async(function () {
-        var cookie = this._cliffhanger.invoke(async())
-        if (cancelable) {
-            this._cancelable[cookie] = cancelable
-        }
-        this._conduit.send(this._colleague.reinstatementId, {
-            namespace: 'bigeasy.compassion.colleague.conference',
-            type: 'send',
-            cancelable: cancelable,
-            from: this._participantIds[this._colleague.colleagueId],
-            to: colleagueId,
-            method: method,
-            value: message,
-            cookie: cookie
-        }, async())
-    }, function (message) {
-        return [ message ]
-    })
+    var cookie = this._cliffhanger.invoke(async())
+    if (cancelable) {
+        this._cancelable[cookie] = cancelable
+    }
+    this._conduit.send(this._colleague.reinstatementId, {
+        namespace: 'bigeasy.compassion.colleague.conference',
+        type: 'send',
+        cancelable: cancelable,
+        from: this._participantIds[this._colleague.colleagueId],
+        to: colleagueId,
+        method: method,
+        request: message,
+        cookie: cookie
+    }, async())
 })
 
 Conference.prototype._broadcast = cadence(function (async, cancelable, method, message) {
-    async(function () {
-        var cookie = this._cliffhanger.invoke(async())
-        if (cancelable) {
-            this._cancelable[cookie] = cancelable
-        }
-        var participantId = this._participantIds[this._colleague.colleagueId]
-        var converganceKey = '!' + method + '/' + participantId + '/' + cookie
-        this._broadcasts.hold(converganceKey, { cookie: cookie }).release()
-        this._conduit.send(this._colleague.reinstatementId, {
-            namespace: 'bigeasy.compassion.colleague.conference',
-            type: 'broadcast',
-            converganceKey: converganceKey,
-            cookie: cookie,
-            method: method,
-            body: message
-        }, async())
-    }, function (messages) {
-        return [ messages ]
-    })
+    var cookie = this._cliffhanger.invoke(async())
+    if (cancelable) {
+        this._cancelable[cookie] = cancelable
+    }
+    var participantId = this._participantIds[this._colleague.colleagueId]
+    var reductionKey = '!' + method + '/' + participantId + '/' + cookie
+    this._broadcasts.hold(reductionKey, { cookie: cookie }).release()
+    this._conduit.send(this._colleague.reinstatementId, {
+        namespace: 'bigeasy.compassion.colleague.conference',
+        type: 'broadcast',
+        reductionKey: reductionKey,
+        cookie: cookie,
+        method: method,
+        request: message
+    }, async())
 })
 
 Conference.prototype._reduce = cadence(function (async, cancelable, method, converanceId, message) {
-    async(function () {
-        var participantId = this._participantIds[this._colleague.colleagueId]
-        var converganceKey = '.' + method + '/' + participantId + '/' + converanceId
-        this._conduit.send({
-            namespace: 'bigeasy.compassion.colleague.conference',
-            type: 'converge',
-            converganceKey: converganceKey,
-            cookie: cookie,
-            method: method,
-            body: body
-        }, async())
-    }, function (messages) {
-        return [ messages ]
-    })
+    var participantId = this._participantIds[this._colleague.colleagueId]
+    var reductionKey = '.' + method + '/' + converanceId
+    this._conduit.send({
+        namespace: 'bigeasy.compassion.colleague.conference',
+        type: 'converge',
+        reductionKey: reductionKey,
+        cookie: cookie,
+        method: method,
+        request: null,
+        response: message
+    }, async())
 })
 
 Conference.prototype._cancel = function () {
