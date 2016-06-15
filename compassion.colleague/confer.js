@@ -21,7 +21,7 @@ function Conference (conduit, self) {
     this._colleague = null
     this._conduit = conduit
     this._self = self || null
-    this._participants = []
+    this._participants = {}
     this._colleagueId = null
     this._participantIds = null
     this._broadcasts = new Cache().createMagazine()
@@ -31,7 +31,7 @@ function Conference (conduit, self) {
     this._cancelable = {}
     this._exiles = []
     this._operations = {}
-    this._operating = new Reactor({ object: this, method: '_operate' })
+    this._setOperation('reduced', '!naturalize', { object: this, method: '_naturalized' })
 }
 
 Conference.prototype._createOperation = function (operation) {
@@ -64,11 +64,11 @@ Conference.prototype.exile = function (operation) {
 }
 
 Conference.prototype.receive = function (name, operation) {
-    this._setOperation('receive', name, operation)
+    this._setOperation('receive', '.' + name, operation)
 }
 
 Conference.prototype.reduced = function (name, operation) {
-    this._setOperation('reduced', name, operation)
+    this._setOperation('reduced', '.' + name, operation)
 }
 
 Conference.prototype.naturalize = function () {
@@ -144,7 +144,7 @@ Conference.prototype._message = cadence(function (async, message) {
             var leader = value.government.majority[0]
 // TODO What is all this?
 // TODO Come back and think hard about about rejoining.
-            this._participants.push(this._participantIds[leader])
+            this._participants[this._participantIds[leader]] = value.properties[leader]
             this.isLeader = true
             this._operate({ qualifier: 'internal', method: 'join', vargs: [
                 true, this._colleague, value.properties[leader]
@@ -166,7 +166,7 @@ Conference.prototype._message = cadence(function (async, message) {
             if (consensus) {
                 consensus.cancel()
             }
-            if (this._participants.indexOf(exile) != -1) {
+            if (this._participants[exile] != null) {
                 this._exiles.push({ colleagueId: exile })
             }
         }
@@ -179,14 +179,15 @@ Conference.prototype._message = cadence(function (async, message) {
 // TODO Add immigrated to citizen properties
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
+            this._participants[this._participantIds[immigration.id]] = value.properties[immigration.id]
         }
     } else if (message.entry.value.type == 'broadcast') {
         var value = message.entry.value
         async(function () {
             this._operate({
-                qualifier: 'recieve',
+                qualifier: 'receive',
                 method: value.method,
-                vargs: [ value.body ]
+                vargs: [ value.request ]
             }, async())
         }, function (response) {
             this._conduit.send(this._colleague.reinstatementId, {
@@ -268,22 +269,22 @@ Conference.prototype._message = cadence(function (async, message) {
             this._operate({
                 qualifier: 'internal',
                 method: 'immigrate',
-                vargs: [ this._immigrants[0] ]
+                vargs: [ this._immigrants[0], this._participants[this._immigrants[0]] ]
             }, abend)
         }
     }
 })
 
 Conference.prototype.send = cadence(function (async, method, colleagueId, message) {
-    this._send(false, method, colleagueId, message, async())
+    this._send(false, '.' + method, colleagueId, message, async())
 })
 
 Conference.prototype.broadcast = cadence(function (async, method, colleagueId, message) {
-    this._broadcast(false, method, colleagueId, message, async())
+    this._broadcast(false, '.' + method, colleagueId, message, async())
 })
 
 Conference.prototype.reduce = cadence(function (async, method, colleagueId, message) {
-    this._reduce(false, method, colleagueId, message, async())
+    this._reduce(false, '.' + method, colleagueId, message, async())
 })
 
 Conference.prototype.message = function (message) {
@@ -325,7 +326,7 @@ Conference.prototype._broadcast = cadence(function (async, cancelable, method, m
         this._cancelable[cookie] = cancelable
     }
     var participantId = this._participantIds[this._colleague.colleagueId]
-    var reductionKey = '!' + method + '/' + participantId + '/' + cookie
+    var reductionKey = method + '/' + participantId + '/' + cookie
     this._broadcasts.hold(reductionKey, { cookie: cookie }).release()
     this._conduit.send(this._colleague.reinstatementId, {
         namespace: 'bigeasy.compassion.colleague.conference',
@@ -339,7 +340,7 @@ Conference.prototype._broadcast = cadence(function (async, cancelable, method, m
 
 Conference.prototype._reduce = cadence(function (async, cancelable, method, converanceId, message) {
     var participantId = this._participantIds[this._colleague.colleagueId]
-    var reductionKey = '.' + method + '/' + converanceId
+    var reductionKey = method + '/' + converanceId
     this._conduit.send({
         namespace: 'bigeasy.compassion.colleague.conference',
         type: 'converge',
@@ -349,6 +350,16 @@ Conference.prototype._reduce = cadence(function (async, cancelable, method, conv
         request: null,
         response: message
     }, async())
+})
+
+Conference.prototype._naturalized = cadence(function (async, responses, participantId) {
+    assert(this._transtion == null || this._transition == participantId)
+    assert(this._immigrants[0] == participantId)
+    this._transition = null
+    this._immigrants.shift()
+    if (this._colleague.participantId == participantId) {
+        this._conduit.naturalized()
+    }
 })
 
 Conference.prototype._cancel = function () {

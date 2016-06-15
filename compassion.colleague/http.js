@@ -51,7 +51,13 @@ Colleague.prototype.play = function (entry) {
             this.kibitzer.replay()
             break
         case 'publish':
-            assert.deepEqual(this._recording.shift(), entry.specific)
+            try {
+                assert.deepEqual(this._recording.shift(), entry.specific)
+            } catch (e) {
+                console.log('r', this._recording[0].entry)
+                console.log('l', entry.specific.entry)
+                throw e
+            }
             break
         }
     } else if (this.kibitzer != null) {
@@ -77,6 +83,7 @@ Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstr
         ping: this._ping,
         timerless: timerless
     })
+    this.kibitzer.legislator.naturalized = bootstrap
     this.kibitzer.log.on('entry', this._onEntry.bind(this))
 }
 
