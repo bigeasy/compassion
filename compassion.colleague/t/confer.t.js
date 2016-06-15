@@ -65,7 +65,7 @@ function prove (async, assert) {
             }
         }, async())
     }, function () {
-        assert(conference._participants, [ '1/0:0' ], 'participants')
+        assert(conference._participants, { '1/0:0': { immigrated: '1/0' } }, 'participants')
         conference._enqueue({
             type: 'entry',
 // TODO Add government flag to message.
