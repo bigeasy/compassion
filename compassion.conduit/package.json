@@ -1,47 +1,46 @@
 {
-    "name":             "compassion.conduit",
-    "version":          "0.0.0",
-    "description":      "Paxos based consensus framework.",
+    "name":                 "compassion.conduit",
+    "version":              "0.0.0",
+    "description":          "Paxos based consensus framework.",
     "keywords":
     [
-                        "consensus", "paxos"
+                            "consensus", "paxos"
     ],
-    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "contributors":     [],
-    "homepage":         "https://github.com/bigeasy/compassion",
-    "bugs":             "https://github.com/bigeasy/compassion/issues",
-    "license":          "MIT",
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/compassion",
+    "bugs":                 "https://github.com/bigeasy/compassion/issues",
+    "license":              "MIT",
     "repository":
     {
-                        "type": "git",
-                        "url": "http://github.com/bigeasy/compassion.git"
+                            "type": "git",
+                            "url": "http://github.com/bigeasy/compassion.git"
     },
     "dependencies":
     {
-                        "abend":                "1.x",
-                        "arguable":             "2.x",
-                        "cadence":              "1.x",
-                        "cliffhanger":          "1.x",
-                        "inlet":                "1.x",
-                        "prolific.logger":      "0.0.1",
-                        "prolific.main":        "0.0.2",
-                        "prolific.shuttle":     "2.x",
-                        "server-destroy":       "1.0.1",
-                        "ws":                   "1.1.0"
+                            "abend":                        "1.x",
+                            "arguable":                     "2.x",
+                            "cadence":                      "1.x",
+                            "cliffhanger":                  "1.x",
+                            "inlet":                        "1.x",
+                            "prolific.logger":              "0.0.1",
+                            "prolific.main":                "0.0.2",
+                            "prolific.shuttle":             "2.x",
+                            "server-destroy":               "1.0.1",
+                            "ws":                           "1.1.0"
     },
     "devDependencies":
     {
-                        "delta":                "1.x",
-                        "proof":                "1.x",
-                        "vizsla":               "1.4.x"
+                            "delta":                        "1.x",
+                            "proof":                        "1.x",
+                            "vizsla":                       "1.4.x"
     },
-    "main":             "conduit.bin",
+    "main":                 "conduit.bin",
     "bin":
     {
-                        "compassion-conduit":   "./conduit.bin.js"
+                            "compassion-conduit":   "./conduit.bin.js"
     },
     "scripts":
     {
-                        "test": "proof test t/*.t.js"
+                            "test": "proof test t/*.t.js"
     }
 }
