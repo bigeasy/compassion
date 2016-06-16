@@ -19,6 +19,9 @@ function Conduit () {
     }.bind(this), 1000).unref()
 }
 
+Conduit.prototype.index = cadence(function () {
+    return 'Compassion Conduit API\n'
+})
 
 Conduit.prototype.connection = function (ws) {
     var path = (url.parse(ws.upgradeReq.url).path || '').split('/')
