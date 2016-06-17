@@ -60,8 +60,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.helpIf(program.command.param.help)
     program.command.required('bind')
 
-    var bind = program.command.bind('bind')
-
     var stdio = [ 'inherit', 'inherit', 'inherit' ]
     var exec = true
     if (program.command.param.ipc) {
