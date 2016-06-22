@@ -35,7 +35,7 @@
                             "reactor":                      "2.x",
                             "recover":                      "0.0.1",
                             "vestibule":                    "1.x",
-                            "vizsla":                       "1.4.x",
+                            "vizsla":                       "1.5.x",
                             "ws":                           "1.1.0"
     },
     "devDependencies":

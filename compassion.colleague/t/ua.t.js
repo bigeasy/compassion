@@ -4,7 +4,6 @@ function prove (async, assert) {
     var UserAgent = require('../ua')
 
     var Vizsla = require('vizsla')
-    var Transport = require('vizsla/mock')
 
     var cadence = require('cadence')
     var Dispatcher = require('inlet/dispatcher')
@@ -19,8 +18,8 @@ function prove (async, assert) {
 
     var service = new Service
 
-    var transport = new Transport(service.dispatcher.createWrappedDispatcher())
-    var ua = new UserAgent(new Vizsla({ transport: transport }), 'http://127.0.0.1/discover')
+    var ua = new UserAgent(new Vizsla(service.dispatcher.createWrappedDispatcher()),
+        'http://127.0.0.1/discover')
 
     async(function () {
         ua.send('127.0.0.1:8888', {}, async())
