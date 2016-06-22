@@ -1,7 +1,6 @@
 var abend = require('abend')
 
 var assert = require('assert')
-var recover = require('recover')
 
 var cadence = require('cadence')
 
@@ -98,7 +97,7 @@ Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
 
 // TODO Should this be parallel with how ever many turnstiles?
 Conference.prototype._operate = cadence(function (async, message) {
-    async(recover(function () {
+    async([function () {
         var operation = this._getOperation(message.qualifier, message.method)
         if (operation == null) {
             return null
@@ -106,7 +105,7 @@ Conference.prototype._operate = cadence(function (async, message) {
         operation.apply([], message.vargs.concat(async()))
     }, /^compassion.colleage.confer#cancelled$/m, function () {
         return [ async.break ]
-    }))
+    }])
 })
 
 Conference.prototype._message = cadence(function (async, message) {
