@@ -1,55 +1,53 @@
 {
-    "name":             "compassion.colleague",
-    "version":          "0.0.20",
-    "description":      "Instance of a compassion island participant.",
+    "name":                 "compassion.colleague",
+    "version":              "0.0.20",
+    "description":          "Instance of a compassion island participant.",
     "keywords":
     [
-                        "consensus", "paxos"
+                            "consensus", "paxos"
     ],
-    "author":           "Alan Gutierrez <alan@prettyrobots.com>",
-    "contributors":     [],
-    "homepage":         "https://github.com/bigeasy/compassion",
-    "bugs":             "https://github.com/bigeasy/compassion/issues",
-    "license":          "MIT",
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/compassion",
+    "bugs":                 "https://github.com/bigeasy/compassion/issues",
+    "license":              "MIT",
     "repository":
     {
-                        "type": "git",
-                        "url": "http://github.com/bigeasy/compassion.git"
+                            "type": "git",
+                            "url": "http://github.com/bigeasy/compassion.git"
     },
     "dependencies":
     {
-                        "abend":                "1.x",
-                        "arguable":             "2.x",
-                        "bintrees":             "1.0.1",
-                        "byline":               "4.2.1",
-                        "cadence":              "1.x",
-                        "cliffhanger":          "1.1.x",
-                        "delta":                "1.x",
-                        "inlet":                "1.x",
-                        "interrupt":            "1.x",
-                        "kibitz":               "0.x",
-                        "magazine":             "1.x",
-                        "operation":            "1.x",
-                        "prolific.logger":      "0.0.1",
-                        "prolific.main":        "0.0.2",
-                        "prolific.shuttle":     "2.x",
-                        "reactor":              "2.x",
-                        "recover":              "0.0.1",
-                        "vestibule":            "1.x",
-                        "vizsla":               "1.4.x",
-                        "ws":                   "1.1.0"
+                            "abend":                        "1.x",
+                            "arguable":                     "2.x",
+                            "bintrees":                     "1.0.1",
+                            "byline":                       "4.2.1",
+                            "cadence":                      "1.x",
+                            "cliffhanger":                  "1.1.x",
+                            "delta":                        "1.x",
+                            "inlet":                        "1.x",
+                            "interrupt":                    "1.x",
+                            "kibitz":                       "0.x",
+                            "magazine":                     "1.x",
+                            "operation":                    "1.x",
+                            "prolific.logger":              "0.0.1",
+                            "prolific.main":                "0.0.2",
+                            "prolific.shuttle":             "2.x",
+                            "reactor":                      "2.x",
+                            "recover":                      "0.0.1",
+                            "vestibule":                    "1.x",
+                            "vizsla":                       "1.4.x",
+                            "ws":                           "1.1.0"
     },
     "devDependencies":
     {
-                        "proof": "1.x"
+                            "proof":                        "1.x"
     },
-    "main":             "colleague.bin",
-    "bin":
+    "main":                 "colleague.bin",
     {
-                        "compassion-colleague": "./colleague.bin.js"
+                            "compassion-colleague":         "colleague.bin"
     },
     "scripts":
     {
-                        "test": "proof test t/*.t.js"
+                            "test": "proof test t/*.t.js"
     }
 }
