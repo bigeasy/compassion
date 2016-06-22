@@ -17,27 +17,27 @@
     },
     "dependencies":
     {
-                            "abend":                        "1.x",
-                            "arguable":                     "2.x",
-                            "cadence":                      "1.x",
-                            "cliffhanger":                  "1.x",
-                            "inlet":                        "1.x",
-                            "prolific.logger":              "0.0.1",
-                            "prolific.main":                "0.0.2",
-                            "prolific.shuttle":             "2.x",
+                            "abend":                        "1.0.x",
+                            "arguable":                     "2.6.x",
+                            "cadence":                      "1.0.x",
+                            "cliffhanger":                  "1.2.x",
+                            "inlet":                        "1.1.x",
+                            "prolific.logger":              "0.0.x",
+                            "prolific.main":                "0.0.x",
+                            "prolific.shuttle":             "2.4.x",
                             "server-destroy":               "1.0.1",
                             "ws":                           "1.1.0"
     },
     "devDependencies":
     {
-                            "delta":                        "1.x",
-                            "proof":                        "1.x",
-                            "vizsla":                       "1.4.x"
+                            "delta":                        "1.0.x",
+                            "proof":                        "1.0.x",
+                            "vizsla":                       "1.5.x"
     },
     "main":                 "conduit.bin",
     "bin":
     {
-                            "compassion-conduit":   "./conduit.bin.js"
+                            "compassion-conduit":           "conduit.bin.js"
     },
     "scripts":
     {
