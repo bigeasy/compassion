@@ -2,7 +2,6 @@ var abend = require('abend')
 
 var assert = require('assert')
 var recover = require('recover')
-var interrupt = require('interrupt').createInterrupter('bigeasy.compassion.confer')
 
 var cadence = require('cadence')
 
@@ -105,7 +104,7 @@ Conference.prototype._operate = cadence(function (async, message) {
             return null
         }
         operation.apply([], message.vargs.concat(async()))
-    }, /^interrupt:bigeasy.compassion.colleage.confer:cancelled$/, function () {
+    }, /^compassion.colleage.confer#cancelled$/m, function () {
         return [ async.break ]
     }))
 })
