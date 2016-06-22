@@ -43,6 +43,7 @@
                             "proof":                        "1.x"
     },
     "main":                 "colleague.bin",
+    "bin":
     {
                             "compassion-colleague":         "colleague.bin"
     },
