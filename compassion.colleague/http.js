@@ -167,10 +167,14 @@ Colleague.prototype.listen = cadence(function (async, address, argv) {
         this.delegate.initialize(argv, async())
     }, function () {
         var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
+        var timeout = 0
         var loop = async(function () {
             if (this._shutdown) {
                 return [ loop.break ]
             }
+            setTimeout(async(), timeout)
+        },  function () {
+            timeout = 5000
             this._ws = new WebSocket(url)
             async([function () {
                 async(function () {
