@@ -5,8 +5,8 @@
 
     options:
 
-        -b, --bind <address:port>
-            address and port to bind to
+        -c, --conduit <address:port>
+            address of the conduit to use for network communication
 
         -m, --module
             use a Node.js module instead of an executable for the child
