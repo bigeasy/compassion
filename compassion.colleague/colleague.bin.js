@@ -35,11 +35,8 @@
 
     ___ $ ___ en_US ___
 
-        bind is required:
-            the `--bind` argument is a required argument
-
-        name is required:
-            the `--name` argument is a required argument
+        conduit is required:
+            the `--conduit` argument is a required argument
     ___ . ___
 
  */
@@ -58,7 +55,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     Shuttle.shuttle(program, 1000, logger)
 
     program.helpIf(program.command.param.help)
-    program.command.required('bind')
+    program.command.required('conduit')
 
     var stdio = [ 'inherit', 'inherit', 'inherit' ]
     var exec = true
