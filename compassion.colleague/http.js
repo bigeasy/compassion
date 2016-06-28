@@ -38,24 +38,27 @@ Colleague.prototype.replay = function (entry) {
 
 // TODO Break this up somehow, really crufty.
 Colleague.prototype.play = function (entry) {
-    if (entry.context == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
+    if (entry.qualifier == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
-            logger.trace('bootstrap', { body: entry.specific.body, cookie: entry.specific.cookie })
-            this._createKibitzer(entry.specific.body, entry.specific.cookie, true, true)
+            logger.trace('bootstrap', { body: entry.body, cookie: entry.cookie })
+            this._createKibitzer(entry.body, entry.cookie, true, true)
             this.kibitzer.replay()
             break
         case 'join':
-            logger.trace('join', { body: entry.specific.body, cookie: entry.specific.cookie })
-            this._createKibitzer(entry.specific.body, entry.specific.cookie, true, false)
+            logger.trace('join', { body: entry.body, cookie: entry.cookie })
+            this._createKibitzer(entry.body, entry.cookie, true, false)
             this.kibitzer.replay()
             break
         case 'publish':
             try {
-                assert.deepEqual(this._recording.shift(), entry.specific)
+                assert.deepEqual(this._recording.shift(), {
+                    reinstatementId: entry.reinstatementId,
+                    entry: entry.entry
+                })
             } catch (e) {
                 console.log('r', this._recording[0].entry)
-                console.log('l', entry.specific.entry)
+                console.log('l', entry.entry)
                 throw e
             }
             break

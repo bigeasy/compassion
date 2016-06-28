@@ -112,7 +112,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         }, function () {
             var stream = fs.createReadStream(program.command.param.replay)
             byline(stream).on('data', function (line) {
-                colleague.play(JSON.parse(line))
+                if (/^{/.test(line.toString())) {
+                    colleague.play(JSON.parse(line.toString()))
+                }
             })
             stream.on('end', function () { program.emit('SIGINT') })
         })
