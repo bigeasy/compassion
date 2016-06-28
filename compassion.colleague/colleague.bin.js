@@ -117,6 +117,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
             stream.on('end', function () { program.emit('SIGINT') })
         })
     } else {
-        colleague.listen(program.command.param.conduit, program.argv, abend)
+        colleague.listen(program.command.param.conduit, program, abend)
     }
 }))
