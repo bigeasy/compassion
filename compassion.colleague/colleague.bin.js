@@ -108,7 +108,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     if (program.command.param.replay) {
         colleague.replay()
         async(function () {
-            colleague.delegate.initialize(program.argv, async())
+            colleague.delegate.initialize(program, async())
         }, function () {
             var stream = fs.createReadStream(program.command.param.replay)
             byline(stream).on('data', function (line) {

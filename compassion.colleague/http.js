@@ -162,9 +162,9 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
     })
 })
 
-Colleague.prototype.listen = cadence(function (async, address, argv) {
+Colleague.prototype.listen = cadence(function (async, address, program) {
     async(function () {
-        this.delegate.initialize(argv, async())
+        this.delegate.initialize(program, async())
     }, function () {
         var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
         var timeout = 0
