@@ -178,6 +178,11 @@ Conference.prototype._message = cadence(function (async, message) {
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
             this._participants[this._participantIds[immigration.id]] = value.properties[immigration.id]
+            if (this._colleague.participantId == this._participantIds[immigration.id]) {
+                this._operate({ qualifier: 'internal', method: 'join', vargs: [
+                    false, this._colleague, value.properties[immigration.id]
+                ] }, abend)
+            }
         }
     } else if (message.entry.value.type == 'broadcast') {
         var value = message.entry.value
@@ -277,8 +282,8 @@ Conference.prototype.send = cadence(function (async, method, colleagueId, messag
     this._send(false, '.' + method, colleagueId, message, async())
 })
 
-Conference.prototype.broadcast = cadence(function (async, method, colleagueId, message) {
-    this._broadcast(false, '.' + method, colleagueId, message, async())
+Conference.prototype.broadcast = cadence(function (async, method, message) {
+    this._broadcast(false, '.' + method, message, async())
 })
 
 Conference.prototype.reduce = cadence(function (async, method, colleagueId, message) {
