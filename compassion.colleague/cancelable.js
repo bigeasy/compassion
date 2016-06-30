@@ -24,4 +24,12 @@ Cancelable.prototype.naturalize = cadence(function (async, participantId) {
     })
 })
 
+Cancelable.prototype.exile = cadence(function (async, participantId) {
+    async(function () {
+        this._conference._broadcast(true, '!exile', participantId, async())
+    }, function () {
+        return []
+    })
+})
+
 module.exports = Cancelable

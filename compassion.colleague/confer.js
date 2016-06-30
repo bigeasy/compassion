@@ -19,8 +19,7 @@ function Conference (conduit, self) {
     this._colleague = null
     this._conduit = conduit
     this._self = self || null
-    this._participants = {}
-    this._colleagueId = null
+    this.properties = {}
     this._participantIds = null
     this._broadcasts = new Cache().createMagazine()
     this._reductions = new Cache().createMagazine()
@@ -58,6 +57,7 @@ Conference.prototype.immigrate = function (operation) {
 }
 
 Conference.prototype.exile = function (operation) {
+// TODO Rename 'invoke' or 'initiate'.
     this._setOperation('internal', 'exile', operation)
 }
 
@@ -76,17 +76,6 @@ Conference.prototype.naturalize = function () {
     }
     delete this._naturalizing[colleagueId]
 }
-
-Conference.prototype._check = cadence(function (async, timeout) {
-    if (this.isLeader) {
-        if (this._exiles.length) {
-            if (!this._exiles[0].exiling) {
-                this.conduit.publish({ type: 'exile' }, async())
-            }
-        } else if (this._immigrants.length) {
-        }
-    }
-})
 
 Conference.prototype._apply = cadence(function (async, qualifier, name, vargs) {
     var operation = this._operations[qualifier + '.' + name]
@@ -119,6 +108,13 @@ Conference.prototype._message = cadence(function (async, message) {
     } else if (message.entry.value.government) {
         var value = message.entry.value
 
+        // We need an id that is unique across restarts. A colleague may rejoin
+        // with the same id. Two colleagues with the same id at the same time is
+        // a usage error.
+        //
+        // We're going to respond to exile immediately within the Conference, so
+        // we can run broadcasts, so the application will learn about exiles
+        // eventually and always after the participant is gone.
         this._participantIds = {}
         value
             .government
@@ -127,46 +123,50 @@ Conference.prototype._message = cadence(function (async, message) {
             .forEach(function (id) {
                 this._participantIds[id] = value.properties[id].immigrated + ':' + id
             }, this)
-// TODO Losing sight of why I need these special aggregate ids.
-
-
         this._colleague.participantId = this._participantIds[this._colleague.colleagueId]
 
         // Send a collapse message either here or from conduit.
         if (value.collapsed) {
+// TODO Not implemented.
             this._broadcasts.clear()
-            this._naturalizing = {}
-            this._exiling = {}
+            throw new Error('collapsed')
         } else if (value.government.promise == '1/0') {
-
             var leader = value.government.majority[0]
 // TODO What is all this?
 // TODO Come back and think hard about about rejoining.
-            this._participants[this._participantIds[leader]] = value.properties[leader]
+            this.properties[this._participantIds[leader]] = value.properties[leader]
             this.isLeader = true
-            this._operate({ qualifier: 'internal', method: 'join', vargs: [
-                true, this._colleague, value.properties[leader]
-            ] }, abend)
+            this._operate({
+                qualifier: 'internal',
+                method: 'join',
+                vargs: [ true, this._colleague, value.properties[leader] ]
+            }, abend)
             return
         }
 
-        // TODO Exile needs to be an object that has the final state. Hmm... No,
-        // I believe I left the citizen in there.
+// TODO Exile is also indempotent. It will be run whether or not immigration
+// completed. Another leader may have run a naturalization almost to completion.
+// The naturalization broadcast may have been where the naturalization failed.
+// This would mean that participants may have prepared themselves, committed
+// themselves, but have not notified the Conference that naturalization has
+// completed. Thus, we do this and it is really a rollback.
+//
+// At the time of writing, this seems like a lot to ask of application
+// developers, but it works fine with my initial application of Compassion. Is
+// my initial application a special case where indempotency, where rollback is
+// easy, or do the requirements laid down by the atomic log send a developer
+// down a path of indempotency.
+//
+// With that in mind, I'm going to, at this point, exile everything, even those
+// things that I know have not yet immigrated.
         var exile = value.government.exile
         if (exile) {
-            exile = this._participantIds[exile]
-            // Remove from the list of naturalizations if it is in there.
-            this._immigrants = this._immigrants.filter(function (immigrant) {
-                return immigrant != exile
+            this._exiles.push({
+                colleagueId: exile,
+                participantId: this._participantIds[exile],
+                promise: message.entry.promise
             })
-            // If naturalization was in progress, then cancel it, skip exile.
-            var consensus = this._consensus.find({ type: 'naturalization', topic: exile })
-            if (consensus) {
-                consensus.cancel()
-            }
-            if (this._participants[exile] != null) {
-                this._exiles.push({ colleagueId: exile })
-            }
+            delete this._participantIds[exile]
         }
 
         // Order matters. Citizens must be naturalized in the same order in
@@ -177,11 +177,17 @@ Conference.prototype._message = cadence(function (async, message) {
 // TODO Add immigrated to citizen properties
 // TODO Put id in this object.
             this._immigrants.push(this._participantIds[immigration.id])
-            this._participants[this._participantIds[immigration.id]] = value.properties[immigration.id]
+            this.properties[this._participantIds[immigration.id]] = value.properties[immigration.id]
             if (this._colleague.participantId == this._participantIds[immigration.id]) {
-                this._operate({ qualifier: 'internal', method: 'join', vargs: [
-                    false, this._colleague, value.properties[immigration.id]
-                ] }, abend)
+                this._operate({
+                    qualifier: 'internal',
+                    method: 'join',
+                    vargs: [
+                        false,
+                        this._colleague,
+                        value.properties[immigration.id]
+                    ]
+                }, abend)
             }
         }
     } else if (message.entry.value.type == 'broadcast') {
@@ -263,20 +269,36 @@ Conference.prototype._message = cadence(function (async, message) {
             break
         }
     }
+    this._checkTransitions()
+})
+
+Conference.prototype._checkTransitions = function () {
     if (this.isLeader && this._transition == null) {
         if (this._exiles.length != 0) {
             this._transition = 'exile'
-            this._operate({ qualifier: 'internal', method: 'exile', vargs: [] }, abend)
+            this._operate({
+                qualifier: 'internal',
+                method: 'exile',
+                vargs: [
+                    this._exiles[0].participantId,
+                    this.properties[this._exiles[0].participantId],
+                    this._exiles[0].promise
+                ]
+            }, abend)
         } else if (this._immigrants.length != 0) {
             this._transition = 'naturalize'
             this._operate({
                 qualifier: 'internal',
                 method: 'immigrate',
-                vargs: [ this._immigrants[0], this._participants[this._immigrants[0]] ]
+                vargs: [
+                    this._immigrants[0],
+                    this.properties[this._immigrants[0]],
+                    this.properties[this._immigrants[0]].immigrated
+                ]
             }, abend)
         }
     }
-})
+}
 
 Conference.prototype.send = cadence(function (async, method, colleagueId, message) {
     this._send(false, '.' + method, colleagueId, message, async())
@@ -357,12 +379,29 @@ Conference.prototype._reduce = cadence(function (async, cancelable, method, conv
 
 Conference.prototype._naturalized = cadence(function (async, responses, participantId) {
     assert(this._transtion == null || this._transition == participantId)
-    assert(this._immigrants[0] == participantId)
     this._transition = null
-    this._immigrants.shift()
+    if (this._immigrants[0] == participantId) {
+        this._immigrants.shift()
+    }
     if (this._colleague.participantId == participantId) {
         this._conduit.naturalized()
     }
+    console.error('>>>', 'naturalized!', participantId)
+    this._checkTransitions()
+})
+
+Conference.prototype._exiled = cadence(function (async, responses, participantId) {
+// TODO Set `_transition` to `null` on collpase.
+    assert(this._transtion == null || this._transition == participantId)
+    this._transition = null
+    this._immigrants = this._immigrants.filter(function (immigrantId) {
+        return immigrantId == participantId
+    })
+    if (this._exiles[0].participantId == participantId) {
+        this._exiles.shift()
+    }
+    delete this.properties[participantId]
+    this._checkTransitions()
 })
 
 Conference.prototype._cancel = function () {
