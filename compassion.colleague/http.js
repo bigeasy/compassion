@@ -52,7 +52,7 @@ Colleague.prototype.play = function (entry) {
             break
         case 'publish':
             try {
-                assert.deepEqual(this._recording.shift(), {
+                assert.deepEqual(this._recording[0], {
                     reinstatementId: entry.reinstatementId,
                     entry: entry.entry
                 })
@@ -61,6 +61,7 @@ Colleague.prototype.play = function (entry) {
                 console.log('l', entry.entry)
                 throw e
             }
+            this._recording.shift()
             break
         }
     } else if (this.kibitzer != null) {
