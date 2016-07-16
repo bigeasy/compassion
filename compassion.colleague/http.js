@@ -117,7 +117,7 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
     return {}
 })
 
-// TODO Return a unique null cookie? Do cookies need to be ordered?
+// TODO Make async so that you can create a dummy that uses IPC or socket.
 Colleague.prototype.publish = function (reinstatementId, entry) {
     logger.trace('publish', { reinstatementId: reinstatementId, entry: entry })
     if (reinstatementId != this._reinstatementId) {
