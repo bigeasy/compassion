@@ -145,7 +145,7 @@ Colleague.prototype.health = cadence(function (async, request) {
         uptime: Date.now() - this.start,
         requests: this._requests.turnstile.health,
         islandId: islandId,
-        legislatorId: this._colleagueId,
+        colleagueId: this._colleagueId,
         government: government
     }
 })

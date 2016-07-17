@@ -55,7 +55,7 @@ function prove (async, assert) {
         assert(response, {
             requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: null,
-            legislatorId: 'x',
+            colleagueId: 'x',
             government: null
         }, 'health')
         compassion.join({
@@ -82,7 +82,7 @@ function prove (async, assert) {
         assert(response, {
             requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
             islandId: 'y',
-            legislatorId: 'x',
+            colleagueId: 'x',
             government: {
                 majority: [ 'x' ],
                 minority: [],

@@ -11,7 +11,8 @@ function Conduit () {
     dispatcher.dispatch('POST /bootstrap', 'bootstrap')
     dispatcher.dispatch('POST /join', 'join')
     dispatcher.dispatch('POST /kibitz', 'kibitz')
-    dispatcher.dispatch('GET /health', 'health')
+    dispatcher.dispatch('POST /health', 'health')
+    dispatcher.dispatch('GET /connections', 'connections')
     this.dispatcher = dispatcher
 // TODO Should be able to time out explicitly on socket close.
     setInterval(function () {
@@ -74,7 +75,7 @@ Conduit.prototype._send = cadence(function (async, type, request) {
     request.raise(404)
 })
 
-; [ 'bootstrap', 'join', 'kibitz' ].forEach(function (name) {
+; [ 'bootstrap', 'join', 'kibitz', 'health' ].forEach(function (name) {
     Conduit.prototype[name] = cadence(function (async, request) {
         this._send(name, request, async())
     })
@@ -91,29 +92,10 @@ Conduit.prototype.health = cadence(function (async) {
              })
         }
     }
-    async(function () {
-        async.map(function (inquiry) {
-            async(function () {
-                async([function () {
-                    var cookie = this._cliffhanger.invoke(async())
-                    inquiry.listener.ws.send(JSON.stringify({ type: 'health', cookie: cookie, body: null }))
-                }, /^expired$/, function () {
-                    return [ null ]
-                }])
-            }, function (health) {
-                return {
-                    islandName: inquiry.islandName,
-                    colleagueId: inquiry.colleagueId,
-                    health: health
-                }
-            })
-        })(inquire)
-    }, function (health) {
-        return {
-            instanceId: 0,
-            colleagues: health
-        }
-    })
+    return {
+        instanceId: 0,
+        colleagues: inquire
+    }
 })
 
 module.exports = Conduit
