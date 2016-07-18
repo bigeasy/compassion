@@ -12,7 +12,7 @@ function Conduit () {
     dispatcher.dispatch('POST /join', 'join')
     dispatcher.dispatch('POST /kibitz', 'kibitz')
     dispatcher.dispatch('POST /health', 'health')
-    dispatcher.dispatch('GET /connections', 'connections')
+    dispatcher.dispatch('GET /colleagues', 'colleagues')
     this.dispatcher = dispatcher
 // TODO Should be able to time out explicitly on socket close.
     setInterval(function () {
@@ -81,14 +81,13 @@ Conduit.prototype._send = cadence(function (async, type, request) {
     })
 })
 
-Conduit.prototype.health = cadence(function (async) {
+Conduit.prototype.colleagues = cadence(function (async) {
     var inquire = []
     for (var islandName in this._islands) {
         for (var colleagueId in this._islands[islandName]) {
             inquire.push({
                 islandName: islandName,
-                colleagueId: colleagueId,
-                listener: this._islands[islandName][colleagueId]
+                colleagueId: colleagueId
              })
         }
     }
