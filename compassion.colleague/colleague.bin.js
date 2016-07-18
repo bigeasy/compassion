@@ -76,6 +76,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         throw e
     }
 
+    var delegate = new Delegate
     var UserAgent = require('./ua')
     var Vizsla = require('vizsla')
     if (exec) {
@@ -102,14 +103,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ua: new UserAgent(new Vizsla)
     })
     program.on('SIGINT', colleague.stop.bind(colleague))
-    var fs = require('fs')
-    var byline = require('byline')
-    var player = colleague
-    if (program.command.param.replay) {
-        colleague.replay()
-        async(function () {
-            colleague.delegate.initialize(program, async())
-        }, function () {
+    async(function () {
+        delegate.initialize(program, colleague, async())
+    }, function () {
+        if (program.command.param.replay) {
+            var fs = require('fs')
+            var byline = require('byline')
+            var player = colleague
+            colleague.replay()
             var stream = fs.createReadStream(program.command.param.replay)
             byline(stream).on('data', function (line) {
                 if (/^{/.test(line.toString())) {
@@ -117,8 +118,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 }
             })
             stream.on('end', function () { program.emit('SIGINT') })
-        })
-    } else {
-        colleague.listen(program.command.param.conduit, program, abend)
-    }
+        } else {
+            colleague.listen(program.command.param.conduit, program, abend)
+        }
+    })
 }))

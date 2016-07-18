@@ -2,6 +2,7 @@ var cadence = require('cadence')
 var events = require('events')
 var Delta = require('delta')
 var Kibitzer = require('kibitz')
+var url = require('url')
 var abend = require('abend')
 var Reactor = require('reactor')
 var WebSocket = require('ws')
@@ -22,7 +23,6 @@ function Colleague (options) {
     this.start = Date.now()
     this.properties = options.properties
     this.ua = options.ua
-    this.delegate = new (options.Delegate)(this)
 }
 
 Colleague.prototype.shutdown = function () {
@@ -51,17 +51,17 @@ Colleague.prototype.play = function (entry) {
             this.kibitzer.replay()
             break
         case 'publish':
+            break
             try {
                 assert.deepEqual(this._recording[0], {
                     reinstatementId: entry.reinstatementId,
                     entry: entry.entry
                 })
+                this._recording.shift()
             } catch (e) {
-                console.log('r', this._recording[0].entry)
+                console.log('r', this._recording[0] && this._recording[0].entry)
                 console.log('l', entry.entry)
-                throw e
             }
-            this._recording.shift()
             break
         }
     } else if (this.kibitzer != null) {
@@ -95,6 +95,7 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
     logger.trace('bootstrap', { body: request.body, cookie: this.start })
     this._createKibitzer(request.body, this.start, false, true)
     this.kibitzer.bootstrap(abend)
+    console.log('foo')
     return {}
 })
 
@@ -113,12 +114,12 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
     if (this.kibitzer == null) {
         return [ null ]
     }
+    console.log('bazzz')
     this.kibitzer.dispatch(request.body.kibitz, async())
-    return {}
 })
 
 // TODO Make async so that you can create a dummy that uses IPC or socket.
-Colleague.prototype.publish = function (reinstatementId, entry) {
+Colleague.prototype.publish = function (reinstatementId, entry, callback) {
     logger.trace('publish', { reinstatementId: reinstatementId, entry: entry })
     if (reinstatementId != this._reinstatementId) {
         return null
@@ -133,6 +134,11 @@ Colleague.prototype.publish = function (reinstatementId, entry) {
         logger.trace('argle', { recording: this._recording })
         this._recording.push({ reinstatementId: reinstatementId, entry: entry })
     }
+    callback()
+}
+
+Colleague.prototype.naturalized = function () {
+    this.kibitzer.legislator.naturalized = true
 }
 
 Colleague.prototype.health = cadence(function (async, request) {
@@ -144,8 +150,9 @@ Colleague.prototype.health = cadence(function (async, request) {
     return {
         uptime: Date.now() - this.start,
         requests: this._requests.turnstile.health,
-        islandId: islandId,
+        islandName: this._islandName,
         colleagueId: this._colleagueId,
+        islandId: islandId,
         government: government
     }
 })
@@ -162,46 +169,34 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
         this[request.type](request, async())
     }, function (body) {
         this._ws.send(JSON.stringify({ cookie: request.cookie, body: body }))
-        return null
+        return []
     })
 })
 
 Colleague.prototype.listen = cadence(function (async, address, program) {
-    async(function () {
-        this.delegate.initialize(program, async())
+    var parsed = {
+        protocol: 'ws:',
+        slashes: true,
+        host: address,
+        pathname: '/' + this._islandName + '/' + this._colleagueId
+    }
+    this._ws = new WebSocket(url.format(parsed))
+    async([function () {
+        this.stop()
+    }], function () {
+        new Delta(async()).ee(this._ws).on('open')
     }, function () {
-        var url = 'ws://' + address + '/' + this._islandName + '/' + this._colleagueId
-        var timeout = 0
-        var loop = async(function () {
-            if (this._shutdown) {
-                return [ loop.break ]
-            }
-            setTimeout(async(), timeout)
-        },  function () {
-            timeout = 5000
-            this._ws = new WebSocket(url)
-            async([function () {
-                async(function () {
-                    new Delta(async()).ee(this._ws).on('open')
-                }, function () {
-                    new Delta(async()).ee(this._ws)
-                        .on('message', this.request.bind(this))
-                        .on('close')
-                })
-            }, function (error) {
-                logger.error('connect', { message: error.message })
-                return [ loop.continue ]
-            }])
-        })()
+        new Delta(async()).ee(this._ws)
+            .on('message', this.request.bind(this))
+            .on('close')
     })
 })
 
 Colleague.prototype.stop = function () {
-    setTimeout(function () { throw new Error }, 3000).unref()
+    setTimeout(function () { throw new Error }, 250).unref()
     if (!this._shutdown) {
         this.shutdown()
         this._shutdown = true
-        this.delegate.stop()
         if (this._ws != null) {
             this._ws.close()
         }

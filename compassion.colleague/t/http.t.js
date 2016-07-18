@@ -13,7 +13,8 @@ function prove (async, assert) {
     }
 
     Service.prototype.kibitz = cadence(function (async, request) {
-        compassion.kibitz(request, async())
+        console.log('bar', request.body)
+        colleague.kibitz(request, async())
     })
 
     var service = new Service
@@ -21,44 +22,45 @@ function prove (async, assert) {
     var UserAgent = require('../ua')
     var Vizsla = require('vizsla')
 
-    var ua = new UserAgent(new Vizsla(service.dispatcher.createWrappedDispatcher()),
-        'http://127.0.0.1/abend')
+    var ua = new UserAgent(new Vizsla(service.dispatcher.createWrappedDispatcher()), 'http://127.0.0.1/abend')
 
     var bootstrapped
 
-    function Child (compassion) {
+    function Child (colleague) {
         var initialized = false
-        compassion.messages.on('message', function (message) {
+        colleague.messages.on('message', function (message) {
             if (message.type == 'entry') {
                 if (initialized) {
                     assert(message.entry.value.number, 0, 'entry')
                     bootstrapped()
                 } else if (message.entry.promise == '1/0') {
                     initialized = true
-                    compassion.publish(2, { number: 0 })
+                    colleague.publish(2, { number: 0 }, function () {})
                 }
             }
         })
     }
 
-    var compassion = new Colleague({ colleagueId: 'x', Delegate: Child, ua: ua })
+    var colleague = new Colleague({ islandName: 'island', colleagueId: 'x', ua: ua })
+    new Child(colleague)
 
-    compassion.publish(0, { value: 0 })
+    colleague.publish(0, { value: 0 })
 
     async(function () {
-        compassion.kibitz({}, async())
+        colleague.kibitz({}, async())
     }, function (result) {
         assert(result, null, 'missing')
-        compassion.health(async())
+        colleague.health(async())
     }, function (response) {
         delete response.uptime
         assert(response, {
             requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
+            islandName: 'island',
             islandId: null,
             colleagueId: 'x',
             government: null
         }, 'health')
-        compassion.join({
+        colleague.join({
             body: {
                 properties: { location: '127.0.0.1:8080' },
                 islandId: 'y',
@@ -68,7 +70,7 @@ function prove (async, assert) {
     }, function (response) {
         assert(response, {}, 'join')
         bootstrapped = async()
-        compassion.bootstrap({
+        colleague.bootstrap({
             body: {
                 islandId: 'y',
                 properties: { location: '127.0.0.1:8080' }
@@ -76,11 +78,12 @@ function prove (async, assert) {
         }, async())
     }, function (response) {
         assert(response, {}, 'bootstrap')
-        compassion.health(async())
+        colleague.health(async())
     }, function (response) {
         delete response.uptime
         assert(response, {
             requests: { occupied: 0, waiting: 0, rejecting: 0, turnstiles: 24 },
+            islandName: 'island',
             islandId: 'y',
             colleagueId: 'x',
             government: {
@@ -90,6 +93,6 @@ function prove (async, assert) {
                 promise: '1/0'
             }
         }, 'running health')
-        compassion.shutdown()
+        colleague.shutdown()
     })
 }
