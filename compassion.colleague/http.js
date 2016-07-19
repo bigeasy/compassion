@@ -118,8 +118,7 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
     this.kibitzer.dispatch(request.body.kibitz, async())
 })
 
-// TODO Make async so that you can create a dummy that uses IPC or socket.
-Colleague.prototype.publish = function (reinstatementId, entry, callback) {
+Colleague.prototype.publish = cadence(function (async, reinstatementId, entry) {
     logger.trace('publish', { reinstatementId: reinstatementId, entry: entry })
     if (reinstatementId != this._reinstatementId) {
         return null
@@ -134,8 +133,8 @@ Colleague.prototype.publish = function (reinstatementId, entry, callback) {
         logger.trace('argle', { recording: this._recording })
         this._recording.push({ reinstatementId: reinstatementId, entry: entry })
     }
-    callback()
-}
+    return []
+})
 
 Colleague.prototype.naturalized = function () {
     this.kibitzer.legislator.naturalized = true

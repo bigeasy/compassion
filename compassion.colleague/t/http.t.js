@@ -44,9 +44,10 @@ function prove (async, assert) {
     var colleague = new Colleague({ islandName: 'island', colleagueId: 'x', ua: ua })
     new Child(colleague)
 
-    colleague.publish(0, { value: 0 })
 
     async(function () {
+        colleague.publish(0, { value: 0 }, async())
+    }, function () {
         colleague.kibitz({}, async())
     }, function (result) {
         assert(result, null, 'missing')
