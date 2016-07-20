@@ -95,7 +95,6 @@ Colleague.prototype.bootstrap = cadence(function (async, request) {
     logger.trace('bootstrap', { body: request.body, cookie: this.start })
     this._createKibitzer(request.body, this.start, false, true)
     this.kibitzer.bootstrap(abend)
-    console.log('foo')
     return {}
 })
 
@@ -114,7 +113,6 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
     if (this.kibitzer == null) {
         return [ null ]
     }
-    console.log('bazzz')
     this.kibitzer.dispatch(request.body.kibitz, async())
 })
 
