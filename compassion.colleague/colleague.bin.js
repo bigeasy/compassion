@@ -102,6 +102,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ping: +(program.command.param.ping || 10000),
         ua: new UserAgent(new Vizsla)
     })
+    colleague.replaying = program.command.param.replay
     program.on('SIGINT', colleague.stop.bind(colleague))
     async(function () {
         delegate.initialize(program, colleague, async())

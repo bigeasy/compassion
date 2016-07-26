@@ -67,6 +67,7 @@ Colleague.prototype.play = function (entry) {
     } else if (this.kibitzer != null) {
         this.kibitzer.play(entry)
     }
+    this.messages.emit('replay', entry)
     return this
 }
 
