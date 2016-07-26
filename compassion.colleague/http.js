@@ -15,8 +15,8 @@ function Colleague (options) {
     this._requests = new Reactor({ object: this, method: '_request' })
     this._requests.turnstile.health.turnstiles = 24
     this.messages = new events.EventEmitter
-    this._colleagueId = options.colleagueId
-    this._islandName = options.islandName
+    this.colleagueId = options.colleagueId
+    this.islandName = options.islandName
     this._timeout = options.timeout
     this._ping = options.ping
     this._recording = null
@@ -77,9 +77,9 @@ Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstr
         bootstrap: bootstrap,
         reinstatementId: ++this._reinstatementId,
         islandId: body.islandId,
-        colleagueId: this._colleagueId
+        colleagueId: this.colleagueId
     })
-    this.kibitzer = new Kibitzer(body.islandId, this._colleagueId, {
+    this.kibitzer = new Kibitzer(body.islandId, this.colleagueId, {
         ua: this.ua,
         cookie: cookie,
         properties: body.properties,
@@ -147,8 +147,8 @@ Colleague.prototype.health = cadence(function (async, request) {
     return {
         uptime: Date.now() - this.start,
         requests: this._requests.turnstile.health,
-        islandName: this._islandName,
-        colleagueId: this._colleagueId,
+        islandName: this.islandName,
+        colleagueId: this.colleagueId,
         islandId: islandId,
         government: government
     }
@@ -175,7 +175,7 @@ Colleague.prototype.listen = cadence(function (async, address, program) {
         protocol: 'ws:',
         slashes: true,
         host: address,
-        pathname: '/' + this._islandName + '/' + this._colleagueId
+        pathname: '/' + this.islandName + '/' + this.colleagueId
     }
     this._ws = new WebSocket(url.format(parsed))
     async([function () {
