@@ -114,7 +114,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
             colleague.replay()
             var stream = fs.createReadStream(program.command.param.replay)
             byline(stream).on('data', function (line) {
-                if (/^{/.test(line.toString())) {
+                if (/^{"/.test(line.toString())) {
                     colleague.play(JSON.parse(line.toString()))
                 }
             })
