@@ -6,9 +6,9 @@ function prove (async, assert) {
     var WebSocket = require('ws')
     var delta = require('delta')
     var ua = new Vizsla
-    var io
+    var program
     async(function () {
-        io = bin({}, [ '--bind', '127.0.0.1:8888' ], {}, async())
+        program = bin([ '--bind', '127.0.0.1:8888' ], {}, async())
     }, function () {
         var ws = new WebSocket('ws://127.0.0.1:8888/?key=[island]:1&islandName=island&colleagueId=1')
         async(function () {
@@ -34,6 +34,6 @@ function prove (async, assert) {
     }, function (response) {
         assert(response, { hello: 'world' }, 'post')
         assert(true, 'started')
-        io.events.emit('SIGINT')
+        program.emit('SIGINT')
     })
 }

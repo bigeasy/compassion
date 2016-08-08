@@ -35,10 +35,12 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     Shuttle.shuttle(program, 1000, logger)
 
-    program.helpIf(program.command.param.help)
-    program.command.required('bind')
+    program.helpIf(program.ultimate.help)
+    program.required('bind')
 
-    var bind = program.command.bind('bind')
+    program.validate(require('arguable/bindable'), 'bind')
+
+    var bind = program.ultimate.bind
 
     var ws = require('ws')
     var conduit = new Conduit
@@ -46,5 +48,5 @@ require('arguable')(module, require('cadence')(function (async, program) {
     new ws.Server({ server: server }).on('connection', conduit.connection.bind(conduit))
     destroyer(server)
     server.listen(bind.port, bind.address, async())
-    program.on('SIGINT', server.destroy.bind(server))
+    program.on('shutdown', server.destroy.bind(server))
 }))
