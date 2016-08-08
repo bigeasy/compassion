@@ -30,7 +30,7 @@
     },
     "devDependencies":
     {
-                            "delta":                        "1.0.x",
+                            "delta":                        "1.1.x",
                             "proof":                        "1.0.x",
                             "vizsla":                       "1.5.x"
     },

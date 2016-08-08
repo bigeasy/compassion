@@ -5,7 +5,7 @@ var url = require('url')
 
 function Conduit () {
     this._cliffhanger = new Cliffhanger()
-    this._islands = {}
+    this._listeners = {}
     var dispatcher = new Dispatcher(this)
     dispatcher.dispatch('GET /', 'index')
     dispatcher.dispatch('POST /bootstrap', 'bootstrap')
@@ -25,20 +25,18 @@ Conduit.prototype.index = cadence(function () {
 })
 
 Conduit.prototype.connection = function (ws) {
-    var path = (url.parse(ws.upgradeReq.url).path || '').split('/')
-    if (path.length == 3) {
-        var islandName = path[1], colleagueId = path[2]
-        var islands = this._islands, cliffhanger = this._cliffhanger
+    var query = url.parse(ws.upgradeReq.url, true).query
+    if (query.key != null) {
+        var listeners = this._listeners, cliffhanger = this._cliffhanger
 
-        var island = islands[islandName]
-        if (island == null) {
-            island = islands[islandName] = {}
-        }
-        var listener = island[colleagueId]
+        var listener = listeners[query.key]
         if (listener != null) {
             listener.close.call(null)
         }
-        listener = island[colleagueId] = { close: close, ws: ws }
+        listener = listeners[query.key] = { query: query, close: close, ws: ws }
+
+        ws.on('message', message)
+        ws.on('close', close)
 
         function message (event) {
             var message = JSON.parse(event)
@@ -46,31 +44,22 @@ Conduit.prototype.connection = function (ws) {
         }
 
         function close () {
+            delete listeners[query.key]
             ws.removeListener('close', close)
             ws.removeListener('message', message)
-            delete islands[islandName][colleagueId]
-            if (Object.keys(islands[islandName]).length == 0) {
-                delete islands[islandName]
-            }
             ws.close()
             ws.terminate()
         }
-
-        ws.on('message', message)
-        ws.on('close', close)
     }
 }
 
 Conduit.prototype._send = cadence(function (async, type, request) {
     var body = request.body
-    var island = this._islands[body.islandName]
-    if (island != null) {
-        var listener = island[body.colleagueId]
-        if (listener != null) {
-            var cookie = this._cliffhanger.invoke(async())
-            listener.ws.send(JSON.stringify({ type: type, cookie: cookie, body: request.body }))
-            return
-        }
+    var listener = this._listeners[body.key]
+    if (listener != null) {
+        var cookie = this._cliffhanger.invoke(async())
+        listener.ws.send(JSON.stringify({ type: type, cookie: cookie, body: body.post }))
+        return
     }
     request.raise(404)
 })
@@ -83,13 +72,8 @@ Conduit.prototype._send = cadence(function (async, type, request) {
 
 Conduit.prototype.colleagues = cadence(function (async) {
     var inquire = []
-    for (var islandName in this._islands) {
-        for (var colleagueId in this._islands[islandName]) {
-            inquire.push({
-                islandName: islandName,
-                colleagueId: colleagueId
-             })
-        }
+    for (var listener in this._listeners) {
+        inquire.push(listener.query)
     }
     return {
         instanceId: 0,
