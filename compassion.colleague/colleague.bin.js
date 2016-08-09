@@ -8,9 +8,6 @@
         -c, --conduit <address:port>
             address of the conduit to use for network communication
 
-        -m, --module
-            use a Node.js module instead of an executable for the child
-
         -I, --island <string>
             name of the island
 
@@ -21,14 +18,7 @@
             milliseconds between keep alive pings (defualt 250)
 
         -t, --timeout <integer>
-            milliseconds before a participant is considered unreachable
-                (defualt 1000)
-
-        -r, --replay <string>
-            replay a log
-
-        --ipc
-            communicate with child using Node IPC instead of socket
+            milliseconds before a participant is considered unreachable (defualt 1000)
 
         --help
             display help message
@@ -54,73 +44,34 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     Shuttle.shuttle(program, 1000, logger)
 
-    program.helpIf(program.command.param.help)
-    program.command.required('conduit')
+    program.helpIf(program.ultimate.help)
+    program.required('conduit')
 
-    var stdio = [ 'inherit', 'inherit', 'inherit' ]
-    var exec = true
-    if (program.command.param.ipc) {
-        module = './ipc'
-        stdio.push('ipc')
-    } else if (program.command.param.module) {
-        module = program.argv.shift()
-        exec = false
-    } else {
-        module = './child'
-        stdio.push('pipe')
-    }
+// TODO Assert that these are integers.
+    program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
+    var argv = program.argv.slice()
     try {
-        var Delegate = require(module)
+        var delegate = require(argv[0])
     } catch (e) {
         throw e
     }
 
-    var delegate = new Delegate
     var UserAgent = require('./ua')
     var Vizsla = require('vizsla')
-    if (exec) {
-        var child = children.spawn(program.argv.shift(), program.argv, { stdio: stdio })
-        async(function () {
-            new Delta(async()).ee(child).on('close')
-        }, function (exit, signal) {
-            console.log(exit, signal)
-            colleague.stop()
-// TODO Want.
-            // return program.exitCode(exit, signal)
-            return exit
-        })
-    }
 
     var colleague = new Colleague({
-        islandName: program.command.param.island,
-        colleagueId: program.command.param.id,
-        Delegate: Delegate,
-        argv: child,
-// TODO Assert that these are integers.
-        timeout: +(program.command.param.timeout || 60000),
-        ping: +(program.command.param.ping || 10000),
+        islandName: program.ultimate.island,
+        colleagueId: program.ultimate.id,
+        timeout: +(program.ultimate.timeout || 60000),
+        ping: +(program.ultimate.ping || 10000),
+// TODO Simplify.
         ua: new UserAgent(new Vizsla)
     })
-    colleague.replaying = program.command.param.replay
     program.on('SIGINT', colleague.stop.bind(colleague))
     async(function () {
-        delegate.initialize(program, colleague, async())
+        delegate([{ colleague: colleague }, argv], {}, async())
     }, function () {
-        if (program.command.param.replay) {
-            var fs = require('fs')
-            var byline = require('byline')
-            var player = colleague
-            colleague.replay()
-            var stream = fs.createReadStream(program.command.param.replay)
-            byline(stream).on('data', function (line) {
-                if (/^{"/.test(line.toString())) {
-                    colleague.play(JSON.parse(line.toString()))
-                }
-            })
-            stream.on('end', function () { program.emit('SIGINT') })
-        } else {
-            colleague.listen(program.command.param.conduit, program, abend)
-        }
+        colleague.listen(program.ultimate.conduit, program, abend)
     })
 }))

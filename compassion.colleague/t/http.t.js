@@ -13,7 +13,6 @@ function prove (async, assert) {
     }
 
     Service.prototype.kibitz = cadence(function (async, request) {
-        console.log('bar', request.body)
         colleague.kibitz(request, async())
     })
 
@@ -26,24 +25,24 @@ function prove (async, assert) {
 
     var bootstrapped
 
-    function Child (colleague) {
-        var initialized = false
-        colleague.messages.on('message', function (message) {
-            if (message.type == 'entry') {
-                if (initialized) {
-                    assert(message.entry.value.number, 0, 'entry')
-                    bootstrapped()
-                } else if (message.entry.promise == '1/0') {
-                    initialized = true
-                    colleague.publish(2, { number: 0 }, function () {})
-                }
+
+    var colleague = new Colleague({
+        islandName: 'island',
+        colleagueId: 'x',
+        ua: ua
+    })
+    var initialized = false
+    colleague.messages.on('message', function (message) {
+        if (message.type == 'entry') {
+            if (initialized) {
+                assert(message.entry.value.number, 0, 'entry')
+                bootstrapped()
+            } else if (message.entry.promise == '1/0') {
+                initialized = true
+                colleague.publish(2, { number: 0 }, function () {})
             }
-        })
-    }
-
-    var colleague = new Colleague({ islandName: 'island', colleagueId: 'x', ua: ua })
-    new Child(colleague)
-
+        }
+    })
 
     async(function () {
         colleague.publish(0, { value: 0 }, async())

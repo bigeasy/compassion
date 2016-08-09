@@ -126,10 +126,8 @@ Colleague.prototype.publish = cadence(function (async, reinstatementId, entry) {
         return null
     }
     if (this._recording == null) {
-        logger.trace('bargle')
         this.kibitzer.publish(entry)
     } else {
-        logger.trace('argle', { recording: this._recording })
         this._recording.push({ reinstatementId: reinstatementId, entry: entry })
     }
     return []
@@ -171,12 +169,17 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
     })
 })
 
-Colleague.prototype.listen = cadence(function (async, address, program) {
+Colleague.prototype.listen = cadence(function (async, conduit) {
     var parsed = {
         protocol: 'ws:',
         slashes: true,
-        host: address,
-        pathname: '/' + this.islandName + '/' + this.colleagueId
+        host: conduit,
+        path: '/',
+        query: {
+            key: '[' + this.islandName + ']:' + this.colleagueId,
+            islandName: this.islandName,
+            colleagueId: this.colleagueId
+        }
     }
     this._ws = new WebSocket(url.format(parsed))
     async([function () {
