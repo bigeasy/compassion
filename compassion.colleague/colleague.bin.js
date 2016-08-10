@@ -53,7 +53,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var argv = program.argv.slice()
     var delegate = program.attempt(function () {
-        return require(argv[0])
+        return require(argv.shift())
     }, /^code:MODULE_NOT_FOUND$/, 'cannot find module')
 
     var UserAgent = require('./ua')
