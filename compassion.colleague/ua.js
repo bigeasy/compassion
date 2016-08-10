@@ -10,9 +10,8 @@ UserAgent.prototype.send = cadence(function (async, properties, body) {
     this._ua.fetch({
         url: url,
         post: {
-            islandName: properties.islandName,
-            colleagueId: properties.colleagueId,
-            kibitz: body
+            key: '(' + properties.islandName + ')' + properties.colleagueId,
+            post: { kibitz: body }
         },
         nullify: true
     }, async())
