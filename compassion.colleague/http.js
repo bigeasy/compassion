@@ -169,39 +169,4 @@ Colleague.prototype._request = cadence(function (async, timeout, request) {
     })
 })
 
-Colleague.prototype.listen = cadence(function (async, conduit) {
-    var parsed = {
-        protocol: 'ws:',
-        slashes: true,
-        host: conduit,
-        path: '/',
-        query: {
-            key: '[' + this.islandName + ']:' + this.colleagueId,
-            islandName: this.islandName,
-            colleagueId: this.colleagueId
-        }
-    }
-    this._ws = new WebSocket(url.format(parsed))
-    async([function () {
-        this.stop()
-    }], function () {
-        new Delta(async()).ee(this._ws).on('open')
-    }, function () {
-        new Delta(async()).ee(this._ws)
-            .on('message', this.request.bind(this))
-            .on('close')
-    })
-})
-
-Colleague.prototype.stop = function () {
-    setTimeout(function () { throw new Error }, 250).unref()
-    if (!this._shutdown) {
-        this.shutdown()
-        this._shutdown = true
-        if (this._ws != null) {
-            this._ws.close()
-        }
-    }
-}
-
 module.exports = Colleague

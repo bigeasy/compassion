@@ -37,6 +37,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
     var abend = require('abend')
     var Delta = require('delta')
+    var Listener = require('./listener')
 
     var Colleague = require('./http.js')
 
@@ -68,10 +69,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
 // TODO Simplify.
         ua: new UserAgent(new Vizsla)
     })
-    program.on('SIGINT', colleague.stop.bind(colleague))
+    program.on('shutdown', colleague.shutdown.bind(colleague))
     async(function () {
         delegate([{ colleague: colleague }, argv], {}, async())
     }, function () {
-        colleague.listen(program.ultimate.conduit, program, abend)
+        var listener = new Listener(colleague)
+        listener.listen(program.ultimate.conduit, abend)
+        program.on('shutdown', listener.stop.bind(listener))
+        listener.listening.enter(async())
     })
 }))

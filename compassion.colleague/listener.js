@@ -35,14 +35,18 @@ Listener.prototype.message = function (message) {
     this._messages.push(message)
 }
 
-Listener.prototype.listen = cadence(function (async, conduit, query) {
+Listener.prototype.listen = cadence(function (async, conduit) {
+    var islandName = this._colleague.islandName
+    var colleagueId = this._colleague.colleagueId
+    var key = '(' + islandName + ')' + colleagueId
     var parsed = {
         protocol: 'ws:',
         slashes: true,
         host: conduit,
         pathname: '/',
-        query: query
+        query: { key: key, islandName: islandName, colleagueId: colleagueId }
     }
+    console.log(url.format(parsed))
     this._ws = new WebSocket(url.format(parsed))
     async([function () {
         this.stop()

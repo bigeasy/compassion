@@ -10,6 +10,8 @@ function prove (async, assert) {
     }, function () {
         var Listener = require('../listener')
         var listener = new Listener({
+            islandName: 'island',
+            colleagueId: 1,
             request: function (message, callback) {
                 assert(message, { key: 'value' }, 'requested')
                 callback(null, { called: true })
@@ -22,7 +24,7 @@ function prove (async, assert) {
             ua.fetch({
                 url: 'http://127.0.0.1:8888/kibitz',
                 raise: true,
-                post: { key: 'x', post: { key: 'value' } }
+                post: { key: '(island)1', post: { key: 'value' } }
             }, async())
         }, function (body) {
             assert(body.called, 'called')
