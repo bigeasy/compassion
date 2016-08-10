@@ -18,7 +18,7 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "arguable":                     "3.0.x",
+                            "arguable":                     "3.1.x",
                             "bintrees":                     "1.0.1",
                             "byline":                       "4.2.1",
                             "cadence":                      "1.0.x",
