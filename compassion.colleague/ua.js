@@ -1,5 +1,6 @@
 var cadence = require('cadence')
 var util = require('util')
+var assert = require('assert')
 
 function UserAgent (ua) {
     this._ua = ua
@@ -10,7 +11,7 @@ UserAgent.prototype.send = cadence(function (async, properties, body) {
     this._ua.fetch({
         url: url,
         post: {
-            key: '(' + properties.islandName + ')' + properties.colleagueId,
+            key: '(' + body.islandId + ')' + body.id,
             post: { kibitz: body }
         },
         nullify: true

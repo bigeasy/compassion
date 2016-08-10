@@ -110,11 +110,11 @@ Colleague.prototype._onEntry = function (entry) {
     this.messages.emit('message', { type: 'entry', entry: entry })
 }
 
-Colleague.prototype.kibitz = cadence(function (async, request) {
+Colleague.prototype.kibitz = cadence(function (async, post) {
     if (this.kibitzer == null) {
         return [ null ]
     }
-    this.kibitzer.dispatch(request.body.kibitz, async())
+    this.kibitzer.dispatch(post, async())
 })
 
 Colleague.prototype.publish = cadence(function (async, reinstatementId, entry) {

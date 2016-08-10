@@ -13,7 +13,7 @@ function prove (async, assert) {
     }
 
     Service.prototype.kibitz = cadence(function (async, request) {
-        colleague.kibitz(request, async())
+        colleague.kibitz(request.body.post.kibitz, async())
     })
 
     var service = new Service
