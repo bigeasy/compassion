@@ -52,11 +52,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
     var argv = program.argv.slice()
-    try {
-        var delegate = require(argv[0])
-    } catch (e) {
-        throw e
-    }
+    var delegate = program.attempt(function () {
+        return require(argv[0])
+    }, /^code:MODULE_NOT_FOUND$/, 'cannot find module')
 
     var UserAgent = require('./ua')
     var Vizsla = require('vizsla')
