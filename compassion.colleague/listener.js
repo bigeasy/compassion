@@ -46,7 +46,6 @@ Listener.prototype.listen = cadence(function (async, conduit) {
         pathname: '/',
         query: { key: key, islandName: islandName, colleagueId: colleagueId }
     }
-    console.log(url.format(parsed))
     this._ws = new WebSocket(url.format(parsed))
     async([function () {
         this.stop()
