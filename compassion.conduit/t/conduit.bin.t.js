@@ -10,15 +10,16 @@ function prove (async, assert) {
     async(function () {
         program = bin([ '--bind', '127.0.0.1:8888' ], {}, async())
     }, function () {
-        var ws = new WebSocket('ws://127.0.0.1:8888/?key=[island]:1&islandName=island&colleagueId=1')
+        var ws = new WebSocket('ws://127.0.0.1:8888/?islandName=island&colleagueId=1')
         async(function () {
             delta(async()).ee(ws).on('open')
         }, function () {
             ua.fetch({
                 url: 'http://127.0.0.1:8888/kibitz',
                 post: {
-                    key: '[island]:1',
-                    post: { key: 'value' }
+                    islandName: 'island',
+                    colleagueId: 1,
+                    key: 'value'
                 }
             }, async())
             async(function () {

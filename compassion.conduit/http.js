@@ -2,6 +2,7 @@ var cadence = require('cadence')
 var Cliffhanger = require('cliffhanger')
 var Dispatcher = require('inlet/dispatcher')
 var url = require('url')
+var assert = require('assert')
 
 function Conduit () {
     this._cliffhanger = new Cliffhanger()
@@ -26,14 +27,16 @@ Conduit.prototype.index = cadence(function () {
 
 Conduit.prototype.connection = function (ws) {
     var query = url.parse(ws.upgradeReq.url, true).query
-    if (query.key != null) {
+    if (query.islandName && query.colleagueId) {
         var listeners = this._listeners, cliffhanger = this._cliffhanger
 
-        var listener = listeners[query.key]
+        var key = '(' + query.islandName + ')' + query.colleagueId
+
+        var listener = listeners[key]
         if (listener != null) {
             listener.close.call(null)
         }
-        listener = listeners[query.key] = { query: query, close: close, ws: ws }
+        listener = listeners[key] = { query: query, close: close, ws: ws }
 
         ws.on('message', message)
         ws.on('close', close)
@@ -44,7 +47,7 @@ Conduit.prototype.connection = function (ws) {
         }
 
         function close () {
-            delete listeners[query.key]
+            delete listeners[key]
             ws.removeListener('close', close)
             ws.removeListener('message', message)
             ws.close()
@@ -55,10 +58,12 @@ Conduit.prototype.connection = function (ws) {
 
 Conduit.prototype._send = cadence(function (async, type, request) {
     var body = request.body
-    var listener = this._listeners[body.key]
+    assert(body.islandName, body.colleagueId)
+    var key = '(' + body.islandName + ')' + body.colleagueId
+    var listener = this._listeners[key]
     if (listener != null) {
         var cookie = this._cliffhanger.invoke(async())
-        listener.ws.send(JSON.stringify({ type: type, cookie: cookie, body: body.post }))
+        listener.ws.send(JSON.stringify({ type: type, cookie: cookie, body: body }))
         return
     }
     request.raise(404)
@@ -72,8 +77,8 @@ Conduit.prototype._send = cadence(function (async, type, request) {
 
 Conduit.prototype.colleagues = cadence(function (async) {
     var inquire = []
-    for (var listener in this._listeners) {
-        inquire.push(listener.query)
+    for (var key in this._listeners) {
+        inquire.push(this._listeners[key].query)
     }
     return {
         instanceId: 0,
