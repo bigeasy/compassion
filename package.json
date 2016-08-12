@@ -6,11 +6,11 @@
 
       "Paxos driven atomic broadcast framework.",
 
-    "homepage":             "http://bigeasy.github.com/edify",
     "keywords":
     [
                             "consensus", "paxos"
     ],
+    "homepage":             "http://bigeasy.github.com/edify",
     "author":               "Alan Gutierrez <alan@prettyrobots.com>",
     "license":              "MIT",
     "repository":
