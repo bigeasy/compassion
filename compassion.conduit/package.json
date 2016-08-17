@@ -34,7 +34,7 @@
     {
                             "delta":                        "1.1.x",
                             "proof":                        "1.1.x",
-                            "vizsla":                       "1.6.x"
+                            "vizsla":                       "2.0.x"
     },
     "main":                 "conduit.bin",
     "bin":
