@@ -32,7 +32,7 @@
                             "prolific.shuttle":             "3.0.x",
                             "reactor":                      "2.2.x",
                             "vestibule":                    "1.1.x",
-                            "vizsla":                       "1.5.x",
+                            "vizsla":                       "1.6.x",
                             "ws":                           "1.1.1"
     },
     "devDependencies":
