@@ -31,7 +31,7 @@
     "devDependencies":
     {
                             "delta":                        "1.1.x",
-                            "proof":                        "1.0.x",
+                            "proof":                        "1.1.x",
                             "vizsla":                       "1.5.x"
     },
     "main":                 "conduit.bin",
