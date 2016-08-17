@@ -22,9 +22,8 @@
                             "cadence":                      "1.0.x",
                             "cliffhanger":                  "1.2.x",
                             "inlet":                        "1.1.x",
-                            "prolific.logger":              "0.0.x",
-                            "prolific.main":                "0.0.x",
-                            "prolific.shuttle":             "2.4.x",
+                            "prolific.logger":              "1.0.x",
+                            "prolific.shuttle":             "3.0.x",
                             "server-destroy":               "1.0.1",
                             "ws":                           "1.1.0"
     },
