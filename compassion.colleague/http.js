@@ -1,6 +1,5 @@
 var cadence = require('cadence')
 var events = require('events')
-var Delta = require('delta')
 var Kibitzer = require('kibitz')
 var url = require('url')
 var abend = require('abend')

@@ -3,7 +3,7 @@ var url = require('url')
 var WebSocket = require('ws')
 
 var cadence = require('cadence')
-var Delta = require('delta')
+var delta = require('delta')
 var Vestibule = require('vestibule')
 var Reactor = require('reactor')
 
@@ -50,9 +50,9 @@ Listener.prototype.listen = cadence(function (async, conduit) {
     async([function () {
         this.stop()
     }], function () {
-        new Delta(async()).ee(this._ws).on('open')
+        delta(async()).ee(this._ws).on('open')
     }, function () {
-        new Delta(async()).ee(this._ws)
+        delta(async()).ee(this._ws)
             .on('message', this.message.bind(this))
             .on('close')
         this.listening.notify()

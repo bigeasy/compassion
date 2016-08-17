@@ -36,7 +36,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var children = require('child_process')
     var Shuttle = require('prolific.shuttle')
     var abend = require('abend')
-    var Delta = require('delta')
     var Listener = require('./listener')
 
     var Colleague = require('./http.js')
