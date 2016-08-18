@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.conduit",
-    "version":              "0.0.9",
+    "version":              "0.0.10",
     "description":
 
       "Paxos based consensus framework.",
