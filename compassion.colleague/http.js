@@ -153,7 +153,7 @@ Colleague.prototype.health = cadence(function (async, request) {
 })
 
 Colleague.prototype.request = function (message) {
-    this._requests.push(JSON.parse(message))
+    this._requests.push(message)
 }
 
 Colleague.prototype._request = cadence(function (async, timeout, request) {
