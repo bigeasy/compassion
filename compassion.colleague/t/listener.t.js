@@ -6,7 +6,7 @@ function prove (async, assert) {
     var abend = require('abend')
     var conduit = require('compassion.conduit/conduit.bin'), program
     async(function () {
-        program = conduit([ '--bind', '127.0.0.1:8888' ], {}, async())
+        program = conduit([ '--bind', '127.0.0.1:8888', '--id', '1' ], {}, async())
     }, function () {
         var Listener = require('../listener')
         var listener = new Listener({

@@ -6,7 +6,7 @@ function prove (async, assert) {
         colleague: require('../colleague.bin')
     }, conduit, colleague
     async(function () {
-        conduit = bin.conduit({ bind: '127.0.0.1:8888' }, {}, async())
+        conduit = bin.conduit({ bind: '127.0.0.1:8888', id: '1' }, {}, async())
     }, function () {
         colleague = bin.colleague([ {
             conduit: '127.0.0.1:8888',
