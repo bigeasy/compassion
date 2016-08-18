@@ -4,9 +4,10 @@ var Dispatcher = require('inlet/dispatcher')
 var url = require('url')
 var assert = require('assert')
 
-function Conduit () {
+function Conduit (id) {
     this._cliffhanger = new Cliffhanger()
     this._listeners = {}
+    this._instanceId = id
     var dispatcher = new Dispatcher(this)
     dispatcher.dispatch('GET /', 'index')
     dispatcher.dispatch('POST /bootstrap', 'bootstrap')
@@ -81,7 +82,7 @@ Conduit.prototype.colleagues = cadence(function (async) {
         inquire.push(this._listeners[key].query)
     }
     return {
-        instanceId: 0,
+        instanceId: this._instanceId,
         colleagues: inquire
     }
 })

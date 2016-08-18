@@ -10,6 +10,9 @@
         -b, --bind <address:port>
             address and port to bind to
 
+        -i, --id <string>
+            conduit id
+
         --help
             display help message
 
@@ -36,14 +39,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
     Shuttle.shuttle(program, 1000, logger)
 
     program.helpIf(program.ultimate.help)
-    program.required('bind')
+    program.required('bind', 'id')
 
     program.validate(require('arguable/bindable'), 'bind')
 
     var bind = program.ultimate.bind
 
     var ws = require('ws')
-    var conduit = new Conduit
+    var conduit = new Conduit(program.ultimate.id)
     var server = http.createServer(conduit.dispatcher.createWrappedDispatcher())
     new ws.Server({ server: server }).on('connection', conduit.connection.bind(conduit))
     destroyer(server)

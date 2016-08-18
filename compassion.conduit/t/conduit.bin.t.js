@@ -8,7 +8,7 @@ function prove (async, assert) {
     var ua = new Vizsla
     var program
     async(function () {
-        program = bin([ '--bind', '127.0.0.1:8888' ], {}, async())
+        program = bin([ '--bind', '127.0.0.1:8888', '--id', '1' ], {}, async())
     }, function () {
         var ws = new WebSocket('ws://127.0.0.1:8888/?islandName=island&colleagueId=1')
         async(function () {
