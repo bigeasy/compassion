@@ -10,13 +10,13 @@
     [
                             "consensus", "paxos"
     ],
-    "homepage":             "http://bigeasy.github.com/edify",
+    "homepage":             "http://bigeasy.github.com/compassion",
     "author":               "Alan Gutierrez <alan@prettyrobots.com>",
     "license":              "MIT",
     "repository":
     {
                             "type": "git",
-                            "url": "http://github.com/bigeasy/edify.git"
+                            "url": "http://github.com/bigeasy/compassion.git"
     },
     "dependencies":
     {
