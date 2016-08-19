@@ -23,11 +23,11 @@ Listener.prototype.stop = function () {
 }
 
 Listener.prototype._message = cadence(function (async, timeout, message) {
+    message = JSON.parse(message)
     async(function () {
-        message = JSON.parse(message)
-        this._colleague.request(message.body, async())
-    }, function (body) {
-        this._ws.send(JSON.stringify({ cookie: message.cookie, body: body }))
+        this._colleague.request(message.type, message.body, async())
+    }, function (response) {
+        this._ws.send(JSON.stringify({ cookie: message.cookie, body: response }))
     })
 })
 

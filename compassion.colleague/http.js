@@ -92,16 +92,16 @@ Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstr
 }
 
 Colleague.prototype.bootstrap = cadence(function (async, request) {
-    logger.trace('bootstrap', { body: request.body, cookie: this.start })
-    this._createKibitzer(request.body, this.start, false, true)
+    logger.trace('bootstrap', { request: request, cookie: this.start })
+    this._createKibitzer(request, this.start, false, true)
     this.kibitzer.bootstrap(abend)
     return {}
 })
 
 Colleague.prototype.join = cadence(function (async, request) {
-    logger.trace('join', { body: request.body, cookie: this.start })
-    this._createKibitzer(request.body, this.start, false, false)
-    this.kibitzer.join(request.body.liaison, abend)
+    logger.trace('join', { request: request, cookie: this.start })
+    this._createKibitzer(request, this.start, false, false)
+    this.kibitzer.join(request.liaison, abend)
     return {}
 })
 
@@ -109,11 +109,11 @@ Colleague.prototype._onEntry = function (entry) {
     this.messages.emit('message', { type: 'entry', entry: entry })
 }
 
-Colleague.prototype.kibitz = cadence(function (async, post) {
+Colleague.prototype.kibitz = cadence(function (async, request) {
     if (this.kibitzer == null) {
         return [ null ]
     }
-    this.kibitzer.dispatch(post, async())
+    this.kibitzer.dispatch(request.kibitz, async())
 })
 
 Colleague.prototype.publish = cadence(function (async, reinstatementId, entry) {
@@ -136,7 +136,7 @@ Colleague.prototype.naturalized = function () {
     this.kibitzer.legislator.naturalized = true
 }
 
-Colleague.prototype.health = cadence(function (async, request) {
+Colleague.prototype.health = cadence(function (async) {
     var islandId = null, government = null
     if (this.kibitzer != null) {
         islandId = this.kibitzer.legislator.islandId
@@ -152,20 +152,11 @@ Colleague.prototype.health = cadence(function (async, request) {
     }
 })
 
-Colleague.prototype.request = function (message) {
-    this._requests.push(message)
-}
-
-Colleague.prototype._request = cadence(function (async, timeout, request) {
-    if (!~([ 'health', 'kibitz', 'join', 'bootstrap', 'shutdown' ]).indexOf(request.type)) {
+Colleague.prototype.request = cadence(function (async, type, body) {
+    if (!~([ 'health', 'kibitz', 'join', 'bootstrap', 'shutdown' ]).indexOf(type)) {
         return [ { cookie: request.cookie, body: null } ]
     }
-    async(function () {
-        this[request.type](request, async())
-    }, function (body) {
-        this._ws.send(JSON.stringify({ cookie: request.cookie, body: body }))
-        return []
-    })
+    this[type](body, async())
 })
 
 module.exports = Colleague
