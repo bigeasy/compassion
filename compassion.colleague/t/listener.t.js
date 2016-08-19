@@ -1,4 +1,4 @@
-require('proof/redux')(2, require('cadence')(prove))
+require('proof/redux')(3, require('cadence')(prove))
 
 function prove (async, assert) {
     var Vizsla = require('vizsla')
@@ -12,12 +12,13 @@ function prove (async, assert) {
         var listener = new Listener({
             islandName: 'island',
             colleagueId: 1,
-            request: function (message, callback) {
+            request: function (type, message, callback) {
+                assert(type, 'kibitz', 'request type')
                 assert(message, {
                     islandName: 'island',
                     colleagueId: 1,
                     key: 'value'
-                }, 'requested')
+                }, 'request message')
                 callback(null, { called: true })
             }
         })

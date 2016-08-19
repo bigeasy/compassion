@@ -13,7 +13,7 @@ function prove (async, assert) {
     }
 
     Service.prototype.kibitz = cadence(function (async, request) {
-        colleague.kibitz(request.body.post.kibitz, async())
+        colleague.kibitz(request.body, async())
     })
 
     var service = new Service
@@ -61,20 +61,16 @@ function prove (async, assert) {
             government: null
         }, 'health')
         colleague.join({
-            body: {
-                properties: { location: '127.0.0.1:8080' },
-                islandId: 'y',
-                liaison: { location: '127.0.0.1:8888' }
-            }
+            properties: { location: '127.0.0.1:8080' },
+            islandId: 'y',
+            liaison: { location: '127.0.0.1:8888' }
         }, async())
     }, function (response) {
         assert(response, {}, 'join')
         bootstrapped = async()
         colleague.bootstrap({
-            body: {
-                islandId: 'y',
-                properties: { location: '127.0.0.1:8080' }
-            }
+            islandId: 'y',
+            properties: { location: '127.0.0.1:8080' }
         }, async())
     }, function (response) {
         assert(response, {}, 'bootstrap')
