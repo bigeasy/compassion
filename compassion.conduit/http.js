@@ -59,7 +59,7 @@ Conduit.prototype.connection = function (ws) {
 
 Conduit.prototype._send = cadence(function (async, type, request) {
     var body = request.body
-    assert(body.islandName, body.colleagueId)
+    assert(body.islandName && body.colleagueId)
     var key = '(' + body.islandName + ')' + body.colleagueId
     var listener = this._listeners[key]
     if (listener != null) {
