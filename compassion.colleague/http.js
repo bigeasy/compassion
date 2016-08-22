@@ -40,13 +40,13 @@ Colleague.prototype.play = function (entry) {
     if (entry.qualifier == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
-            logger.trace('bootstrap', { body: entry.body, cookie: entry.cookie })
-            this._createKibitzer(entry.body, entry.cookie, true, true)
+            logger.trace('bootstrap', { request: entry.request, cookie: entry.cookie })
+            this._createKibitzer(entry.request, entry.cookie, true, true)
             this.kibitzer.replay()
             break
         case 'join':
-            logger.trace('join', { body: entry.body, cookie: entry.cookie })
-            this._createKibitzer(entry.body, entry.cookie, true, false)
+            logger.trace('join', { request: entry.request, cookie: entry.cookie })
+            this._createKibitzer(entry.request, entry.cookie, true, false)
             this.kibitzer.replay()
             break
         case 'publish':
