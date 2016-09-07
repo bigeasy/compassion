@@ -1,1 +1,3 @@
-Instance of a compassion island participant.
+## Compassion Colleague
+
+Instance of a Compassion island participant.
