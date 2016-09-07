@@ -1,7 +1,10 @@
 {
     "name":                 "compassion",
     "version":              "0.0.4",
-    "description":          "Root executable for standard Compassion processes.",
+    "description":
+
+      "Root executable for standard Compassion processes.",
+
     "keywords":
     [
                             "consensus", "paxos"
