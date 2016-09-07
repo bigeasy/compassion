@@ -1,7 +1,7 @@
 {
     "name":                 "compassion",
     "version":              "0.0.4",
-    "description":          "Paxos based consensus framework.",
+    "description":          "Root executable for standard Compassion processes.",
     "keywords":
     [
                             "consensus", "paxos"
