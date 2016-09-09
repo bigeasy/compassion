@@ -26,7 +26,8 @@
                             "compassion.colleague":         "0.0.x",
                             "delta":                        "1.1.x",
                             "prolific.logger":              "1.0.x",
-                            "prolific.shuttle":             "3.0.x"
+                            "prolific.shuttle":             "3.0.x",
+                            "staccato":                     "1.1.x"
     },
     "devDependencies":
     {

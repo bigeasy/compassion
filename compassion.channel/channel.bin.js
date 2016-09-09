@@ -66,8 +66,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ua: null
     })
     async(function () {
-        delegate({ colleague: colleague, argv: argv }, async())
-    }, function () {
-        replay(stream, colleague, async())
+        delegate(argv, async())
+    }, function (constructor) {
+        replay(stream, colleague, constructor(colleague), async())
     })
 }))
