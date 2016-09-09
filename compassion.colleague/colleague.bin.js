@@ -70,7 +70,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async(function () {
         delegate(argv, async())
     }, function (constructor) {
-        constructor(colleague, async())
+        constructor(colleague, false, async())
     }, function () {
         var listener = new Listener(colleague)
         listener.listen(program.ultimate.conduit, abend)
