@@ -1,1 +1,1 @@
-module.exports = function (argv, env, callback) { callback() }
+module.exports = function (argv, callback) { callback(null, function () {}) }
