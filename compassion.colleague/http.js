@@ -36,7 +36,7 @@ Colleague.prototype.replay = function (entry) {
 }
 
 // TODO Break this up somehow, really crufty.
-Colleague.prototype.play = function (entry) {
+Colleague.prototype.play = cadence(function (async, entry, machine) {
     if (entry.qualifier == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
@@ -66,9 +66,8 @@ Colleague.prototype.play = function (entry) {
     } else if (this.kibitzer != null) {
         this.kibitzer.play(entry)
     }
-    this.messages.emit('replay', entry)
-    return this
-}
+    machine.replay(entry, async())
+})
 
 Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstrap) {
     this.shutdown()
