@@ -68,9 +68,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
     program.on('shutdown', colleague.shutdown.bind(colleague))
     async(function () {
-        delegate(argv, async())
-    }, function (constructor) {
-        constructor(colleague)
+        delegate({ colleague: colleague, argv: argv }, async())
+    }, function () {
         var listener = new Listener(colleague)
         listener.listen(program.ultimate.conduit, abend)
         program.on('shutdown', listener.stop.bind(listener))
