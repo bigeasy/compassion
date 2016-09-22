@@ -16,7 +16,6 @@ function prove (async, assert) {
     }, function () {
         assert(true, 'started')
         program = bin({
-            log: '-',
             island: 'island',
             id: '1',
             argv: [ 'example' ]
