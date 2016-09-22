@@ -26,7 +26,7 @@
                             "cliffhanger":                  "1.2.x",
                             "inlet":                        "2.0.x",
                             "prolific.logger":              "2.0.x",
-                            "prolific.shuttle":             "4.0.x",
+                            "prolific.shuttle":             "7.0.x",
                             "server-destroy":               "1.0.1",
                             "ws":                           "1.1.1"
     },

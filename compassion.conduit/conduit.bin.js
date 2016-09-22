@@ -36,7 +36,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = require('prolific.logger').createLogger('bigeasy.compassion.conduit.bin')
 
-    Shuttle.shuttle(program, 1000, logger)
+    var shuttle = Shuttle.shuttle(program, logger)
 
     program.helpIf(program.ultimate.help)
     program.required('bind', 'id')
@@ -52,4 +52,5 @@ require('arguable')(module, require('cadence')(function (async, program) {
     destroyer(server)
     server.listen(bind.port, bind.address, async())
     program.on('shutdown', server.destroy.bind(server))
+    program.on('shutdown', shuttle.close.bind(shuttle))
 }))
