@@ -34,7 +34,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Conduit = require('./http.js')
 
-    var logger = require('prolific.logger').createLogger('bigeasy.compassion.conduit.bin')
+    var logger = require('prolific.logger').createLogger('compassion.conduit')
 
     var shuttle = Shuttle.shuttle(program, logger)
 

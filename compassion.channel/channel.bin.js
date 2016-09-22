@@ -40,7 +40,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var fs = require('fs')
     var Colleague = require('compassion.colleague/http')
 
-    var logger = require('prolific.logger').createLogger('bigeasy.compassion.channel')
+    var logger = require('prolific.logger').createLogger('compassion.channel')
 
     var shuttle = Shuttle.shuttle(program, logger)
 

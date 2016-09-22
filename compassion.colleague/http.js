@@ -5,7 +5,7 @@ var url = require('url')
 var abend = require('abend')
 var Reactor = require('reactor')
 var WebSocket = require('ws')
-var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.http')
+var logger = require('prolific.logger').createLogger('compassion.colleague')
 var assert = require('assert')
 
 function Colleague (options) {
