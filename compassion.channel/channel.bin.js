@@ -46,10 +46,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.helpIf(program.ultimate.help)
 
-    program.required('log')
     program.assert(program.argv.length != 0, 'colleague module required')
 
-    var stream = program.ultimate.log == '-'
+    var stream = program.ultimate.log == null
                ? program.stdin
                : fs.createReadStream(program.ultimate.log)
 
