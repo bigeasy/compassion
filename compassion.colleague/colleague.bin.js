@@ -42,7 +42,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var logger = require('prolific.logger').createLogger('bigeasy.compassion.colleague.bin')
 
-    Shuttle.shuttle(program, 1000, logger)
+    var shuttle = Shuttle.shuttle(program, logger)
 
     program.helpIf(program.ultimate.help)
     program.required('conduit')
@@ -67,6 +67,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ua: new UserAgent(new Vizsla)
     })
     program.on('shutdown', colleague.shutdown.bind(colleague))
+    program.on('shutdown', shuttle.close.bind(shuttle))
     async(function () {
         delegate(argv, async())
     }, function (constructor) {
