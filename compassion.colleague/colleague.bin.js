@@ -5,6 +5,9 @@
 
     options:
 
+        -C, --chaperon <address:port>
+            address of the chaperon that has bootstrap status
+
         -c, --conduit <address:port>
             address of the conduit to use for network communication
 
@@ -27,6 +30,8 @@
 
         conduit is required:
             the `--conduit` argument is a required argument
+        unknown argument:
+            Unknown argument %s.
     ___ . ___
 
  */
@@ -63,19 +68,31 @@ require('arguable')(module, require('cadence')(function (async, program) {
         colleagueId: program.ultimate.id,
         timeout: +(program.ultimate.timeout || 60000),
         ping: +(program.ultimate.ping || 10000),
+        chaperon: 'http://' + program.ultimate.chaperon,
+        conduit: program.ultimate.conduit,
 // TODO Simplify.
         ua: new UserAgent(new Vizsla)
     })
     program.on('shutdown', colleague.shutdown.bind(colleague))
     program.on('shutdown', shuttle.close.bind(shuttle))
     async(function () {
-        delegate(argv, async())
+        delegate(argv, program, async())
     }, function (constructor) {
+    // TODO Okay, obviously then, if you really want to break things up, instead
+    // of colleague, you just have a publisher, or the colleague exposes only a
+    // publish interface, and that gets plugged in later, or you send an event
+    // emitter, or something, because publish is synchronous, fire and forget.
+    //
+    // Ah, so you return an event emitter, or pass one in? Meh. Let's hide the
+    // colleague itself from a Conference user. We can assign details to the
+    // Conference object.
         constructor(colleague, false, async())
-    }, function () {
-        var listener = new Listener(colleague)
+    }, function (consumer, properties) {
+        colleague._setConsumer(consumer, properties)
+        var listener = new Listener(colleague, consumer)
         listener.listen(program.ultimate.conduit, abend)
         program.on('shutdown', listener.stop.bind(listener))
         listener.listening.enter(async())
+        colleague.chaperon.check()
     })
 }))

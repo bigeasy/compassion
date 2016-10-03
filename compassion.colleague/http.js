@@ -3,15 +3,19 @@ var events = require('events')
 var Kibitzer = require('kibitz')
 var url = require('url')
 var abend = require('abend')
+var Scheduler = require('happenstance')
 var Reactor = require('reactor')
 var WebSocket = require('ws')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 var assert = require('assert')
+var events = require('events')
+var util = require('util')
 
 function Colleague (options) {
     this.kibitzer = null
-    this._reinstatementId = 0
+    this._chaperon = options.chaperon
     this._requests = new Reactor({ object: this, method: '_request' })
+    this.chaperon = new Reactor({ object: this, method: '_checkChaperon' })
     this._requests.turnstile.health.turnstiles = 24
     this.messages = new events.EventEmitter
     this.colleagueId = options.colleagueId
@@ -19,16 +23,38 @@ function Colleague (options) {
     this._timeout = options.timeout
     this._ping = options.ping
     this._recording = null
-    this.start = Date.now()
+    this.startedAt = Date.now()
     this.properties = options.properties
-    this.ua = options.ua
+    this._ua = options.ua
+    this._Date = options.Date || Date
+    this.scheduler = new Scheduler({ Date: this._Date })
+    var properties = options.properties || {}
+    properties.location = options.conduit
+    properties.colleagueId = options.colleagueId
+    properties.islandName = options.islandName
+    this.kibitzer = new Kibitzer({
+        colleagueId: options.colleagueId,
+        ua: options.ua,
+        Date: this._Date,
+        properties: properties,
+        timeout: options.timeout,
+        ping: options.ping,
+        timerless: options.timerless
+    })
+    /* TODO this.kibitzer.legislator.naturalized = bootstrap */
+}
+
+Colleague.prototype._setConsumer =  function (consumer, properties) {
+    this._consumer = consumer
+    for (var propertyName in properties) {
+        this.kibitzer.properties[propertyName] = properties[propertyName]
+    }
+    this.kibitzer.on('enqueued', consumer.enqueued.bind(consumer))
 }
 
 Colleague.prototype.shutdown = function () {
-    if (this.kibitzer != null) {
-        this.kibitzer.terminate()
-        this.kibitzer = null
-    }
+    this.scheduler.shutdown()
+    this.kibitzer.shutdown()
 }
 
 Colleague.prototype.replay = function (entry) {
@@ -37,7 +63,7 @@ Colleague.prototype.replay = function (entry) {
 
 // TODO Break this up somehow, really crufty.
 Colleague.prototype.play = cadence(function (async, entry, machine) {
-    if (entry.qualifier == 'bigeasy.compassion.colleague.http' && entry.level == 'trace') {
+    if (entry.qualifier == 'compassion.colleague' && entry.level == 'trace') {
         switch (entry.name) {
         case 'bootstrap':
             logger.trace('bootstrap', { request: entry.request, cookie: entry.cookie })
@@ -53,7 +79,6 @@ Colleague.prototype.play = cadence(function (async, entry, machine) {
             break
             try {
                 assert.deepEqual(this._recording[0], {
-                    reinstatementId: entry.reinstatementId,
                     entry: entry.entry
                 })
                 this._recording.shift()
@@ -69,43 +94,64 @@ Colleague.prototype.play = cadence(function (async, entry, machine) {
     machine.replay(entry, async())
 })
 
-Colleague.prototype._createKibitzer = function (body, cookie, timerless, bootstrap) {
-    this.shutdown()
-    this.messages.emit('message', {
-        type: 'reinstate',
-        bootstrap: bootstrap,
-        reinstatementId: ++this._reinstatementId,
-        islandId: body.islandId,
-        colleagueId: this.colleagueId
+// Query a helper process that will look at the events in the meta. This is
+// bootstrappy and not meant to be a replacement for Paxos, but we've got to
+// start somewhere. This is not a part of the upstream libraries because this
+// strategy for bootstrapping is specific to Chaperon.
+Colleague.prototype._checkChaperon = cadence(function (async) {
+    async(function () {
+        this._ua._ua.fetch({ // TODO `_ua._ua` is horrible.
+            url: this._chaperon
+        }, {
+            url: '/action',
+            post: {
+                colleagueId: this.colleagueId,
+                islandName: this.islandName,
+                islandId: this.kibitzer.legislator.islandId,
+                startedAt: this.startedAt
+            },
+            nullify: true
+        }, async())
+    }, function (action) {
+        console.log('>', action)
+        if (action == null) {
+            this.checkChaperonIn(1000)
+            return
+        }
+        switch (action.name) {
+        case 'unstable':
+        case 'unreachable':
+            this.checkChaperonIn(1000)
+            break
+        case 'recoverable':
+            this.checkChaperonIn(1000 * 60)
+            break
+        case 'bootstrap':
+            this.kibitzer.bootstrap(this.startedAt)
+            this.checkChaperonIn(1000)
+            break
+        case 'join':
+            async(function () {
+                this.kibitzer.joinRedux(action.vargs[0], async())
+            }, function (enqueued) {
+                this.checkChaperonIn(1000 * (enqueued ? 5 : 60))
+            })
+            break
+        case 'splitBrain':
+        case 'unrecoverable':
+            this.kibizter.shutdown()
+            break
+        }
     })
-    this.kibitzer = new Kibitzer(body.islandId, this.colleagueId, {
-        ua: this.ua,
-        cookie: cookie,
-        properties: body.properties,
-        timeout: this._timeout,
-        ping: this._ping,
-        timerless: timerless
-    })
-    this.kibitzer.legislator.naturalized = bootstrap
-    this.kibitzer.log.on('entry', this._onEntry.bind(this))
+})
+
+Colleague.prototype.checkChaperonIn = function (delay) {
+    delay += this._Date.now()
+    this.scheduler.schedule(delay, 'checkChaperon', { object: this, method: '_annoyingFixMe' })
 }
 
-Colleague.prototype.bootstrap = cadence(function (async, request) {
-    logger.trace('bootstrap', { request: request, cookie: this.start })
-    this._createKibitzer(request, this.start, false, true)
-    this.kibitzer.bootstrap(abend)
-    return {}
-})
-
-Colleague.prototype.join = cadence(function (async, request) {
-    logger.trace('join', { request: request, cookie: this.start })
-    this._createKibitzer(request, this.start, false, false)
-    this.kibitzer.join(request.liaison, abend)
-    return {}
-})
-
-Colleague.prototype._onEntry = function (entry) {
-    this.messages.emit('message', { type: 'entry', entry: entry })
+Colleague.prototype._annoyingFixMe = function () {
+    this.chaperon.check()
 }
 
 Colleague.prototype.kibitz = cadence(function (async, request) {
@@ -115,20 +161,48 @@ Colleague.prototype.kibitz = cadence(function (async, request) {
     this.kibitzer.dispatch(request.kibitz, async())
 })
 
-Colleague.prototype.publish = cadence(function (async, reinstatementId, entry) {
-    logger.trace('publish', { reinstatementId: reinstatementId, entry: entry })
-    if (reinstatementId != this._reinstatementId) {
-        return null
-    }
-    if (this.kibitzer == null) {
-        return null
-    }
+Colleague.prototype.publish = cadence(function (async, entry) {
+    logger.trace('publish', { entry: entry })
     if (this._recording == null) {
         this.kibitzer.publish(entry)
     } else {
-        this._recording.push({ reinstatementId: reinstatementId, entry: entry })
+        this._recording.push({ entry: entry })
     }
     return []
+})
+
+Colleague.prototype.oob = cadence(function (async, body) {
+    this._consumer.oob(body.name, body.post, async())
+})
+
+// Any error is going to crash. No retry. We are going to ask the current
+// leader. If the leader is not there or responds with any sort of error code,
+// we crash. Out-of-band data is supposed to be used to abtain a mirror of an
+// initial state, probably through an atomic immigration entry processor, so if
+// the leader is unresponsive, and the government has changed, we're not going
+// to be able to wait until things get better. We can't process the log until
+// we're initialized. Deadlock. Crash and start over.
+//
+// The leader doesn't necessarily need to be the leader. That is application
+// dependant. It only needs to have the state information necessary to
+// initialize the new participant. Unless the application developer wants us to
+// crash, we're not going to crash if leadership changes, only if the leader at
+// the time of immigration has gone away or is unable to respond.
+Colleague.prototype.outOfBand = cadence(function (async, name, post) {
+    var leaderId = this.kibitzer.legislator.government.majority[0]
+    var properties = this.kibitzer.legislator.properties[leaderId]
+    var url = util.format('http://%s/oob', properties.location)
+    this._ua._ua.fetch({
+        url: url,
+        post: {
+            islandName: this.islandName,
+            islandId: this.islandId,
+            colleagueId: leaderId,
+            name: name,
+            post: post
+        },
+        raise: true
+    }, async())
 })
 
 Colleague.prototype.naturalized = function () {
@@ -136,18 +210,13 @@ Colleague.prototype.naturalized = function () {
 }
 
 Colleague.prototype.health = cadence(function (async) {
-    var islandId = null, government = null
-    if (this.kibitzer != null) {
-        islandId = this.kibitzer.legislator.islandId
-        government = this.kibitzer.legislator.government
-    }
     return {
-        uptime: Date.now() - this.start,
+        startedAt: this.startedAt,
         requests: this._requests.turnstile.health,
         islandName: this.islandName,
         colleagueId: this.colleagueId,
-        islandId: islandId,
-        government: government
+        islandId: this.kibitzer.legislator.islandId,
+        government: this.kibitzer.legislator.government
     }
 })
 

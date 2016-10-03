@@ -7,9 +7,10 @@ var delta = require('delta')
 var Vestibule = require('vestibule')
 var Reactor = require('reactor')
 
-function Listener (colleague) {
+function Listener (colleague, consumer) {
     this.listening = new Vestibule
     this._colleague = colleague
+    this._consumer = consumer
     this._stopped = false
     this._messages = new Reactor({ object: this, method: '_message' })
     this._ws = null
@@ -25,7 +26,11 @@ Listener.prototype.stop = function () {
 Listener.prototype._message = cadence(function (async, timeout, message) {
     message = JSON.parse(message)
     async(function () {
-        this._colleague.request(message.type, message.body, async())
+        if (message.type == 'oob') {
+            this._consumer.oob(message.body.name, message.body.post, async())
+        } else {
+            this._colleague.request(message.type, message.body, async())
+        }
     }, function (response) {
         this._ws.send(JSON.stringify({ cookie: message.cookie, body: response }))
     })
@@ -47,6 +52,7 @@ Listener.prototype.listen = cadence(function (async, conduit) {
         query: { key: key, islandName: islandName, colleagueId: colleagueId }
     }
     this._ws = new WebSocket(url.format(parsed))
+            console.log('listenering')
     async([function () {
         this.stop()
     }], function () {
