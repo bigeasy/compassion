@@ -13,6 +13,7 @@ function Conduit (id) {
     dispatcher.dispatch('POST /bootstrap', 'bootstrap')
     dispatcher.dispatch('POST /join', 'join')
     dispatcher.dispatch('POST /kibitz', 'kibitz')
+    dispatcher.dispatch('POST /oob', 'oob')
     dispatcher.dispatch('POST /health', 'health')
     dispatcher.dispatch('GET /colleagues', 'colleagues')
     this.dispatcher = dispatcher
@@ -59,6 +60,7 @@ Conduit.prototype.connection = function (ws) {
 
 Conduit.prototype._send = cadence(function (async, type, request) {
     var body = request.body
+    console.log(body)
     assert(body.islandName && body.colleagueId)
     var key = '(' + body.islandName + ')' + body.colleagueId
     var listener = this._listeners[key]
@@ -70,7 +72,7 @@ Conduit.prototype._send = cadence(function (async, type, request) {
     request.raise(404)
 })
 
-; [ 'bootstrap', 'join', 'kibitz', 'health' ].forEach(function (name) {
+; [ 'oob', 'bootstrap', 'join', 'kibitz', 'health' ].forEach(function (name) {
     Conduit.prototype[name] = cadence(function (async, request) {
         this._send(name, request, async())
     })
