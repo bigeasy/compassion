@@ -33,7 +33,7 @@ function Colleague (options) {
     properties.colleagueId = options.colleagueId
     properties.islandName = options.islandName
     this.kibitzer = new Kibitzer({
-        colleagueId: options.colleagueId,
+        kibitzerId: options.colleagueId,
         ua: options.ua,
         Date: this._Date,
         properties: properties,
@@ -132,7 +132,7 @@ Colleague.prototype._checkChaperon = cadence(function (async) {
             break
         case 'join':
             async(function () {
-                this.kibitzer.joinRedux(action.vargs[0], async())
+                this.kibitzer.join(action.vargs[0], async())
             }, function (enqueued) {
                 this.checkChaperonIn(1000 * (enqueued ? 5 : 60))
             })
