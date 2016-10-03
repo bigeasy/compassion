@@ -127,6 +127,7 @@ Colleague.prototype._checkChaperon = cadence(function (async) {
             this.checkChaperonIn(1000 * 60)
             break
         case 'bootstrap':
+            this.kibitzer.legislator.naturalized = true
             this.kibitzer.bootstrap(this.startedAt)
             this.checkChaperonIn(1000)
             break
