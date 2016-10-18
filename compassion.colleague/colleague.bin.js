@@ -94,5 +94,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         program.on('shutdown', listener.stop.bind(listener))
         listener.listening.enter(async())
         colleague.chaperon.check()
+        logger.info('started', { parameters: program.ultimate, argv: program.argv })
     })
 }))
