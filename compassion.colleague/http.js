@@ -13,6 +13,7 @@ var util = require('util')
 
 function Colleague (options) {
     this.kibitzer = null
+    this._outOfBandNumber = 0
     this._chaperon = options.chaperon
     this._requests = new Reactor({ object: this, method: '_request' })
     this.chaperon = new Reactor({ object: this, method: '_checkChaperon' })
@@ -39,9 +40,10 @@ function Colleague (options) {
         properties: properties,
         timeout: options.timeout,
         ping: options.ping,
-        timerless: options.timerless
+        timerless: options.timerless,
+        replaying: options.replaying
     })
-    /* TODO this.kibitzer.legislator.naturalized = bootstrap */
+    this.replaying = options.replaying
 }
 
 Colleague.prototype._setConsumer =  function (consumer, properties) {
@@ -58,7 +60,7 @@ Colleague.prototype.shutdown = function () {
 }
 
 Colleague.prototype.replay = function (entry) {
-    this._recording = []
+    this.kibitzer.replay()
 }
 
 // TODO Break this up somehow, really crufty.
@@ -91,7 +93,7 @@ Colleague.prototype.play = cadence(function (async, entry, machine) {
     } else if (this.kibitzer != null) {
         this.kibitzer.play(entry)
     }
-    machine.replay(entry, async())
+    machine.replay(entry)
 })
 
 // Query a helper process that will look at the events in the meta. This is
@@ -173,6 +175,7 @@ Colleague.prototype.publish = cadence(function (async, entry) {
 })
 
 Colleague.prototype.oob = cadence(function (async, body) {
+    logger.trace('oob', { body: body })
     this._consumer.oob(body.name, body.post, async())
 })
 
@@ -190,24 +193,35 @@ Colleague.prototype.oob = cadence(function (async, body) {
 // crash, we're not going to crash if leadership changes, only if the leader at
 // the time of immigration has gone away or is unable to respond.
 Colleague.prototype.outOfBand = cadence(function (async, name, post) {
+    var outOfBandNumber = this._outOfBandNumber++
+    logger.trace('outOfBandCall', {
+        message: {
+            name: name, post: post, invocation: outOfBandNumber
+        }
+   })
     var leaderId = this.kibitzer.legislator.government.majority[0]
     var properties = this.kibitzer.legislator.properties[leaderId]
     var url = util.format('http://%s/oob', properties.location)
-    this._ua._ua.fetch({
-        url: url,
-        post: {
-            islandName: this.islandName,
-            islandId: this.islandId,
-            colleagueId: leaderId,
-            name: name,
-            post: post
-        },
-        raise: true
-    }, async())
+    async(function () {
+        this._ua._ua.fetch({
+            url: url,
+            post: {
+                islandName: this.islandName,
+                islandId: this.islandId,
+                colleagueId: leaderId,
+                name: name,
+                post: post
+            },
+            raise: true
+        }, async())
+    }, function (result) {
+        logger.trace('outOfBandReturn', { invocation: outOfBandNumber, result: result })
+        return [ result ]
+    })
 })
 
 Colleague.prototype.naturalized = function () {
-    this.kibitzer.legislator.naturalized = true
+    this.kibitzer.legislator.naturalize()
 }
 
 Colleague.prototype.health = cadence(function (async) {
