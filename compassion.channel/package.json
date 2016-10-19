@@ -25,6 +25,7 @@
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.4.x",
                             "delta":                        "1.1.x",
+                            "departure":                    "0.0.1",
                             "prolific.logger":              "2.0.x",
                             "prolific.shuttle":             "7.0.x",
                             "staccato":                     "1.1.x"
