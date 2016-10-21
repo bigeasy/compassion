@@ -59,8 +59,17 @@ Colleague.prototype.shutdown = function () {
     this.kibitzer.shutdown()
 }
 
+Colleague.prototype.record = function (name, message) {
+    logger.info('record', { recording: { name: name, message: message } })
+    this._consumer.replay(name, message)
+}
+
 Colleague.prototype.replay = function (entry) {
-    this.kibitzer.replay()
+    if (entry.qualified == 'compassion.colleague#record') {
+        this._consumer.replay(entry.recording.name, entry.recording.message)
+    } else {
+        this.kibitzer.replay()
+    }
 }
 
 // TODO Break this up somehow, really crufty.
