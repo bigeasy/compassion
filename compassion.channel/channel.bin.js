@@ -60,7 +60,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var staccato = new Staccato(byline(stream))
 
     async(function () {
-        started(staccato, program.ultimate.island, program.ultimate.id, async())
+        started(staccato, async())
     }, function (entry) {
         console.log(entry)
         var argv = program.argv.slice()

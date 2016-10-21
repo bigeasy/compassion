@@ -1,4 +1,4 @@
-module.exports = require('cadence')(function (async, staccato, island, id) {
+module.exports = require('cadence')(function (async, staccato) {
     var loop = async(function () {
         staccato.read(async())
     }, function (line) {

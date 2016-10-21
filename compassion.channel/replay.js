@@ -18,6 +18,9 @@ module.exports = cadence(function (async, staccato, colleague, machine, messages
         switch (entry.qualifier) {
         case 'compassion.colleague':
             switch (entry.name) {
+            case 'record':
+                machine.replay(entry.recording.name, entry.recording.message)
+                break
             case 'outOfBandCall':
                 departure.raise((messages.shift() || {}).message, entry.message)
                 break
