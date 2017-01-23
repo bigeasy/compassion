@@ -24,11 +24,11 @@
                             "arguable":                     "5.0.x",
                             "cadence":                      "1.0.x",
                             "cliffhanger":                  "1.2.x",
+                            "conduit":                      "0.0.2",
                             "inlet":                        "2.0.x",
                             "prolific.logger":              "2.0.x",
                             "prolific.shuttle":             "7.0.x",
-                            "server-destroy":               "1.0.1",
-                            "ws":                           "1.1.1"
+                            "server-destroy":               "1.0.1"
     },
     "devDependencies":
     {
