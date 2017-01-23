@@ -34,7 +34,7 @@
                             "prolific.logger":              "2.0.x",
                             "prolific.shuttle":             "7.0.x",
                             "reactor":                      "2.2.x",
-                            "vestibule":                    "1.3.x",
+                            "vestibule":                    "1.6.x",
                             "vizsla":                       "2.0.x",
                             "ws":                           "1.1.1"
     },
