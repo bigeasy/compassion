@@ -28,7 +28,7 @@
                             "cliffhanger":                  "1.2.x",
                             "delta":                        "1.1.x",
                             "inlet":                        "2.0.x",
-                            "kibitz":                       "0.3.x",
+                            "kibitz":                       "0.5.x",
                             "magazine":                     "1.0.x",
                             "operation":                    "1.2.x",
                             "prolific.logger":              "2.0.x",

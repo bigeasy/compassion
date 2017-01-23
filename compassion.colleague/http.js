@@ -34,8 +34,7 @@ function Colleague (options) {
     properties.colleagueId = options.colleagueId
     properties.islandName = options.islandName
     this.kibitzer = new Kibitzer({
-        kibitzerId: options.colleagueId,
-        ua: options.ua,
+        id: options.colleagueId,
         Date: this._Date,
         properties: properties,
         timeout: options.timeout,
