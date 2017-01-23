@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "arguable":                     "4.0.x",
+                            "arguable":                     "5.0.x",
                             "cadence":                      "1.0.x",
                             "cliffhanger":                  "1.2.x",
                             "inlet":                        "2.0.x",
