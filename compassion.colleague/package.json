@@ -33,7 +33,7 @@
                             "operation":                    "1.2.x",
                             "prolific.logger":              "2.0.x",
                             "prolific.shuttle":             "7.0.x",
-                            "reactor":                      "2.2.x",
+                            "reactor":                      "2.4.x",
                             "vestibule":                    "1.6.x",
                             "vizsla":                       "2.0.x",
                             "ws":                           "1.1.1"
