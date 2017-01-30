@@ -5,7 +5,6 @@ var url = require('url')
 var abend = require('abend')
 var Scheduler = require('happenstance')
 var Reactor = require('reactor')
-var WebSocket = require('ws')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 var assert = require('assert')
 var events = require('events')
@@ -30,6 +29,16 @@ function Colleague (options) {
     this._Date = options.Date || Date
     this.scheduler = new Scheduler({ Date: this._Date })
     var properties = options.properties || {}
+
+    var dispatcher = new Dispatcher(this)
+    dispatcher.dispatch('GET /', 'index')
+    dispatcher.dispatch('GET /health', 'health')
+    dispatcher.dispatch('POST /kibitz', 'kibitz')
+    dispatcher.dispatch('POST /join', 'join')
+    dispatcher.dispatch('POST /bootstrap', 'bootstrap')
+    dispatcher.dispatch('POST /shutdown', 'shutdown')
+    this.dispatcher = dispatcher
+
     properties.location = options.conduit
     properties.colleagueId = options.colleagueId
     properties.islandName = options.islandName
@@ -103,67 +112,6 @@ Colleague.prototype.play = cadence(function (async, entry, machine) {
     }
     machine.replay(entry)
 })
-
-// Query a helper process that will look at the events in the meta. This is
-// bootstrappy and not meant to be a replacement for Paxos, but we've got to
-// start somewhere. This is not a part of the upstream libraries because this
-// strategy for bootstrapping is specific to Chaperon.
-Colleague.prototype._checkChaperon = cadence(function (async) {
-    async(function () {
-        this._ua._ua.fetch({ // TODO `_ua._ua` is horrible.
-            url: this._chaperon
-        }, {
-            url: '/action',
-            post: {
-                colleagueId: this.colleagueId,
-                islandName: this.islandName,
-                islandId: this.kibitzer.legislator.islandId,
-                startedAt: this.startedAt
-            },
-            nullify: true
-        }, async())
-    }, function (action) {
-        console.log('>', action)
-        if (action == null) {
-            this.checkChaperonIn(1000)
-            return
-        }
-        switch (action.name) {
-        case 'unstable':
-        case 'unreachable':
-            this.checkChaperonIn(1000)
-            break
-        case 'recoverable':
-            this.checkChaperonIn(1000 * 60)
-            break
-        case 'bootstrap':
-            this.kibitzer.legislator.naturalized = true
-            this.kibitzer.bootstrap(this.startedAt)
-            this.checkChaperonIn(1000)
-            break
-        case 'join':
-            async(function () {
-                this.kibitzer.join(action.vargs[0], async())
-            }, function (enqueued) {
-                this.checkChaperonIn(1000 * (enqueued ? 5 : 60))
-            })
-            break
-        case 'splitBrain':
-        case 'unrecoverable':
-            this.kibizter.shutdown()
-            break
-        }
-    })
-})
-
-Colleague.prototype.checkChaperonIn = function (delay) {
-    delay += this._Date.now()
-    this.scheduler.schedule(delay, 'checkChaperon', { object: this, method: '_annoyingFixMe' })
-}
-
-Colleague.prototype._annoyingFixMe = function () {
-    this.chaperon.check()
-}
 
 Colleague.prototype.kibitz = cadence(function (async, request) {
     if (this.kibitzer == null) {

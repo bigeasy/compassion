@@ -60,8 +60,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         return require(argv.shift())
     }, /^code:MODULE_NOT_FOUND$/, 'cannot find module')
 
-    var UserAgent = require('./ua')
-    var Vizsla = require('vizsla')
+    var UserAgent = require('vizsla')
 
     var colleague = new Colleague({
         islandName: program.ultimate.island,
@@ -69,9 +68,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         timeout: +(program.ultimate.timeout || 60000),
         ping: +(program.ultimate.ping || 10000),
         chaperon: 'http://' + program.ultimate.chaperon,
-        conduit: program.ultimate.conduit,
-// TODO Simplify.
-        ua: new UserAgent(new Vizsla)
+        conduit: program.ultimate.conduit
     })
     program.on('shutdown', colleague.shutdown.bind(colleague))
     program.on('shutdown', shuttle.close.bind(shuttle))
@@ -96,4 +93,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         colleague.chaperon.check()
         logger.info('started', { parameters: program.ultimate, argv: program.argv })
     })
+    var chaperon = new Chaperon
+    chaperon.poll
+    var middleware = colleague.createWrappedDispatcher()
+    var resolved = url.resolve(program.ultimate.conduit, '/' + program.ultimate.id)
+    Envoy.connect(resolved, middleware, program.shutdown.bind(shutdown))
 }))

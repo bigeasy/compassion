@@ -26,6 +26,7 @@
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "cliffhanger":                  "1.2.x",
+                            "conduit":                      "0.0.2",
                             "delta":                        "1.1.x",
                             "inlet":                        "2.0.x",
                             "kibitz":                       "0.5.x",
@@ -35,8 +36,7 @@
                             "prolific.shuttle":             "7.0.x",
                             "reactor":                      "2.4.x",
                             "vestibule":                    "1.6.x",
-                            "vizsla":                       "2.0.x",
-                            "ws":                           "1.1.1"
+                            "vizsla":                       "2.0.x"
     },
     "devDependencies":
     {
