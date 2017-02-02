@@ -23,18 +23,14 @@
                             "abend":                        "1.0.x",
                             "arguable":                     "5.0.x",
                             "cadence":                      "1.0.x",
-                            "cliffhanger":                  "1.2.x",
-                            "conduit":                      "0.0.2",
-                            "inlet":                        "2.0.x",
+                            "connect":                      "3.5.0",
+                            "nascent.rendezvous":           "0.0.2",
                             "prolific.logger":              "2.0.x",
-                            "prolific.shuttle":             "7.0.x",
-                            "server-destroy":               "1.0.1"
+                            "prolific.shuttle":             "7.0.x"
     },
     "devDependencies":
     {
-                            "delta":                        "1.1.x",
-                            "proof":                        "1.2.x",
-                            "vizsla":                       "2.0.x"
+                            "proof":                        "1.2.x"
     },
     "main":                 "conduit.bin",
     "bin":
