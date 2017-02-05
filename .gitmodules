@@ -1,6 +1,7 @@
 [submodule "docs"]
 	path = docs
 	url = https://github.com/bigeasy/compassion.git
+	branch = gh-pages
 [submodule "compassion.colleague/docs"]
 	path = compassion.colleague/docs
 	url = https://github.com/bigeasy/compassion.git
