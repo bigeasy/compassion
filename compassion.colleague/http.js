@@ -54,6 +54,10 @@ function Colleague (options) {
     this.replaying = options.replaying
 }
 
+Colleague.prototype.index = cadence(function (async) {
+    return 'Compassion Colleague API\n'
+})
+
 Colleague.prototype._setConsumer =  function (consumer, properties) {
     this._consumer = consumer
     for (var propertyName in properties) {
@@ -185,9 +189,9 @@ Colleague.prototype.health = cadence(function (async) {
         startedAt: this.startedAt,
         requests: this._requests.turnstile.health,
         islandName: this.islandName,
-        colleagueId: this.colleagueId,
-        islandId: this.kibitzer.legislator.islandId,
-        government: this.kibitzer.legislator.government
+        colleagueId: this.kibitzer.paxos.id,
+        islandId: this.kibitzer.paxos.islandId,
+        government: this.kibitzer.paxos.government
     }
 })
 

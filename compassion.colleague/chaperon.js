@@ -1,10 +1,10 @@
 var cadence = require('cadence')
 
 // A Chaperon client.
-function Chaperon () {
+function Chaperon (kibitzer) {
+    this._kibitzer = kibitzer
     this._chaperon = options.chaperon
-    this._kibitzer = options.kibitzer
-    this._colleageId = options.colleagueId
+    this._id = options.id
     this._islandName = options.islandName
     this._startedAt = options.startedAt
 }

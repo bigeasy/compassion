@@ -36,24 +36,47 @@
 
  */
 require('arguable')(module, require('cadence')(function (async, program) {
-    var http = require('http')
+    program.helpIf(program.ultimate.help)
+    program.required('conduit')
+    // TODO Assert that these are integers.
+    program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
-    var children = require('child_process')
+    var logger = require('prolific.logger').createLogger('compassion.colleague')
+
     var Shuttle = require('prolific.shuttle')
+
+    var Envoy = require('nascent.rendezvous/envoy')
+
+    var Transformer = require('./transformer')
+
+    var shuttle = Shuttle.shuttle(program, logger)
+
+    program.on('shutdown', shuttle.close.bind(shuttle))
+
+    logger.info('started', { parameters: program.utlimate, argv: program.argv })
+
+    // program.on('shutdown', colleague.shutdown.bind(colleague))
+
+    var transformer = new Transformer({
+        islandName: program.ultimate.islandName,
+        id: program.ultimate.id
+    })
+
+    var envoy = new Envoy(transformer.dispatcher.createWrappedDispatcher())
+
+    program.on('shutdown', envoy.close.bind(envoy))
+
+    async(function () {
+        envoy.connect(program.ultimate.conduit + '/' + program.ultimate.id, async())
+    })
+
+    return
+    var children = require('child_process')
     var abend = require('abend')
     var Listener = require('./listener')
 
     var Colleague = require('./http.js')
 
-    var logger = require('prolific.logger').createLogger('compassion.colleague')
-
-    var shuttle = Shuttle.shuttle(program, logger)
-
-    program.helpIf(program.ultimate.help)
-    program.required('conduit')
-
-// TODO Assert that these are integers.
-    program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
     var argv = program.argv.slice()
     var delegate = program.attempt(function () {
