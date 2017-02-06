@@ -5,3 +5,9 @@
 [submodule "compassion.colleague/docs"]
 	path = compassion.colleague/docs
 	url = https://github.com/bigeasy/compassion.git
+[submodule "compassion.root/docs"]
+	path = compassion.root/docs
+	url = https://github.com/bigeasy/compassion.git
+[submodule "compassion.conduit/docs"]
+	path = compassion.conduit/docs
+	url = https://github.com/bigeasy/compassion.git
