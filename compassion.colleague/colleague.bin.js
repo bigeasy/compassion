@@ -47,9 +47,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Envoy = require('nascent.rendezvous/envoy')
 
-    var Transformer = require('./transformer')
+    var Middleware = require('./middleware')
 
     var shuttle = Shuttle.shuttle(program, logger)
+
+    var url = require('url')
 
     program.on('shutdown', shuttle.close.bind(shuttle))
 
@@ -57,68 +59,20 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
 
-    var transformer = new Transformer({
+    var middleware = new Middleware({
         islandName: program.ultimate.islandName,
         id: program.ultimate.id
     })
 
-    var envoy = new Envoy(transformer.dispatcher.createWrappedDispatcher())
+    var envoy = new Envoy(middleware.dispatcher.createWrappedDispatcher())
 
     program.on('shutdown', envoy.close.bind(envoy))
 
+    var location = program.ultimate.conduit
+    location = url.resolve(location + '/', program.ultimate.island)
+    location = url.resolve(location + '/',  program.ultimate.id)
+
     async(function () {
-        envoy.connect(program.ultimate.conduit + '/' + program.ultimate.id, async())
+        envoy.connect(location, async())
     })
-
-    return
-    var children = require('child_process')
-    var abend = require('abend')
-    var Listener = require('./listener')
-
-    var Colleague = require('./http.js')
-
-
-    var argv = program.argv.slice()
-    var delegate = program.attempt(function () {
-        return require(argv.shift())
-    }, /^code:MODULE_NOT_FOUND$/, 'cannot find module')
-
-    var UserAgent = require('vizsla')
-
-    var colleague = new Colleague({
-        islandName: program.ultimate.island,
-        colleagueId: program.ultimate.id,
-        timeout: +(program.ultimate.timeout || 60000),
-        ping: +(program.ultimate.ping || 10000),
-        chaperon: 'http://' + program.ultimate.chaperon,
-        conduit: program.ultimate.conduit
-    })
-    program.on('shutdown', colleague.shutdown.bind(colleague))
-    program.on('shutdown', shuttle.close.bind(shuttle))
-    async(function () {
-        delegate(argv, program, async())
-    }, function (constructor) {
-    // TODO Okay, obviously then, if you really want to break things up, instead
-    // of colleague, you just have a publisher, or the colleague exposes only a
-    // publish interface, and that gets plugged in later, or you send an event
-    // emitter, or something, because publish is synchronous, fire and forget.
-    //
-    // Ah, so you return an event emitter, or pass one in? Meh. Let's hide the
-    // colleague itself from a Conference user. We can assign details to the
-    // Conference object.
-        constructor(colleague, false, async())
-    }, function (consumer, properties) {
-        colleague._setConsumer(consumer, properties)
-        var listener = new Listener(colleague, consumer)
-        listener.listen(program.ultimate.conduit, abend)
-        program.on('shutdown', listener.stop.bind(listener))
-        listener.listening.enter(async())
-        colleague.chaperon.check()
-        logger.info('started', { parameters: program.ultimate, argv: program.argv })
-    })
-    var chaperon = new Chaperon
-    chaperon.poll
-    var middleware = colleague.createWrappedDispatcher()
-    var resolved = url.resolve(program.ultimate.conduit, '/' + program.ultimate.id)
-    Envoy.connect(resolved, middleware, program.shutdown.bind(shutdown))
 }))
