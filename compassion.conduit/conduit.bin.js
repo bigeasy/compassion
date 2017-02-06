@@ -46,7 +46,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var connect = require('connect')
     var app = require('connect')()
-        .use(new Conduit().dispatcher.createWrappedDispatcher())
+        .use(new Conduit(rendezvous).dispatcher.createWrappedDispatcher())
         .use(rendezvous.middleware.bind(rendezvous))
 
     var server = http.createServer(app)
