@@ -1,3 +1,5 @@
+/.wiseguy
+/docs
 /node_modules/*
 /*/node_modules/*
 !/compassion.channel/node_modules/example.js
