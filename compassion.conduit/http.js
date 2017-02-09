@@ -16,7 +16,7 @@ Conduit.prototype.index = cadence(function (async) {
 Conduit.prototype.health = cadence(function (async) {
     return {
         health: this.dispatcher.turnstile.health,
-        paths: this._rendezvous._paths
+        paths: this._rendezvous.paths
     }
 })
 

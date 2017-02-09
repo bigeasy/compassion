@@ -32,7 +32,7 @@
                             "kibitz":                       "0.5.x",
                             "magazine":                     "1.0.x",
                             "nascent.coalesce":             "0.0.0",
-                            "nascent.rendezvous":           "0.0.6",
+                            "nascent.rendezvous":           "0.0.8",
                             "operation":                    "1.2.x",
                             "prolific.logger":              "2.0.x",
                             "prolific.shuttle":             "7.0.x",
