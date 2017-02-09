@@ -1,6 +1,3 @@
 [submodule "vendor/lesshat"]
 	path = vendor/lesshat
 	url = https://github.com/madebysource/lesshat.git
-[submodule "colleague"]
-	path = colleague
-	url = https://github.com/bigeasy/compassion.git

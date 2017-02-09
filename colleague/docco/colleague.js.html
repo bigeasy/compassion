@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>colleague.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="chaperon.js.html">
+                  chaperon.js
+                </a>
+
+
+                <a class="source" href="colleague.bin.js.html">
+                  colleague.bin.js
+                </a>
+
+
+                <a class="source" href="colleague.js.html">
+                  colleague.js
+                </a>
+
+
+                <a class="source" href="http.js.html">
+                  http.js
+                </a>
+
+
+                <a class="source" href="ipc.js.html">
+                  ipc.js
+                </a>
+
+
+                <a class="source" href="listener.js.html">
+                  listener.js
+                </a>
+
+
+                <a class="source" href="middleware.js.html">
+                  middleware.js
+                </a>
+
+
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
+                <a class="source" href="ua.js.html">
+                  ua.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>colleague.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> delta = <span class="hljs-built_in">require</span>(<span class="hljs-string">'delta'</span>)
+<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> destructor = <span class="hljs-built_in">require</span>(<span class="hljs-string">'nascent.destructor'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Dispatcher</span> (<span class="hljs-params">colleague</span>) </span>{
+    <span class="hljs-keyword">this</span>._colleague = colleague
+}
+
+Dispatcher.prototype.fromBasin = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, envelope</span>) </span>{
+    <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    })
+})
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Colleague</span> (<span class="hljs-params">kibitzer</span>) </span>{
+    <span class="hljs-keyword">this</span>.basin = <span class="hljs-keyword">new</span> Basin(<span class="hljs-keyword">new</span> Dispatcher(<span class="hljs-keyword">this</span>))
+    <span class="hljs-keyword">this</span>._kibitzer = kibizter
+}
+
+Colleague.prototype.listen = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
+    <span class="hljs-keyword">this</span>._destructor.destructed.wait(<span class="hljs-keyword">async</span>())
+    <span class="hljs-keyword">var</span> env = <span class="hljs-built_in">JSON</span>.parse(<span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-keyword">this</span>._env))
+    env.COMPASSION_COLLEAGUE_FD = <span class="hljs-string">'3'</span>
+    <span class="hljs-keyword">var</span> child = children.spawn(<span class="hljs-keyword">this</span>._command, <span class="hljs-keyword">this</span>._argv, {
+        <span class="hljs-attr">stdio</span>: [ <span class="hljs-string">'inherit'</span>, <span class="hljs-string">'inherit'</span>, <span class="hljs-string">'inherit'</span>, <span class="hljs-string">'pipe'</span> ],
+        <span class="hljs-attr">env</span>: env
+    })
+    <span class="hljs-keyword">var</span> multiplexer = <span class="hljs-keyword">new</span> Multiplexer(input, output, { <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_connect'</span> })
+    <span class="hljs-keyword">this</span>._destructor.addJanitor(<span class="hljs-string">'multiplexer'</span>, multiplexer.close.bind(multiplexer))
+    delta(<span class="hljs-keyword">this</span>._destructor.callback()).ee(child).on(<span class="hljs-string">'exit'</span>)
+    multiplexer.listen(<span class="hljs-keyword">this</span>._destructor.callback())
+})
+
+Colleague.prototype._connect = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, socket</span>) </span>{
+    socket.spigot.emptyInto(<span class="hljs-keyword">new</span> Basin(<span class="hljs-keyword">new</span> Dispatcher(<span class="hljs-keyword">this</span>)))
+})</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>

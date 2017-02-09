@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>ipc.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="chaperon.js.html">
+                  chaperon.js
+                </a>
+
+
+                <a class="source" href="colleague.bin.js.html">
+                  colleague.bin.js
+                </a>
+
+
+                <a class="source" href="colleague.js.html">
+                  colleague.js
+                </a>
+
+
+                <a class="source" href="http.js.html">
+                  http.js
+                </a>
+
+
+                <a class="source" href="ipc.js.html">
+                  ipc.js
+                </a>
+
+
+                <a class="source" href="listener.js.html">
+                  listener.js
+                </a>
+
+
+                <a class="source" href="middleware.js.html">
+                  middleware.js
+                </a>
+
+
+                <a class="source" href="network.js.html">
+                  network.js
+                </a>
+
+
+                <a class="source" href="ua.js.html">
+                  ua.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>ipc.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Reactor = <span class="hljs-built_in">require</span>(<span class="hljs-string">'reactor'</span>)
+<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> Vestibule = <span class="hljs-built_in">require</span>(<span class="hljs-string">'vestibule'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Delegate</span> (<span class="hljs-params">colleague, child</span>) </span>{
+    <span class="hljs-keyword">this</span>._colleague = colleague
+    <span class="hljs-keyword">this</span>._colleague.messages.on(<span class="hljs-string">'message'</span>, <span class="hljs-keyword">this</span>.colleagueMessage.bind(<span class="hljs-keyword">this</span>))
+    <span class="hljs-keyword">this</span>._messages = <span class="hljs-keyword">new</span> Reactor({ <span class="hljs-attr">object</span>: <span class="hljs-keyword">this</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">'_colleagueMessage'</span> })
+    <span class="hljs-keyword">this</span>._initializers = <span class="hljs-keyword">new</span> Vestibule
+    <span class="hljs-keyword">this</span>._initialized = <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">this</span>._child = child
+    <span class="hljs-keyword">this</span>._child.on(<span class="hljs-string">'message'</span>, <span class="hljs-keyword">this</span>.childMessage.bind(<span class="hljs-keyword">this</span>))
+}
+
+Delegate.prototype.initialize = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">callback</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._initialized) {
+        callback()
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">this</span>._initializers.enter(callback)
+    }
+}
+
+Delegate.prototype._colleagueMessage = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, timeout, message</span>) </span>{
+    <span class="hljs-keyword">this</span>._child.send(message, <span class="hljs-keyword">async</span>())
+})
+
+Delegate.prototype.colleagueMessage = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">message</span>) </span>{
+    <span class="hljs-keyword">this</span>._messages.push(message)
+}
+
+Delegate.prototype.childMessage = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">message</span>) </span>{
+    <span class="hljs-keyword">switch</span> (message.type) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'initialized'</span>:
+        <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>._initialized) {
+            <span class="hljs-keyword">this</span>._initialized = <span class="hljs-literal">true</span>
+            <span class="hljs-keyword">this</span>._initializers.notify()
+        }
+        <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'publish'</span>:
+        <span class="hljs-keyword">this</span>._colleague.publish(message.reinstatementId, message.entry)
+        <span class="hljs-keyword">break</span>
+    }
+}
+
+Delegate.prototype.stop = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>._child.kill(<span class="hljs-string">'SIGINT'</span>)
+}
+
+<span class="hljs-built_in">module</span>.exports = Delegate</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>
