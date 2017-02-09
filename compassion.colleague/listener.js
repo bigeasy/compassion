@@ -4,11 +4,11 @@ var WebSocket = require('ws')
 
 var cadence = require('cadence')
 var delta = require('delta')
-var Vestibule = require('vestibule')
+var Signal = require('signal')
 var Reactor = require('reactor')
 
 function Listener (colleague, consumer) {
-    this.listening = new Vestibule
+    this.listening = new Signal
     this._colleague = colleague
     this._consumer = consumer
     this._stopped = false
