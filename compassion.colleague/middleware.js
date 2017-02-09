@@ -11,13 +11,15 @@ var Kibitzer = require('kibitz')
 // band messages to the given Conduit `Requester`.
 
 //
-function Middleware (kibitzer, requester) {
+function Middleware (startedAt, islandName, kibitzer, requester) {
     var dispatcher = new Dispatcher(this)
     dispatcher.dispatch('GET /', 'index')
     dispatcher.dispatch('POST /oob', 'outOfBand')
     dispatcher.dispatch('POST /kibitz', 'kibitz')
     dispatcher.dispatch('GET /health', 'health')
     this.dispatcher = dispatcher
+    this._startedAt = startedAt
+    this._islandName = islandName
     this._kibitzer = kibitzer
     this._requester = requester
 }
@@ -40,7 +42,7 @@ Middleware.prototype.oob = cadence(function (async, request) {
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
-    this._kibitzer.request(request,body, async())
+    this._kibitzer.request(request.body, async())
 })
 
 // Report on the health and provide general info for bootstrap discovery.
@@ -48,12 +50,12 @@ Middleware.prototype.kibitz = cadence(function (async, request) {
 //
 Middleware.prototype.health = cadence(function (async) {
     return {
-        startedAt: this.startedAt,
-        requests: this._requests.turnstile.health,
-        islandName: this.islandName,
-        colleagueId: this.kibitzer.paxos.id,
-        islandId: this.kibitzer.paxos.islandId,
-        government: this.kibitzer.paxos.government
+        dispatcher: this.dispatcher.turnstile.health,
+        startedAt: this._startedAt,
+        islandName: this._islandName,
+        id: this._kibitzer.paxos.id,
+        islandId: this._kibitzer.paxos.islandId,
+        government: this._kibitzer.paxos.government
     }
 })
 

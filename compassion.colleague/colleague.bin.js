@@ -49,9 +49,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Middleware = require('./middleware')
 
+    var Kibitzer = require('kibitz')
+
     var shuttle = Shuttle.shuttle(program, logger)
 
     var url = require('url')
+
+    var kibitzer = new Kibitzer({ id: program.ultimate.id })
 
     program.on('shutdown', shuttle.close.bind(shuttle))
 
@@ -59,10 +63,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
 
-    var middleware = new Middleware({
-        islandName: program.ultimate.islandName,
-        id: program.ultimate.id
-    })
+    var middleware = new Middleware(Date.now(), program.ultimate.island, kibitzer)
 
     var envoy = new Envoy(middleware.dispatcher.createWrappedDispatcher())
 
@@ -72,7 +73,5 @@ require('arguable')(module, require('cadence')(function (async, program) {
     location = url.resolve(location + '/', program.ultimate.island)
     location = url.resolve(location + '/',  program.ultimate.id)
 
-    async(function () {
-        envoy.connect(location, async())
-    })
+    envoy.connect(location, async())
 }))
