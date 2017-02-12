@@ -27,7 +27,7 @@
                             "inlet":                        "2.0.x",
                             "nascent.rendezvous":           "0.0.8",
                             "prolific.logger":              "2.0.x",
-                            "prolific.shuttle":             "7.0.x"
+                            "prolific.shuttle":             "9.0.x"
     },
     "devDependencies":
     {
