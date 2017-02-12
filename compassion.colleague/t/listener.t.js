@@ -24,7 +24,7 @@ function prove (async, assert) {
         })
         async(function () {
             listener.listen('127.0.0.1:8888', { key: 'x' }, abend)
-            listener.listening.enter(async())
+            listener.listening.wait(async())
         }, function () {
             ua.fetch({
                 url: 'http://127.0.0.1:8888/kibitz',
