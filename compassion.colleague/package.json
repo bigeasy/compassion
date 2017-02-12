@@ -35,7 +35,7 @@
                             "destructible":                 "0.0.0",
                             "nascent.rendezvous":           "0.0.9",
                             "operation":                    "1.2.x",
-                            "prolific.logger":              "2.0.x",
+                            "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "7.0.x",
                             "procession":                   "0.0.31",
                             "reactor":                      "2.4.x",
