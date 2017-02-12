@@ -53,7 +53,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Colleague = require('./colleague')
     var Monitor = require('./monitor')
-    var Destructor = require('nascent.destructor')
+    var Destructor = require('destructible')
 
     var Kibitzer = require('kibitz')
 
