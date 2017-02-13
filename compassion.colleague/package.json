@@ -34,6 +34,7 @@
                             "nascent.coalesce":             "0.0.0",
                             "destructible":                 "0.0.0",
                             "nascent.rendezvous":           "0.0.10",
+                            "nascent.upgrader":             "0.0.0",
                             "operation":                    "1.2.x",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
