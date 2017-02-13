@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "arguable":                     "4.3.x",
+                            "arguable":                     "5.0.x",
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.4.x",
