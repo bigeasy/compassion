@@ -52,8 +52,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Middleware = require('./middleware')
 
     var Colleague = require('./colleague')
+    var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
     var Destructor = require('destructible')
+    var UserAgent = require('vizsla')
 
     var Kibitzer = require('kibitz')
 
@@ -73,7 +75,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.on('shutdown', destructor.destroy.bind(destructor))
     destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
 
-    var middleware = new Middleware(Date.now(), program.ultimate.island, kibitzer)
+    var startedAt = Date.now()
+    var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer)
 
     var envoy = new Envoy(middleware.dispatcher.createWrappedDispatcher())
 
@@ -85,6 +88,15 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var colleague = new Colleague
     var monitor = new Monitor
 
+    var chaperon = new Chaperon({
+        ua: new UserAgent(),
+        chaperon: program.ultimate.chaperon,
+        kibitzer: kibitzer,
+        colleague: colleague,
+        island: program.ultimate.island,
+        startedAt: startedAt
+    })
+
     destructor.destructable(function (callback) {
         destructor.addDestructor('envoy', envoy.close.bind(envoy))
         envoy.connect(location, callback)
@@ -94,7 +106,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         async(function () {
             envoy.connected.wait(async())
         }, function () {
-            console.log('here')
             destructor.destructable(cadence(function (async) {
                 destructor.destructable(cadence(function (async) {
                     destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
@@ -107,11 +118,18 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 async(function () {
                     monitor.started.wait(async())
                 }, function () {
-                    destructor.destructable(function (callback) {
-                        console.log('colleague listening')
+                    destructor.destructable(cadence(function (async) {
                         destructor.addDestructor('colleague', colleague.destroy.bind(colleague))
-                        colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], callback)
-                    }, async())
+                        colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
+                    }), async())
+                    async(function () {
+                        colleague.connected.wait(async())
+                    }, function () {
+                        destructor.destructable(cadence(function (async) {
+                            destructor.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
+                            chaperon.listen(async())
+                        }), async())
+                    })
                 })
             }), async())
         })

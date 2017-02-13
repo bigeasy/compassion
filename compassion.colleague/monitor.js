@@ -15,7 +15,7 @@ Monitor.prototype.run = cadence(function (async, program) {
     async([function () {
         var argv = program.argv.slice()
         var env = JSON.parse(JSON.stringify(program.env))
-        env.COMPASSION_COLLEAGUE_ID = 3
+        env.COMPASSION_COLLEAGUE_FD = 3
         this.child = children.spawn(argv.shift(), argv, {
             stdio: [ 'inherit', 'inherit', 'inherit', 'pipe' ],
             env: env
@@ -37,9 +37,7 @@ Monitor.prototype.run = cadence(function (async, program) {
 })
 
 Monitor.prototype.destroy = function () {
-    console.log('calling monitor destroy')
     this._destructor.destroy()
-    console.log('done calling monitor destroy')
 }
 
 module.exports = Monitor

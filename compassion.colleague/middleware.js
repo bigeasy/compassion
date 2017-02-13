@@ -1,3 +1,6 @@
+// Common utilities.
+var coalesce = require('nascent.coalesce')
+
 // Control-flow utilities.
 var cadence = require('cadence')
 
@@ -11,7 +14,7 @@ var Kibitzer = require('kibitz')
 // band messages to the given Conduit `Requester`.
 
 //
-function Middleware (startedAt, islandName, kibitzer, requester) {
+function Middleware (startedAt, island, kibitzer, requester) {
     var dispatcher = new Dispatcher(this)
     dispatcher.dispatch('GET /', 'index')
     dispatcher.dispatch('POST /oob', 'outOfBand')
@@ -19,7 +22,7 @@ function Middleware (startedAt, islandName, kibitzer, requester) {
     dispatcher.dispatch('GET /health', 'health')
     this.dispatcher = dispatcher
     this._startedAt = startedAt
-    this._islandName = islandName
+    this._island = island
     this._kibitzer = kibitzer
     this._requester = requester
 }
@@ -52,9 +55,9 @@ Middleware.prototype.health = cadence(function (async) {
     return {
         dispatcher: this.dispatcher.turnstile.health,
         startedAt: this._startedAt,
-        islandName: this._islandName,
+        island: this._island,
         id: this._kibitzer.paxos.id,
-        islandId: this._kibitzer.paxos.islandId,
+        republic: coalesce(this._kibitzer.paxos.republic),
         government: this._kibitzer.paxos.government
     }
 })
