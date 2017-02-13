@@ -1,6 +1,6 @@
 var delta = require('delta')
 var cadence = require('cadence')
-var Destructor = require('nascent.destructor')
+var Destructor = require('destructible')
 var Multiplexer = require('conduit/multiplexer')
 
 function Dispatcher (colleague) {

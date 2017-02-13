@@ -23,7 +23,7 @@
                             "abend":                        "1.0.x",
                             "arguable":                     "5.0.x",
                             "cadence":                      "1.0.x",
-                            "connect":                      "3.5.0",
+                            "connect":                      "3.5.x",
                             "inlet":                        "2.0.x",
                             "nascent.rendezvous":           "0.0.10",
                             "prolific.logger":              "3.0.x",

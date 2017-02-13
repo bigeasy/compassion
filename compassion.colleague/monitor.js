@@ -3,7 +3,7 @@ var delta = require('delta')
 var cadence = require('cadence')
 
 var Signal = require('signal')
-var Destructor = require('nascent.destructor')
+var Destructor = require('destructible')
 
 function Monitor () {
     this.started = new Signal
