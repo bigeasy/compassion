@@ -37,8 +37,9 @@ Monitor.prototype.run = cadence(function (async, program) {
 })
 
 Monitor.prototype.destroy = function () {
-    console.log('called monitor destroy')
+    console.log('calling monitor destroy')
     this._destructor.destroy()
+    console.log('done calling monitor destroy')
 }
 
 module.exports = Monitor

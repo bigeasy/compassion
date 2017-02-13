@@ -42,7 +42,9 @@ Colleague.prototype.listen = cadence(function (async, input, output) {
 })
 
 Colleague.prototype.destroy = function () {
+    console.log('calling colleague destroy')
     this._destructor.destroy()
+    console.log('called colleague destroy')
 }
 
 Colleague.prototype._connect = cadence(function (async, socket) {
