@@ -28,7 +28,7 @@
                             "departure":                    "0.0.1",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
-                            "staccato":                     "1.1.x"
+                            "staccato":                     "3.0.x"
     },
     "devDependencies":
     {
