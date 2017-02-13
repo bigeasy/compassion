@@ -26,6 +26,7 @@
                             "connect":                      "3.5.1",
                             "inlet":                        "2.0.x",
                             "nascent.rendezvous":           "0.0.11",
+                            "nascent.upgrader":             "0.0.0",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x"
     },
