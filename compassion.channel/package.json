@@ -26,7 +26,7 @@
                             "compassion.colleague":         "0.4.x",
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.1",
-                            "prolific.logger":              "2.0.x",
+                            "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "7.0.x",
                             "staccato":                     "1.1.x"
     },
