@@ -42,6 +42,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
     var abend = require('abend')
+    var coalesce = require('nascent.coalesce')
 
     var logger = require('prolific.logger').createLogger('compassion.colleague')
 
@@ -58,15 +59,25 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var UserAgent = require('vizsla')
 
     var Kibitzer = require('kibitz')
+    var Recorder = require('./recorder')
 
     var shuttle = Shuttle.shuttle(program, logger)
 
     var url = require('url')
 
-    var kibitzer = new Kibitzer({ id: program.ultimate.id })
+    var kibitzer = new Kibitzer({
+        id: program.ultimate.id,
+        ping: coalesce(program.ultimate.ping, 1000),
+        timeout: coalesce(program.ultimate.timeout, 5000)
+    })
+
+    var Timer = require('happenstance').Timer
 
     var cadence = require('cadence')
 
+    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler))
+
+    kibitzer.played.pump(new Recorder(logger))
 
     logger.info('started', { parameters: program.utlimate, argv: program.argv })
 
@@ -74,6 +85,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var destructor = new Destructor
     program.on('shutdown', destructor.destroy.bind(destructor))
     destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
+    destructor.addDestructor('kibitzer', kibitzer.shutdown.bind(kibitzer, abend))
 
     var startedAt = Date.now()
     var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer)

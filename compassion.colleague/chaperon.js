@@ -20,6 +20,7 @@ function Chaperon (options) {
     this._startedAt = options.startedAt
     this._signal = new Signal
     this._wait = null
+    this._shutdown = false
 }
 
 Chaperon.prototype.listen = cadence(function (async) {
