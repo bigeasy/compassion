@@ -51,13 +51,35 @@ require('arguable')(module, require('cadence')(function (async, program) {
     require('prolific.logger').sink.setLevel('kibitz', 'TRACE')
 
     var shuttle = Shuttle.shuttle(program, logger)
+    var Monitor = require('compassion.colleague/monitor')
 
     program.helpIf(program.ultimate.help)
 
     var stream = program.ultimate.log == null
                ? program.stdin
                : fs.createReadStream(program.ultimate.log)
-    var staccato = new Staccato(byline(stream))
+
+
+    var destructor = new Destructor
+
+    destructor.destructible(cadence(function (async) {
+        destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
+        async(function () {
+            monitor.run(program, async())
+        }, function (exitCode, signal) {
+            logger.info('exited', { exitCode: exitCode, signal: signal })
+        })
+    }), async())
+
+    destructible.destructible(cadence(function () {
+        var staccato = new Staccato.Readable(byline(stream))
+        var loop = async(function () {
+            staccato.read(async())
+        }, function (line) {
+            var json = JSON.parse(line)
+        })
+    }), async())
+
 
     async(function () {
         started(staccato, async())
