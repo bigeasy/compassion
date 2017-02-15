@@ -77,7 +77,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler))
 
-    kibitzer.played.pump(new Recorder(logger))
+    kibitzer.played.pump(new Recorder('kibitz', logger))
 
     logger.info('started', { parameters: program.utlimate, argv: program.argv })
 
@@ -109,17 +109,17 @@ require('arguable')(module, require('cadence')(function (async, program) {
         startedAt: startedAt
     })
 
-    destructor.destructable(function (callback) {
+    destructor.destructible(function (callback) {
         destructor.addDestructor('envoy', envoy.close.bind(envoy))
         envoy.connect(location, callback)
     }, async())
 
-    destructor.destructable(cadence(function (async) {
+    destructor.destructible(cadence(function (async) {
         async(function () {
             envoy.connected.wait(async())
         }, function () {
-            destructor.destructable(cadence(function (async) {
-                destructor.destructable(cadence(function (async) {
+            destructor.destructible(cadence(function (async) {
+                destructor.destructible(cadence(function (async) {
                     destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
                     async(function () {
                         monitor.run(program, async())
@@ -130,14 +130,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 async(function () {
                     monitor.started.wait(async())
                 }, function () {
-                    destructor.destructable(cadence(function (async) {
+                    destructor.destructible(cadence(function (async) {
                         destructor.addDestructor('colleague', colleague.destroy.bind(colleague))
                         colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
                     }), async())
                     async(function () {
                         colleague.connected.wait(async())
                     }, function () {
-                        destructor.destructable(cadence(function (async) {
+                        destructor.destructible(cadence(function (async) {
                             destructor.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
                             chaperon.listen(async())
                         }), async())
