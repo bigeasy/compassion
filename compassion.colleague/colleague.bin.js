@@ -79,6 +79,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler))
 
     kibitzer.played.pump(new Recorder('kibitz', logger))
+    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger))
+    kibitzer.paxos.outbox.pump(new Recorder('islander', logger))
 
     logger.info('started', { parameters: program.utlimate, argv: program.argv })
 

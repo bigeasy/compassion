@@ -26,7 +26,7 @@
                             "compassion.colleague":         "0.5.1",
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.1",
-                            "destructible":                 "0.0.1",
+                            "destructible":                 "0.0.2",
                             "kibitz":                       "0.6.5",
                             "nascent.coalesce":             "0.0.0",
                             "prolific.logger":              "3.0.x",
