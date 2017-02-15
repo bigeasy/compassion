@@ -27,7 +27,7 @@
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.1",
                             "destructible":                 "0.0.2",
-                            "kibitz":                       "0.6.5",
+                            "kibitz":                       "0.6.8",
                             "nascent.coalesce":             "0.0.0",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",

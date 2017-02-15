@@ -1,26 +1,46 @@
 var Procession = require('procession')
 var Throttle = require('procession/throttle')
 var cadence = require('cadence')
+var departure = require('departure')
 var Destructor = require('destructible')
+var interrupt = require('interrupt').createInterrupter('compassion.channel')
 
 function Merger (kibitzer, channel) {
-    this.log = new Procession
+    this._replay = this.replay = new Procession
+    this.replay = new Throttle(this._replay = new Procession, 1)
+    this.play = new Procession
     this._destructor = new Destructor
     this._kibitzer = kibitzer
     this._channel = channel
 }
 
-Merger.prototype.replay = cadence(function (async) {
-    var log = this.log.shifter()
+Merger.prototype.merge = cadence(function (async) {
+    var replay = this._replay.shifter()
+    var play = this.play.shifter()
     var loop = async(function () {
-        log.dequeue(async())
-    }, function (entry) {
-        if (entry == null) {
+        replay.dequeue(async())
+    }, function (replayed) {
+        console.log('replayed', replayed)
+        if (replayed == null) {
             return [ loop.break ]
         }
-        if (entry.$envelope.module == 'kibitz') {
-            this._kibitzer.replay(entry.$envelope, async())
+        switch (replayed.source) {
+        case 'kibitz':
+            this._kibitzer.replay(replayed.$envelope, async())
+            break
         }
+        async(function () {
+            play.dequeue(async())
+        }, function (played) {
+            console.log('played', played)
+            if (played == null) {
+                throw interrupt('mismatch', {
+                    expected: replayed,
+                    actual: played
+                })
+            }
+            departure.raise(played.$envelope, replayed.$envelope)
+        })
     })()
 })
 

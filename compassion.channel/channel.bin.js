@@ -42,6 +42,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Channel = require('./channel')
     var Merger = require('./merger')
     var Staccato = require('staccato')
+    var Recorder = require('./recorder')
     var byline = require('byline')
 
     var logger = require('prolific.logger').createLogger('compassion.channel')
@@ -51,6 +52,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Kibitzer = require('kibitz')
     var coalesce = require('nascent.coalesce')
     var Destructor = require('destructible')
+    var Terminator = require('destructible/terminator')
     var cadence = require('cadence')
 
     var channel = new Channel
@@ -71,30 +73,36 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var merger = new Merger(kibitzer, channel)
 
+    kibitzer.played.pump(new Recorder('kibitz', merger.play))
+    kibitzer.paxos.outbox.pump(new Recorder('paxos', merger.play))
+    kibitzer.paxos.outbox.pump(new Recorder('islander', merger.play))
+
     var destructor = new Destructor
+    destructor.events.pump(new Terminator(1000))
+
     program.on('shutdown', destructor.destroy.bind(destructor))
 
     destructor.addDestructor('shuttle', shuttle.close.bind(shuttle))
 
-    destructor.destructible(cadence(function (async) {
+    destructor.async(async, 'monitor')(function () {
         destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
         async(function () {
             monitor.run(program, async())
         }, function (exitCode, signal) {
             logger.info('exited', { exitCode: exitCode, signal: signal })
         })
-    }), async())
+    })
 
     async(function () {
         monitor.started.wait(async())
     }, function () {
-        destructor.destructible(cadence(function (async) {
+        destructor.async(async, 'connected')(function () {
             destructor.addDestructor('channel', channel.destroy.bind(channel))
             channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
             async(function () {
                 channel.connected.wait(async())
             }, function () {
-                destructor.destructible(cadence(function (async) {
+                destructor.async(async, 'readable')(function () {
                     var readable = new Staccato.Readable(byline(stream))
                     destructor.addDestructor('readable', readable.destroy.bind(readable))
                     var loop = async(function () {
@@ -104,11 +112,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
                             merger.log.push(null)
                             return [ loop.break ]
                         }
-                        merger.log.enqueue(JSON.parse(line), async())
+                        merger.replay.enqueue(JSON.parse(line), async())
                     })()
-                    merger.replay(async())
-                }), async())
+                })
+                destructor.async(async, 'merger')(function () {
+                    merger.merge(async())
+                })
             })
-        }), async())
+        })
     })
 }))
