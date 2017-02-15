@@ -100,6 +100,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     location = url.resolve(location + '/',  program.ultimate.id)
 
     var colleague = new Colleague
+    colleague.events.pump(new Recorder('colleague', logger))
     var monitor = new Monitor
 
     var chaperon = new Chaperon({

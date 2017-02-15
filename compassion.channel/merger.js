@@ -15,6 +15,7 @@ function Merger (kibitzer, channel) {
 }
 
 Merger.prototype.merge = cadence(function (async) {
+    var responses = this._channel.responses.shifter()
     var replay = this._replay.shifter()
     var play = this.play.shifter()
     var loop = async(function () {
@@ -23,24 +24,33 @@ Merger.prototype.merge = cadence(function (async) {
         if (replayed == null) {
             return [ loop.break ]
         }
-        console.log('replayed', replayed.$envelope)
-        switch (replayed.source) {
-        case 'kibitz':
-            this._kibitzer.replay(replayed.$envelope, async())
-            break
-        }
-        async(function () {
-            play.dequeue(async())
-        }, function (played) {
-            console.log('played', played.$envelope)
-            if (played == null) {
-                throw interrupt('mismatch', {
-                    expected: replayed,
-                    actual: played
-                })
+        if (replayed.source == 'colleague') {
+            async(function () {
+                this._channel.getProperties(async())
+            }, function (properties) {
+                var response = responses.shift()
+                console.log(response)
+                departure.raise(replayed.$envelope.body, properties)
+            })
+        } else {
+            switch (replayed.source) {
+            case 'kibitz':
+                this._kibitzer.replay(replayed.$envelope, async())
+                break
             }
-            departure.raise(played.$envelope, replayed.$envelope)
-        })
+            async(function () {
+                play.dequeue(async())
+            }, function (played) {
+                console.log('played', played.$envelope)
+                if (played == null) {
+                    throw interrupt('mismatch', {
+                        expected: replayed,
+                        actual: played
+                    })
+                }
+                departure.raise(played.$envelope, replayed.$envelope)
+            })
+        }
     })()
 })
 

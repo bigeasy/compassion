@@ -6,6 +6,7 @@ var Basin = require('conduit/basin')
 var Spigot = require('conduit/spigot')
 var Signal = require('signal')
 var Requester = require('conduit/requester')
+var Procession = require('procession')
 
 function Colleague (kibitzer) {
     this._kibitzer = kibitzer
@@ -15,6 +16,7 @@ function Colleague (kibitzer) {
     this._requester = new Requester('colleague')
     this._spigot.emptyInto(this._requester.basin)
     this.connected = new Signal
+    this.events = new Procession
 }
 
 Colleague.prototype._listen = cadence(function (async) {
@@ -51,12 +53,20 @@ Colleague.prototype.fromSpigot = cadence(function (async, envelope) {
 })
 
 Colleague.prototype.getProperties = cadence(function (async) {
-    console.log('requesting', this._requester.spigot.requests._consumers.length)
-    this._requester.request('colleague', {
-        module: 'colleague',
-        method: 'properties',
-        body: null
-    }, async())
+    async(function () {
+        this._requester.request('colleague', {
+            module: 'colleague',
+            method: 'properties',
+            body: null
+        }, async())
+    }, function (properties) {
+        this.events.push({
+            module: 'compassion.colleague',
+            method: 'properties',
+            body: properties
+        })
+        return [ properties ]
+    })
 })
 
 Colleague.prototype._connect = cadence(function (async, socket) {
