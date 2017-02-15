@@ -39,19 +39,22 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var replay = require('./replay.js')
     var started = require('./started.js')
     var fs = require('fs')
-    var Colleague = require('compassion.colleague/http')
+    var Channel = require('./channel')
+    var Merger = require('./merger')
     var Staccato = require('staccato')
     var byline = require('byline')
 
     var logger = require('prolific.logger').createLogger('compassion.channel')
 
-    require('prolific.logger').sink.setLevel('paxos', 'TRACE')
-    require('prolific.logger').sink.setLevel('compassion', 'TRACE')
-    require('prolific.logger').sink.setLevel('islander', 'TRACE')
-    require('prolific.logger').sink.setLevel('kibitz', 'TRACE')
-
     var shuttle = Shuttle.shuttle(program, logger)
     var Monitor = require('compassion.colleague/monitor')
+    var Kibitzer = require('kibitz')
+    var coalesce = require('nascent.coalesce')
+    var Destructor = require('destructible')
+    var cadence = require('cadence')
+
+    var channel = new Channel
+    var monitor = new Monitor
 
     program.helpIf(program.ultimate.help)
 
@@ -60,7 +63,18 @@ require('arguable')(module, require('cadence')(function (async, program) {
                : fs.createReadStream(program.ultimate.log)
 
 
+    var kibitzer = new Kibitzer({
+        id: program.ultimate.id,
+        ping: coalesce(program.ultimate.ping, 1000),
+        timeout: coalesce(program.ultimate.timeout, 5000)
+    })
+
+    var merger = new Merger(kibitzer, channel)
+
     var destructor = new Destructor
+    program.on('shutdown', destructor.destroy.bind(destructor))
+
+    destructor.addDestructor('shuttle', shuttle.close.bind(shuttle))
 
     destructor.destructible(cadence(function (async) {
         destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
@@ -71,70 +85,30 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })
     }), async())
 
-    destructible.destructible(cadence(function () {
-        var staccato = new Staccato.Readable(byline(stream))
-        var loop = async(function () {
-            staccato.read(async())
-        }, function (line) {
-            var json = JSON.parse(line)
-        })
-    }), async())
-
-
     async(function () {
-        started(staccato, async())
-    }, function (entry) {
-        console.log(entry)
-        var argv = program.argv.slice()
-        var delegate = program.attempt(function () {
-            var delegates = [ argv.shift(), entry.argv.shift() ]
-            return require(delegates[0] || delegates[1])
-        }, /^code:MODULE_NOT_FOUND$/, 'cannot find module')
-        var colleague = new Colleague({
-            islandName: entry.parameters.island,
-            colleagueId: entry.parameters.id,
-            timeout: entry.parameters.timeout,
-            ping: entry.parameters.ping,
-            timerless: true,
-            ua: null,
-            replaying: true
-        })
-        program.on('shutdown', shuttle.close.bind(shuttle))
-
-        var messages = [], outOfBandNumber = 0, callbacks = {}
-        async(function () {
-            delegate(entry.argv.concat(argv), program, async())
-        }, function (constructor) {
-            constructor({
-                colleagueId: colleague.colleagueId,
-                kibitzer: colleague.kibitzer,
-                replaying: true,
-                naturalized: function () {
-                    colleague.kibitzer.legislator.naturalize()
-                },
-                publish: function (message, callback) {
-                    false && messages.push({
-                        type: 'publish',
-                        message: JSON.parse(JSON.stringify(message))
-                    })
-                    callback()
-                },
-                outOfBand: function (name, post, callback) {
-                    var invocation = outOfBandNumber++
-                    messages.push({
-                        type: 'outOfBand',
-                        message: {
-                            name: name,
-                            post: JSON.parse(JSON.stringify(post)),
-                            invocation: invocation
+        monitor.started.wait(async())
+    }, function () {
+        destructor.destructible(cadence(function (async) {
+            destructor.addDestructor('channel', channel.destroy.bind(channel))
+            channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
+            async(function () {
+                channel.connected.wait(async())
+            }, function () {
+                destructor.destructible(cadence(function (async) {
+                    var readable = new Staccato.Readable(byline(stream))
+                    destructor.addDestructor('readable', readable.destroy.bind(readable))
+                    var loop = async(function () {
+                        readable.read(async())
+                    }, function (line) {
+                        if (line == null) {
+                            merger.log.push(null)
+                            return [ loop.break ]
                         }
-                    })
-                    callbacks[invocation] = callback
-                }
-            }, true, async())
-        }, function (consumer, properties) {
-            colleague._setConsumer(consumer, properties)
-            replay(staccato, colleague, consumer, messages, callbacks, async())
-        })
+                        merger.log.enqueue(JSON.parse(line), async())
+                    })()
+                    merger.replay(async())
+                }), async())
+            })
+        }), async())
     })
 }))
