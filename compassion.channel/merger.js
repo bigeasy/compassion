@@ -20,10 +20,10 @@ Merger.prototype.merge = cadence(function (async) {
     var loop = async(function () {
         replay.dequeue(async())
     }, function (replayed) {
-        console.log('replayed', replayed)
         if (replayed == null) {
             return [ loop.break ]
         }
+        console.log('replayed', replayed.$envelope)
         switch (replayed.source) {
         case 'kibitz':
             this._kibitzer.replay(replayed.$envelope, async())
@@ -32,7 +32,7 @@ Merger.prototype.merge = cadence(function (async) {
         async(function () {
             play.dequeue(async())
         }, function (played) {
-            console.log('played', played)
+            console.log('played', played.$envelope)
             if (played == null) {
                 throw interrupt('mismatch', {
                     expected: replayed,

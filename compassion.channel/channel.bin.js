@@ -75,7 +75,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     kibitzer.played.pump(new Recorder('kibitz', merger.play))
     kibitzer.paxos.outbox.pump(new Recorder('paxos', merger.play))
-    kibitzer.paxos.outbox.pump(new Recorder('islander', merger.play))
+    kibitzer.islander.outbox.pump(new Recorder('islander', merger.play))
 
     var destructor = new Destructor
     destructor.events.pump(new Terminator(1000))
@@ -108,11 +108,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
                     var loop = async(function () {
                         readable.read(async())
                     }, function (line) {
-                        if (line == null) {
-                            merger.log.push(null)
-                            return [ loop.break ]
-                        }
-                        merger.replay.enqueue(JSON.parse(line), async())
+                        async(function () {
+                            merger.replay.enqueue(line && JSON.parse(line), async())
+                        }, function () {
+                            if (line == null) {
+                                return [ loop.break ]
+                            }
+                        })
                     })()
                 })
                 destructor.async(async, 'merger')(function () {
