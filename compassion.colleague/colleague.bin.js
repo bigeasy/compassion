@@ -80,7 +80,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     kibitzer.played.pump(new Recorder('kibitz', logger))
     kibitzer.paxos.outbox.pump(new Recorder('paxos', logger))
-    kibitzer.paxos.outbox.pump(new Recorder('islander', logger))
+    kibitzer.islander.outbox.pump(new Recorder('islander', logger))
 
     logger.info('started', { parameters: program.utlimate, argv: program.argv })
 
@@ -89,7 +89,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     destructor.events.pump(new Terminator(1000))
     program.on('shutdown', destructor.destroy.bind(destructor))
     destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
-    destructor.addDestructor('kibitzer', kibitzer.shutdown.bind(kibitzer, abend))
 
     var startedAt = Date.now()
     var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer)
@@ -110,6 +109,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
         colleague: colleague,
         island: program.ultimate.island,
         startedAt: startedAt
+    })
+
+    destructor.async(async, 'kibitzer')(function () {
+        destructor.addDestructor('kibitzer', kibitzer.destroy.bind(kibitzer))
+        kibitzer.listen(async())
     })
 
     destructor.async(async, 'envoy')(function () {
