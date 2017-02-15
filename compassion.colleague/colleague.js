@@ -33,7 +33,7 @@ Colleague.prototype._listen = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.destructable(cadence(function (async) {
+    this._destructor.destructible(cadence(function (async) {
         this._multiplexer = new Multiplexer(input, output, { object: this, method: '_connect' })
         this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
         this._multiplexer.listen(async())
