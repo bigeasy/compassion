@@ -21,11 +21,7 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
-    this._colleague.chatter.push({
-        module: 'compassion.colleague',
-        method: 'request',
-        body: envelope
-    })
+    this._colleague.chatter.push(envelope)
     switch (envelope.method) {
     case 'boundary':
     case 'record':
@@ -59,16 +55,23 @@ Conference.prototype.fromSpigot = cadence(function (async, envelope) {
 
 function Colleague (kibitzer) {
     this._kibitzer = kibitzer
+
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
+
     this._spigot = new Spigot(new Conference(this))
     this._requester = new Requester('colleague')
     this._spigot.emptyInto(this._requester.basin)
+
     this._basin = new Basin(new Conference(this))
+
     this.connected = new Signal
+
     this.chatter = new Procession
     this.responses = new Procession
+
     this.responses.pump({ object: this, method: '_response' })
+
     this.demolition = this._destructor.events
 }
 
