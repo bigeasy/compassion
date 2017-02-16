@@ -38,7 +38,6 @@ Channel.prototype.destroy = function () {
 }
 
 Channel.prototype._connect = cadence(function (async, socket) {
-    console.log('--- _connect ---')
     socket.spigot.emptyInto(this._requester.basin)
     this._requester.spigot.emptyInto(socket.basin)
     this.connected.notify()
