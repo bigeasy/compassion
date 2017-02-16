@@ -55,9 +55,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Terminator = require('destructible/terminator')
     var cadence = require('cadence')
 
-    var channel = new Channel
-    var monitor = new Monitor
-
     program.helpIf(program.ultimate.help)
 
     var stream = program.ultimate.log == null
@@ -70,6 +67,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ping: coalesce(program.ultimate.ping, 1000),
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
+
+    var channel = new Channel(kibitzer)
+    var monitor = new Monitor
 
     var merger = new Merger(kibitzer, channel)
 
