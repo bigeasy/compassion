@@ -38,7 +38,7 @@
                             "operation":                    "1.2.x",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
-                            "procession":                   "0.0.32",
+                            "procession":                   "0.1.x",
                             "reactor":                      "2.4.x",
                             "signal":                       "1.8.x",
                             "vizsla":                       "2.0.x"
