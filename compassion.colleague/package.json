@@ -32,7 +32,7 @@
                             "kibitz":                       "0.6.10",
                             "magazine":                     "3.0.x",
                             "nascent.coalesce":             "0.0.0",
-                            "destructible":                 "0.0.2",
+                            "destructible":                 "0.1.x",
                             "nascent.rendezvous":           "0.0.16",
                             "nascent.upgrader":             "0.0.0",
                             "operation":                    "1.2.x",
