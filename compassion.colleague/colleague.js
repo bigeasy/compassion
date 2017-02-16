@@ -27,13 +27,9 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
         body: envelope
     })
     switch (envelope.method) {
-    case 'entry':
+    case 'boundary':
     case 'record':
-    case 'play':
         // For these cases, it was enough to record them.
-        break
-    case 'publish':
-        this._kibitzer.publish(envelope.entry)
         break
     case 'request':
         this._kibitzer.publish({
@@ -49,9 +45,9 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
     case 'naturalized':
         this._kibitzer.naturalize()
         break
-    case 'response':
-        var cartridge = this._requests.hold(envelope.body.cookie, null)
-
+    case 'broadcast':
+    case 'reduce':
+        this._colleague._kibitzer.publish(envelope)
         break
     }
 })

@@ -57,10 +57,12 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Monitor = require('./monitor')
     var Destructor = require('destructible')
     var Terminator = require('destructible/terminator')
-    var UserAgent = require('vizsla')
+    var Vizsla = require('vizsla')
+    var UserAgent = require('./ua')
 
     var Kibitzer = require('kibitz')
     var Recorder = require('./recorder')
+    var Responder = require('conduit/responder')
 
     var shuttle = Shuttle.shuttle(program, logger)
 
@@ -71,6 +73,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ping: coalesce(program.ultimate.ping, 1000),
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
+
+    var responder = new Responder(new UserAgent(new Vizsla, kibitzer), 'kibitz')
+
+    kibitzer.spigot.emptyInto(responder.basin)
 
     var Timer = require('happenstance').Timer
 
@@ -104,7 +110,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var monitor = new Monitor
 
     var chaperon = new Chaperon({
-        ua: new UserAgent(),
+        ua: new Vizsla(),
         chaperon: program.ultimate.chaperon,
         kibitzer: kibitzer,
         colleague: colleague,

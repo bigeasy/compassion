@@ -68,6 +68,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             async(function () {
                 this._colleague.getProperties(async())
             }, function (properties) {
+                properties.url = action.self.url
                 this._kibitzer.bootstrap(this._startedAt, properties)
                 this._wait = this._signal.wait(1000, async())
             })
