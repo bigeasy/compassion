@@ -25,7 +25,7 @@
                             "cadence":                      "1.0.x",
                             "connect":                      "3.5.1",
                             "inlet":                        "2.0.x",
-                            "nascent.rendezvous":           "0.0.16",
+                            "nascent.rendezvous":           "0.1.x",
                             "nascent.upgrader":             "0.0.0",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x"
