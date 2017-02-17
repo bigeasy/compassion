@@ -48,6 +48,23 @@ Merger.prototype._entry = cadence(function (async, splitter, outboxes, log) {
     })()
 })
 
+// TODO In order to play long running government you're going to have to consume
+// the ping messages. On the other hand, you might have an application that is
+// generating a lot of application log records, so you can't simply move through
+// the paxos log and neglect the application log.
+//
+// Rather than pulling, you might read though and push into two separate
+// queues, but trying to keept he queues full made us choose pull in the first
+// place.
+//
+// We can read though the log and build the atomic log. We know that events
+// entered into the log will be consumed soon after they materialize in the log.
+// Thus, we can push those events onto a queue. There's no way for us to reach
+// an entry boundary without already having materialized the entry.
+//
+// Any records or requests can be played as they are encountered.
+
+//
 Merger.prototype.merge = cadence(function (async) {
     var responses = this._channel.responses.shifter()
     var chatter = this._channel.chatter.shifter()
