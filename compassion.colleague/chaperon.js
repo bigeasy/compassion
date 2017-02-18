@@ -54,6 +54,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             this._wait = this._signal.wait(1000, async())
             return
         }
+        console.log(action)
         switch (action.name) {
         case 'unstable':
         case 'unreachable':
@@ -68,7 +69,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             async(function () {
                 this._colleague.getProperties(async())
             }, function (properties) {
-                properties.url = action.self.url
+                properties.url = action.url.self
                 this._kibitzer.bootstrap(this._startedAt, properties)
                 this._wait = this._signal.wait(1000, async())
             })
@@ -77,7 +78,11 @@ Chaperon.prototype.listen = cadence(function (async) {
             async(function () {
                 this._colleague.getProperties(async())
             }, function (properties) {
-                this._kibitzer.join(action.vargs[0], properties, async())
+                properties.url = action.url.self
+                this._kibitzer.join({
+                    url: action.url.leader,
+                    republic: action.republic
+                }, properties, async())
             }, function (enqueued) {
                 this._wait = this._signal.wait((enqueued ? 5 : 60) * 1000, async())
             })
