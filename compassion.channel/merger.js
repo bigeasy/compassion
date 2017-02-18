@@ -91,6 +91,11 @@ Merger.prototype.merge = cadence(function (async) {
                 departure.raise(properties, envelope.body.properties)
                 this._kibitzer.replay(envelope)
                 break
+            case 'join':
+                properties.url = envelope.body.properties.url
+                departure.raise(properties, envelope.body.properties)
+                this._kibitzer.replay(envelope)
+                break
             }
         }, function () {
             this._entry(splitter, outboxes, log, async())
