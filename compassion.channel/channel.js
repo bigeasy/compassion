@@ -27,6 +27,7 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
         // For these cases, it was enough to record them.
         break
     case 'request':
+        break
         this._kibitzer.publish({
             module: 'compassion.colleague',
             method: request,
@@ -38,7 +39,7 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
         this.responses.push(response)
         break
     case 'naturalized':
-        this._kibitzer.naturalize()
+        // this._kibitzer.naturalize()
         break
     case 'broadcast':
     case 'reduce':

@@ -73,9 +73,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var merger = new Merger(kibitzer, channel)
 
-    kibitzer.played.pump(new Recorder('kibitz', merger.play))
-    kibitzer.paxos.outbox.pump(new Recorder('paxos', merger.play))
-    kibitzer.islander.outbox.pump(new Recorder('islander', merger.play))
+    kibitzer.played.pump(new Recorder('kibitz', logger, merger.play))
+    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger, merger.play))
+    kibitzer.islander.outbox.pump(new Recorder('islander', logger, merger.play))
 
     var destructor = new Destructor
     destructor.events.pump(new Terminator(1000))

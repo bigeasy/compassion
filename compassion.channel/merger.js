@@ -32,7 +32,7 @@ Merger.prototype._entry = cadence(function (async, splitter, outboxes, log) {
         var envelope = entry.$envelope
         switch (entry.source) {
         case 'kibitz':
-            this._kibitzer.replay(envelope, async())
+            this._kibitzer.replay(envelope)
             break
         case 'paxos':
             departure.raise(outboxes.paxos.shift(), envelope)
@@ -89,7 +89,7 @@ Merger.prototype.merge = cadence(function (async) {
             case 'bootstrap':
                 properties.url = envelope.body.properties.url
                 departure.raise(properties, envelope.body.properties)
-                this._kibitzer.replay(envelope, async())
+                this._kibitzer.replay(envelope)
                 break
             }
         }, function () {
