@@ -61,7 +61,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
                ? program.stdin
                : fs.createReadStream(program.ultimate.log)
 
-
     var kibitzer = new Kibitzer({
         id: program.ultimate.id,
         ping: coalesce(program.ultimate.ping, 1000),

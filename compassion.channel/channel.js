@@ -26,15 +26,6 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
     case 'record':
         // For these cases, it was enough to record them.
         break
-    case 'request':
-        break
-        this._kibitzer.publish({
-            module: 'compassion.colleague',
-            method: request,
-            from: this.kibitzer.paxos.id,  // This or maybe the naturalized id.
-            body: envelope.body
-        })
-        break
     case 'response':
         this.responses.push(response)
         break
@@ -49,6 +40,7 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
 })
 
 Conference.prototype.fromSpigot = cadence(function (async, envelope) {
+    console.log('>>>>>>>', envelope)
     assert(envelope == null)
 })
 
@@ -65,7 +57,7 @@ function Channel (kibitzer) {
     this._requester = new Requester('colleague')
     this.spigot.emptyInto(this._requester.basin)
 
-    this._basin = new Basin(new Conference(this))
+    this.basin = new Basin(new Conference(this))
 
     this.requests = new Procession
     this.chatter = new Procession
@@ -81,6 +73,7 @@ Channel.prototype.listen = cadence(function (async, input, output) {
 })
 
 Channel.prototype.fromSpigot = function (envelope, callback) {
+    throw new Error
     callback()
 }
 
@@ -90,16 +83,8 @@ Channel.prototype.destroy = function () {
 
 Channel.prototype._connect = cadence(function (async, socket) {
     this._requester.spigot.emptyInto(socket.basin)
-    socket.spigot.emptyInto(this._basin)
+    socket.spigot.emptyInto(this.basin)
     this.connected.notify()
-})
-
-Channel.prototype.getProperties = cadence(function (async) {
-    this._requester.request('colleague', {
-        module: 'colleague',
-        method: 'properties',
-        body: null
-    }, async())
 })
 
 Channel.prototype.getProperties = cadence(function (async, id) {
@@ -107,7 +92,7 @@ Channel.prototype.getProperties = cadence(function (async, id) {
         this._requester.request('colleague', {
             module: 'colleague',
             method: 'properties',
-            body: { id: id, replaying: false }
+            body: { id: id, replaying: true }
         }, async())
     }, function (properties) {
         return [ properties ]

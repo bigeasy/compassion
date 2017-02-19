@@ -78,6 +78,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             async(function () {
                 this._colleague.getProperties(async())
             }, function (properties) {
+                console.log('CHAPERON JOIN', properties)
                 properties.url = action.url.self
                 this._kibitzer.join({
                     url: action.url.leader,

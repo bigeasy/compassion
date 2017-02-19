@@ -14,7 +14,7 @@ var Kibitzer = require('kibitz')
 // band messages to the given Conduit `Requester`.
 
 //
-function Middleware (startedAt, island, kibitzer, requester) {
+function Middleware (startedAt, island, kibitzer, colleague) {
     var dispatcher = new Dispatcher(this)
     dispatcher.dispatch('GET /', 'index')
     dispatcher.dispatch('POST /oob', 'outOfBand')
@@ -24,7 +24,7 @@ function Middleware (startedAt, island, kibitzer, requester) {
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
-    this._requester = requester
+    this._colleague = colleague
 }
 
 // Return an index message.
@@ -37,15 +37,16 @@ Middleware.prototype.index = cadence(function (async) {
 // Forward out of band requests to our Conduit `Requester`.
 
 //
-Middleware.prototype.oob = cadence(function (async, request) {
-    this._requester.request('outOfBand', request.body, async())
+Middleware.prototype.outOfBand = cadence(function (async, request) {
+    console.log('MIDDLEWARE OOB', request.body)
+    this._colleague.outOfBand(request.body, async())
 })
 
 // Pass Kibitz envelopes to our `Kibitzer`.
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
-    this._kibitzer.request(request.body, async())
+        this._kibitzer.request(request.body, async())
 })
 
 // Report on the health and provide general info for bootstrap discovery.

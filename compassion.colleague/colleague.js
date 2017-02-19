@@ -2,10 +2,12 @@ var delta = require('delta')
 var cadence = require('cadence')
 var Destructor = require('destructible')
 var Multiplexer = require('conduit/multiplexer')
+var coalesce = require('nascent.coalesce')
 var Basin = require('conduit/basin')
 var Spigot = require('conduit/spigot')
 var Signal = require('signal')
 var Requester = require('conduit/requester')
+var Responder = require('conduit/responder')
 var Procession = require('procession')
 var assert = require('assert')
 
@@ -27,19 +29,11 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
     case 'record':
         // For these cases, it was enough to record them.
         break
-    case 'request':
-        this._kibitzer.publish({
-            module: 'compassion.colleague',
-            method: request,
-            from: this.kibitzer.paxos.id,  // This or maybe the naturalized id.
-            body: envelope.body
-        })
-        break
     case 'response':
         this.responses.push(response)
         break
     case 'naturalized':
-        this._kibitzer.naturalize()
+        this._colleague._kibitzer.naturalize()
         break
     case 'broadcast':
     case 'reduce':
@@ -52,8 +46,13 @@ Conference.prototype.fromSpigot = cadence(function (async, envelope) {
     assert(envelope == null)
 })
 
+Conference.prototype.request = function (envelope, callback) {
+    this._colleague._request(envelope, callback)
+}
 
-function Colleague (kibitzer) {
+
+function Colleague (ua, kibitzer) {
+    this._ua = ua
     this._kibitzer = kibitzer
 
     this._destructor = new Destructor
@@ -64,6 +63,8 @@ function Colleague (kibitzer) {
     this._spigot.emptyInto(this._requester.basin)
 
     this._basin = new Basin(new Conference(this))
+    this._responder = new Responder(new Conference(this), 'colleague')
+    this._responder.spigot.emptyInto(this._basin)
 
     this.connected = new Signal
 
@@ -75,12 +76,6 @@ function Colleague (kibitzer) {
     this.demolition = this._destructor.events
 }
 
-Colleague.prototype._response = cadence(function (async, envelope) {
-    async(function () {
-    }, function () {
-    })
-})
-
 Colleague.prototype.listen = cadence(function (async, input, output) {
     this._destructor.async(async, 'multiplexer')(function () {
         this._multiplexer = new Multiplexer(input, output, { object: this, method: '_connect' })
@@ -90,29 +85,36 @@ Colleague.prototype.listen = cadence(function (async, input, output) {
     this._destructor.async(async, 'log')(function () {
         var shifter = this._kibitzer.islander.log.shifter()
         this._destructor.addDestructor('log', shifter.destroy.bind(shifter))
-        async(function () {
+        var loop = async(function () {
             shifter.dequeue(async())
         }, function (entry) {
-            if (entry == null) {
-                return
-            }
-            assert(entry.promise == '0/0')
-            var loop = async(function () {
-                shifter.dequeue(async())
-            }, function (entry) {
-                async(function () {
-                    this._spigot.requests.enqueue(entry && {
-                        module: 'colleague',
-                        method: 'entry',
-                        body: entry
-                    }, async())
-                }, function () {
-                    if (entry == null) {
-                        return [ loop.break ]
-                    }
-                })
-            })()
-        })
+            async(function () {
+                this._spigot.requests.enqueue(entry && {
+                    module: 'colleague',
+                    method: 'entry',
+                    body: entry
+                }, async())
+            }, function () {
+                if (entry == null) {
+                    return [ loop.break ]
+                }
+            })
+        })()
+    })
+})
+
+Colleague.prototype._request = cadence(function (async, envelope) {
+    var properties = this._kibitzer.paxos.government.properties[envelope.to]
+    async(function () {
+        this._ua.fetch({
+            url: properties.url
+        }, {
+            url: './oob',
+            post: envelope,
+            nullify: true
+        }, async())
+    }, function (body) {
+        return [ body ]
     })
 })
 
@@ -135,9 +137,22 @@ Colleague.prototype.getProperties = cadence(function (async) {
     })
 })
 
+Colleague.prototype.outOfBand = cadence(function (async, request) {
+    async(function () {
+        this._requester.request('colleague', {
+            module: 'colleague',
+            method: request.method,
+            from: coalesce(request.from),
+            body: request.body
+        }, async())
+    }, function (response) {
+        return [ response ]
+    })
+})
+
 Colleague.prototype._connect = cadence(function (async, socket) {
     this._requester.spigot.emptyInto(socket.basin)
-    socket.spigot.emptyInto(this._basin)
+    socket.spigot.emptyInto(this._responder.basin)
     this.connected.notify()
 })
 

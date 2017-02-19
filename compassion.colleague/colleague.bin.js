@@ -74,7 +74,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
 
-    var responder = new Responder(new UserAgent(new Vizsla, kibitzer), 'kibitz')
+    var responder = new Responder(new UserAgent(new Vizsla), 'kibitz')
 
     kibitzer.spigot.emptyInto(responder.basin)
 
@@ -96,8 +96,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.on('shutdown', destructor.destroy.bind(destructor))
     destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
 
+    var colleague = new Colleague(new Vizsla, kibitzer)
+
     var startedAt = Date.now()
-    var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer)
+    var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer, colleague)
 
     var envoy = new Envoy(middleware.dispatcher.createWrappedDispatcher())
 
@@ -105,7 +107,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     location = url.resolve(location + '/', program.ultimate.island)
     location = url.resolve(location + '/',  program.ultimate.id)
 
-    var colleague = new Colleague(kibitzer)
     colleague.chatter.pump(new Recorder('colleague', logger))
     var monitor = new Monitor
 

@@ -1,9 +1,8 @@
 var url = require('url')
 var cadence = require('cadence')
 
-function UserAgent (ua, kibitizer) {
+function UserAgent (ua) {
     this._ua = ua
-    this._kibitzer = kibitizer
 }
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
