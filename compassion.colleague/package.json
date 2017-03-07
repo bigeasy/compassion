@@ -34,7 +34,7 @@
                             "magazine":                     "3.0.x",
                             "nascent.coalesce":             "0.0.0",
                             "destructible":                 "0.1.x",
-                            "nascent.rendezvous":           "0.2.0",
+                            "nascent.rendezvous":           "0.3.0",
                             "nascent.upgrader":             "0.0.0",
                             "operation":                    "1.2.x",
                             "prolific.logger":              "3.0.x",
