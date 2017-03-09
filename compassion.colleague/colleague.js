@@ -1,13 +1,8 @@
 var delta = require('delta')
 var cadence = require('cadence')
 var Destructor = require('destructible')
-var Multiplexer = require('conduit/multiplexer')
 var coalesce = require('nascent.coalesce')
-var Basin = require('conduit/basin')
-var Spigot = require('conduit/spigot')
 var Signal = require('signal')
-var Requester = require('conduit/requester')
-var Responder = require('conduit/responder')
 var Procession = require('procession')
 var assert = require('assert')
 

@@ -92,9 +92,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
     var destructor = new Destructor('colleague')
+
     destructor.events.pump(new Terminator(1000))
     program.on('shutdown', destructor.destroy.bind(destructor))
-    destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
+
+    destructor.addDestructor('shutdown', shuttle, 'close')
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
