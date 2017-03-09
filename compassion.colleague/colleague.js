@@ -77,10 +77,12 @@ function Colleague (ua, kibitzer) {
 }
 
 Colleague.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.async(async, 'multiplexer')(function () {
-        this._multiplexer = new Multiplexer(input, output, { object: this, method: '_connect' })
-        this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
-        this._multiplexer.listen(async())
+    this._destructor.async(async, 'conduit')(function () {
+        this._conduit = new Conduit(input, output)
+        this._destructor.addDestructor('multiplexer', this._conduit.destroy.bind(this._conduit))
+        this._conduit.spgiot.emptyInto(this._responder.basin)
+        this._requester.spigot.emptyInto(this._conduit.basin)
+        this._conduit.listen(async())
     })
     this._destructor.async(async, 'log')(function () {
         var shifter = this._kibitzer.islander.log.shifter()
@@ -151,9 +153,6 @@ Colleague.prototype.outOfBand = cadence(function (async, request) {
 })
 
 Colleague.prototype._connect = cadence(function (async, socket) {
-    this._requester.spigot.emptyInto(socket.basin)
-    socket.spigot.emptyInto(this._responder.basin)
-    this.connected.notify()
 })
 
 module.exports = Colleague
