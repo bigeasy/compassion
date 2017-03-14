@@ -36,7 +36,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var shuttle = Shuttle.shuttle(program, logger)
 
-    var Upgrader = require('nascent.upgrader/upgrade')
+    var Upgrader = require('downgrader')
     var upgrader = new Upgrader
 
     var Rendezvous = require('nascent.rendezvous/rendezvous')
