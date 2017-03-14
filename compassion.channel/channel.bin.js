@@ -98,27 +98,28 @@ require('arguable')(module, require('cadence')(function (async, program) {
         destructor.async(async, 'connected')(function () {
             destructor.addDestructor('channel', channel.destroy.bind(channel))
             channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
-            async(function () {
-                channel.connected.wait(async())
-            }, function () {
-                destructor.async(async, 'readable')(function () {
-                    var readable = new Staccato.Readable(byline(stream))
-                    destructor.addDestructor('readable', readable.destroy.bind(readable))
-                    var loop = async(function () {
-                        readable.read(async())
-                    }, function (line) {
-                        async(function () {
-                            merger.replay.enqueue(line && JSON.parse(line), async())
-                        }, function () {
-                            if (line == null) {
-                                return [ loop.break ]
-                            }
-                        })
-                    })()
-                })
-                destructor.async(async, 'merger')(function () {
-                    merger.merge(async())
-                })
+        })
+        async(function () {
+            channel.connected.wait(async())
+        }, function () {
+            destructor.async(async, 'readable')(function () {
+                var readable = new Staccato.Readable(byline(stream))
+                destructor.addDestructor('readable', readable.destroy.bind(readable))
+                var loop = async(function () {
+                    readable.read(async())
+                }, function (line) {
+                    async(function () {
+                        merger.replay.enqueue(line && JSON.parse(line), async())
+                    }, function () {
+                        if (line == null) {
+                            return [ loop.break ]
+                        }
+                    })
+                })()
+            })
+            destructor.async(async, 'merger')(function () {
+                destructor.addDestructor('merger', { object: merger, method: 'destroy' })
+                merger.merge(async())
             })
         })
     })

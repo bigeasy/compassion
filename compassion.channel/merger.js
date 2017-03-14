@@ -18,8 +18,13 @@ function Merger (kibitzer, channel) {
     this.replay = new Throttle(this._replay = new Procession, 1)
     this.play = new Procession
     this._destructor = new Destructor
+    this._destructor.markDestroyed(this, 'destroyed')
     this._kibitzer = kibitzer
     this._channel = channel
+}
+
+Merger.prototype.destroy = function () {
+    this._destructor.destroy()
 }
 
 Merger.prototype._entry = cadence(function (async, splitter, outboxes, log) {
@@ -68,8 +73,10 @@ Merger.prototype._entry = cadence(function (async, splitter, outboxes, log) {
 //
 Merger.prototype.merge = cadence(function (async) {
     var responses = this._channel.responses.shifter()
-    var chatter = this._channel.chatter.shifter()
-    var replay = this._replay.shifter()
+    var chatter = this._chatter = this._channel.chatter.shifter()
+    var replay = this._replay = this._replay.shifter()
+    this._destructor.addDestructor('chatter', { object: chatter, method: 'destroy' })
+    this._destructor.addDestructor('replay', { object: replay, method: 'destroy' })
     // var chatter = this._channel.chatter.shifter()
     var outboxes = {
         paxos: this._kibitzer.paxos.outbox.shifter(),
@@ -107,7 +114,6 @@ Merger.prototype.merge = cadence(function (async) {
             var envelope = entry.$envelope
             switch (entry.source) {
             case 'colleague':
-                console.log('METHOD!!!!!!', envelope)
                 switch (envelope.method) {
                 case 'boundary':
                     async(function () {
@@ -115,7 +121,7 @@ Merger.prototype.merge = cadence(function (async) {
                         if (envelope.entry != null) {
                             var entry = log.shift()
                             departure.raise(entry.promise, envelope.entry)
-                            this._channel.spigot.requests.enqueue({
+                            this._channel.write.enqueue({
                                 module: 'colleague',
                                 method: 'entry',
                                 body: entry
@@ -130,7 +136,7 @@ Merger.prototype.merge = cadence(function (async) {
                     })
                     break
                 case 'record':
-                    this._channel.basin.responses.enqueue({
+                    this._channel.write.enqueue({
                         module: 'colleague',
                         method: 'record',
                         body: envelope.body

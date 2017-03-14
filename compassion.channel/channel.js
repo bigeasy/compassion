@@ -1,10 +1,8 @@
 var cadence = require('cadence')
 var Destructor = require('destructible')
-var Multiplexer = require('conduit/multiplexer')
+var Conduit = require('conduit')
 var Signal = require('signal')
 var Requester = require('conduit/requester')
-var Spigot = require('conduit/spigot')
-var Basin = require('conduit/basin')
 var Procession = require('procession')
 var assert = require('assert')
 
@@ -16,11 +14,11 @@ function Conference (channel) {
     this._channel = channel
 }
 
-Conference.prototype.fromBasin = cadence(function (async, envelope) {
+Channel.prototype.enqueue = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
-    this._channel.chatter.push(envelope)
+    this.chatter.push(envelope)
     switch (envelope.method) {
     case 'boundary':
     case 'record':
@@ -39,25 +37,21 @@ Conference.prototype.fromBasin = cadence(function (async, envelope) {
     }
 })
 
-Conference.prototype.fromSpigot = cadence(function (async, envelope) {
-    console.log('>>>>>>>', envelope)
-    assert(envelope == null)
-})
-
 function Channel (kibitzer) {
     this.connected = new Signal
 
+    this.read = new Procession
+    this.write = new Procession
+
+    this._channel = null
     this._kibitzer = kibitzer
-    this._requester = new Requester('colleague')
-    this._multiplexer = null
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
+    this._destructor.addDestructor('connected', { object: this.connected, method: 'unlatch' })
 
-    this.spigot = new Spigot(new Conference(this))
-    this._requester = new Requester('colleague')
-    this.spigot.emptyInto(this._requester.basin)
+    this._requester = new Requester('colleague', this.read, this.write)
 
-    this.basin = new Basin(new Conference(this))
+    this._requester.read.pump(this)
 
     this.requests = new Procession
     this.chatter = new Procession
@@ -65,11 +59,14 @@ function Channel (kibitzer) {
 }
 
 Channel.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.destructible(cadence(function (async) {
-        this._multiplexer = new Multiplexer(input, output, { object: this, method: '_connect' })
-        this._destructor.addDestructor('multiplexer', this._multiplexer.destroy.bind(this._multiplexer))
-        this._multiplexer.listen(async())
-    }).bind(this), async())
+    this._destructor.async(async, 'listen')(function () {
+        this._conduit = new Conduit(input, output)
+        this.write.pump(this._conduit.write)
+        this._conduit.read.pump(this.read)
+        this.connected.unlatch()
+        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+        this._conduit.listen(async())
+    })
 })
 
 Channel.prototype.fromSpigot = function (envelope, callback) {
