@@ -8,11 +8,21 @@ var Destructor = require('destructible')
 function Monitor () {
     this.started = new Signal
     this.child = null
+    this.destroyed = false
     this._destructor = new Destructor
+    this._destructor.markDestroyed(this, 'destroyed')
+    this._destructor.addDestructor('started', { object: this.started, method: 'unlatch' })
+}
+
+Monitor.prototype._kill = function () {
+    if (this.child != null) {
+        this.child.kill()
+        this.child = null
+    }
 }
 
 Monitor.prototype.run = cadence(function (async, program) {
-    async([function () {
+    this._destructor.async(async, 'run')(function () {
         var argv = program.argv.slice()
         var env = JSON.parse(JSON.stringify(program.env))
         env.COMPASSION_COLLEAGUE_FD = 3
@@ -20,20 +30,10 @@ Monitor.prototype.run = cadence(function (async, program) {
             stdio: [ 'inherit', 'inherit', 'inherit', 'pipe' ],
             env: env
         })
-        this.started.notify()
-        this.started.open = []
+        this.started.unlatch()
+        this._destructor.addDestructor('kill', { object: this, method: '_kill' })
         delta(async()).ee(this.child).on('exit')
-        this._destructor.addDestructor('kill', function () {
-            var child = this.child
-            this.child.kill()
-            this.child = null
-            setTimeout(function () { console.log('super killing'); child.kill('SIGKILL') }, 3000).unref()
-        }.bind(this))
-    }, function (error) {
-        this.started.notify()
-        this.started.open = []
-        throw error
-    }])
+    })
 })
 
 Monitor.prototype.destroy = function () {

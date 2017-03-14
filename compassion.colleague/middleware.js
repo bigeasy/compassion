@@ -1,14 +1,19 @@
 // Common utilities.
 var coalesce = require('nascent.coalesce')
+var assert = require('assert')
 
 // Control-flow utilities.
 var cadence = require('cadence')
+var abend = require('abend')
 
 // Sencha Connect middleware builder.
 var Dispatcher = require('inlet/dispatcher')
 
 // Event wrapper around our consensus algorithm.
 var Kibitzer = require('kibitz')
+
+var Conduit = require('conduit')
+var Server = require('conduit/server')
 
 // Construct an http responder for the given `Kibitzer` that forwards out of
 // band messages to the given Conduit `Requester`.
@@ -56,14 +61,28 @@ Middleware.prototype._connect = cadence(function (async, socket, header) {
 // caller? A good answer; enqueue work in a turnstile that has a maximum size
 // and 503 requests if the header can't get into the queue. Back-pressure is
 // going to be case by case for some time to come.
+var stream = require('stream')
 Middleware.prototype.socket = cadence(function (async, request) {
-    return cadence(function (async, response) {
+    return function (response) {
+        response.writeHead(200, 'OK', {
+            'content-type': 'application/octet-stream',
+            'transfer-encoding': 'chunked'
+        })
         var conduit = new Conduit(request, response)
-        conduit.spigot.emptyInto(new Server(function (socket, header) {
-            this._colleague.client.connect(header, async())
-        }).basin)
-        conduit.listen(async())
-    }).bind(this)
+        assert(!conduit.destroyed)
+        conduit.wrote.pump(function (envelope) {
+            if (envelope == null) {
+                response.end()
+            } else if (envelope.body.body == null) {
+                conduit.write.push(null)
+            }
+        })
+        var server = new Server({
+            object: this._colleague,
+            method: '_tunnel'
+        }, 'tunnel', conduit.read, conduit.write)
+        conduit.listen(abend)
+    }
 })
 
 // Pass Kibitz envelopes to our `Kibitzer`.

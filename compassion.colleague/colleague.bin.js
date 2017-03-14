@@ -74,9 +74,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
 
-    var responder = new Responder(new UserAgent(new Vizsla), 'kibitz')
-
-    kibitzer.spigot.emptyInto(responder.basin)
+    var responder = new Responder(new UserAgent(new Vizsla), 'kibitz', kibitzer.write, kibitzer.read)
 
     var Timer = require('happenstance').Timer
 
@@ -96,7 +94,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     destructor.events.pump(new Terminator(1000))
     program.on('shutdown', destructor.destroy.bind(destructor))
 
-    destructor.addDestructor('shutdown', shuttle, 'close')
+    destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
+    destructor.addDestructor('kibitzer', kibitzer.destroy.bind(kibitzer))
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
