@@ -44,10 +44,6 @@ Colleague.prototype.enqueue = cadence(function (async, envelope) {
     }
 })
 
-Conference.prototype.fromSpigot = cadence(function (async, envelope) {
-    assert(envelope == null)
-})
-
 Conference.prototype.request = function (envelope, callback) {
     this._colleague._request(envelope, callback)
 }
@@ -197,12 +193,19 @@ Colleague.prototype._socket = cadence(function (async, socket, header) {
         }
     })
     socket.read.pump(tunnel.write)
-    tunnel.read.pump(socket.write)
-    socket.read.pump(function (envelope) {
+    tunnel.wrote.pump(function (envelope) {
+        if (envelope == null) {
+            setImmediate(function () { request.end() })
+            return
+            conduit.write.push(null)
+        }
+    })
+    conduit.wrote.pump(function (envelope) {
         if (envelope == null) {
             request.end()
         }
     })
+    tunnel.read.pump(socket.write)
     conduit.listen(abend)
 })
 

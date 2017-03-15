@@ -152,6 +152,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 async(function () {
                     colleague.connected.wait(async())
                 }, function () {
+                    /*setTimeout(async(), 1000)*/
+                }, function () {
                    destructor.async(async, 'chaperon')(function () {
                         destructor.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
                         chaperon.listen(async())
