@@ -61,7 +61,6 @@ Middleware.prototype._connect = cadence(function (async, socket, header) {
 // caller? A good answer; enqueue work in a turnstile that has a maximum size
 // and 503 requests if the header can't get into the queue. Back-pressure is
 // going to be case by case for some time to come.
-var stream = require('stream')
 Middleware.prototype.socket = cadence(function (async, request) {
     return function (response) {
         response.writeHead(200, 'OK', {
@@ -69,11 +68,10 @@ Middleware.prototype.socket = cadence(function (async, request) {
             'transfer-encoding': 'chunked'
         })
         var conduit = new Conduit(request, response)
-        assert(!conduit.destroyed)
         conduit.wrote.pump(function (envelope) {
             if (envelope == null) {
                 response.end()
-            } else if (envelope.body.body == null) {
+            } else if (envelope.body == null) {
                 conduit.write.push(null)
             }
         })

@@ -30,7 +30,7 @@
                             "delta":                        "1.2.x",
                             "inlet":                        "2.0.x",
                             "happenstance":                 "3.0.x",
-                            "kibitz":                       "0.7.2",
+                            "kibitz":                       "0.7.x",
                             "magazine":                     "3.0.x",
                             "nascent.coalesce":             "0.0.0",
                             "destructible":                 "0.1.x",

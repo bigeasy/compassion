@@ -2,6 +2,7 @@ var delta = require('delta')
 var abend = require('abend')
 var cadence = require('cadence')
 var Destructor = require('destructible')
+var stream = require('stream')
 var coalesce = require('nascent.coalesce')
 var Signal = require('signal')
 var Procession = require('procession')
@@ -26,12 +27,14 @@ Colleague.prototype.enqueue = cadence(function (async, envelope) {
     switch (envelope.method) {
     case 'boundary':
     case 'record':
+    case 'replay':
         // For these cases, it was enough to record them.
         break
     case 'response':
         this.responses.push(response)
         break
     case 'naturalized':
+        console.log("-------------   NATURALIZED OH YEAH! " + this._kibitzer.paxos.id + " ------------------")
         this._kibitzer.naturalize()
         break
     case 'broadcast':
@@ -56,8 +59,11 @@ function Colleague (ua, kibitzer) {
 
     this.read = new Procession
     this.write = new Procession
+//    this.read.pump(function (envelope) { console.log('READ', envelope) })
+//    this.write.pump(function (envelope) { console.log('WRITE', envelope) })
 
     this._requester = new Requester('colleague', this.read, this.write)
+//    this._requester.read.pump(function (envelope) { console.log('REQUESTER READ', envelope) })
     var responder = new Responder(this, 'colleague', this._requester.read, this._requester.write)
     var server = new Server({ object: this, method: '_connect' }, 'outgoing', responder.read, responder.write)
     this._client = new Client('incoming', server.read, server.write)
@@ -71,7 +77,7 @@ function Colleague (ua, kibitzer) {
     this.chatter = new Procession
     this.responses = new Procession
 
-    this.responses.pump({ object: this, method: '_response' })
+    this.responses.pump(this, '_response')
 
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
@@ -83,7 +89,7 @@ function Colleague (ua, kibitzer) {
 Colleague.prototype.listen = cadence(function (async, input, output) {
     this._destructor.async(async, 'conduit')(function () {
         this._conduit = new Conduit(input, output)
-        this._destructor.addDestructor('multiplexer', this._conduit.destroy.bind(this._conduit))
+        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
         this.write.pump(this._conduit.write)
         this._conduit.read.pump(this.read)
         this.connected.unlatch()
@@ -110,7 +116,7 @@ Colleague.prototype.listen = cadence(function (async, input, output) {
     })
 })
 
-Colleague.prototype._request = cadence(function (async, envelope) {
+Colleague.prototype.request = cadence(function (async, envelope) {
     var properties = this._kibitzer.paxos.government.properties[envelope.to]
     async(function () {
         this._ua.fetch({
@@ -118,7 +124,7 @@ Colleague.prototype._request = cadence(function (async, envelope) {
         }, {
             url: './oob',
             post: envelope,
-            nullify: true
+            raise: true
         }, async())
     }, function (body) {
         return [ body ]
@@ -163,7 +169,6 @@ Colleague.prototype._tunnel = function (tunnel, header) {
     socket.read.pump(tunnel.write)
 }
 
-var stream = require('stream')
 Colleague.prototype._socket = cadence(function (async, socket, header) {
     var location = url.parse(url.resolve(header.to.url, 'socket'))
     var through = new stream.PassThrough

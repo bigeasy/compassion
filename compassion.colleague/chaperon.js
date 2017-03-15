@@ -67,8 +67,10 @@ Chaperon.prototype.listen = cadence(function (async) {
             // TODO Am I really supposed to do this?
             this._kibitzer.paxos.naturalized = true
             async(function () {
+                console.log('GETTING PROPERTIES')
                 this._colleague.getProperties(async())
             }, function (properties) {
+                console.log('GOT PROPERTIES', properties)
                 properties.url = action.url.self
                 this._kibitzer.bootstrap(this._startedAt, properties)
                 this._wait = this._signal.wait(1000, async())

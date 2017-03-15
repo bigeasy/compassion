@@ -22,6 +22,7 @@ Channel.prototype.enqueue = cadence(function (async, envelope) {
     switch (envelope.method) {
     case 'boundary':
     case 'record':
+    case 'retry':
         // For these cases, it was enough to record them.
         break
     case 'response':
@@ -68,11 +69,6 @@ Channel.prototype.listen = cadence(function (async, input, output) {
         this._conduit.listen(async())
     })
 })
-
-Channel.prototype.fromSpigot = function (envelope, callback) {
-    throw new Error
-    callback()
-}
 
 Channel.prototype.destroy = function () {
     this._destructor.destroy()

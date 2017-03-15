@@ -88,6 +88,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         async(function () {
             monitor.run(program, async())
         }, function (exitCode, signal) {
+            console.log('exit', exitCode)
             logger.info('exited', { exitCode: exitCode, signal: signal })
         })
     })
@@ -109,7 +110,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
                     readable.read(async())
                 }, function (line) {
                     async(function () {
-                        merger.replay.enqueue(line && JSON.parse(line), async())
+                        merger.replay.enqueue(line && JSON.parse(line.toString()), async())
                     }, function () {
                         if (line == null) {
                             return [ loop.break ]

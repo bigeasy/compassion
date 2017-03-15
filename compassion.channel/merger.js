@@ -27,33 +27,6 @@ Merger.prototype.destroy = function () {
     this._destructor.destroy()
 }
 
-Merger.prototype._entry = cadence(function (async, splitter, outboxes, log) {
-    var loop = async(function () {
-        splitter.dequeue('paxos', async())
-    }, function (entry) {
-        if (entry == null) {
-            return [ loop.break, null ]
-        }
-        var envelope = entry.$envelope
-        console.log('ENTRY ENVELOPE', envelope)
-        switch (entry.source) {
-        case 'kibitz':
-            this._kibitzer.replay(envelope)
-            break
-        case 'paxos':
-            departure.raise(outboxes.paxos.shift(), envelope)
-            break
-        case 'islander':
-            departure.raise(outboxes.islander.shift(), envelope)
-            break
-        }
-    }, function () {
-        if (log.peek() != null) {
-            return [ loop.break, log.shift() ]
-        }
-    })()
-})
-
 // TODO In order to play long running government you're going to have to consume
 // the ping messages. On the other hand, you might have an application that is
 // generating a lot of application log records, so you can't simply move through
@@ -128,12 +101,23 @@ Merger.prototype.merge = cadence(function (async) {
                             }, async())
                         }
                     }, function () {
+                        console.log('JOINING', entry)
                         chatter.join(function (entry) {
+                            console.log(entry)
                             return entry.id == envelope.id
                         }, async())
                     }, function (envelope) {
                         console.log('BOUNDARY FOUND', envelope)
                     })
+                    break
+                case 'replay':
+                    console.log('sending', envelope)
+                    this._channel.write.enqueue({
+                        module: 'colleague',
+                        method: 'replay',
+                        id: envelope.id,
+                        body: envelope.body
+                    }, async())
                     break
                 case 'record':
                     this._channel.write.enqueue({
