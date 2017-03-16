@@ -15,6 +15,8 @@ var Kibitzer = require('kibitz')
 var Conduit = require('conduit')
 var Server = require('conduit/server')
 
+var logger = require('prolific.logger').createLogger('compassion.colleague')
+
 // Construct an http responder for the given `Kibitzer` that forwards out of
 // band messages to the given Conduit `Requester`.
 
@@ -46,13 +48,6 @@ Middleware.prototype.index = cadence(function (async) {
 Middleware.prototype.outOfBand = cadence(function (async, request) {
     console.log('MIDDLEWARE OOB', request.body)
     this._colleague.outOfBand(request.body, async())
-})
-
-Middleware.prototype._connect = cadence(function (async, socket, header) {
-    async(function () {
-    }, function (forward) {
-        socket.spigot.emptyInto(forward.basin)
-    })
 })
 
 // TODO Some thoughts on back pressure here. I was going to make it so that
@@ -87,7 +82,8 @@ Middleware.prototype.socket = cadence(function (async, request) {
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
-        this._kibitzer.request(request.body, async())
+    logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
+    this._kibitzer.request(request.body, async())
 })
 
 // Report on the health and provide general info for bootstrap discovery.

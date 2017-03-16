@@ -14,6 +14,7 @@ var Client = require('conduit/client')
 var Conduit = require('conduit')
 var http = require('http')
 var url = require('url')
+var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 function Conference (colleague) {
     this._colleague = colleague
@@ -34,7 +35,6 @@ Colleague.prototype.enqueue = cadence(function (async, envelope) {
         this.responses.push(response)
         break
     case 'naturalized':
-        console.log("-------------   NATURALIZED OH YEAH! " + this._kibitzer.paxos.id + " ------------------")
         this._kibitzer.naturalize()
         break
     case 'broadcast':
@@ -47,7 +47,6 @@ Colleague.prototype.enqueue = cadence(function (async, envelope) {
 Conference.prototype.request = function (envelope, callback) {
     this._colleague._request(envelope, callback)
 }
-
 
 function Colleague (ua, kibitzer) {
     this._ua = ua
