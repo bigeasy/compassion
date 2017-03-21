@@ -41,7 +41,7 @@
                             "procession":                   "0.2.x",
                             "reactor":                      "2.4.x",
                             "signal":                       "1.8.x",
-                            "vizsla":                       "2.0.x"
+                            "vizsla":                       "3.0.x"
     },
     "devDependencies":
     {
