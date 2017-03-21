@@ -39,7 +39,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Upgrader = require('downgrader')
     var upgrader = new Upgrader
 
-    var Rendezvous = require('nascent.rendezvous/rendezvous')
+    var Rendezvous = require('assignation/rendezvous')
     var rendezvous = new Rendezvous
 
     upgrader.on('socket', rendezvous.upgrade.bind(rendezvous))
