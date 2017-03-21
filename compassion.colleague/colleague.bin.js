@@ -48,7 +48,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Shuttle = require('prolific.shuttle')
 
-    var Envoy = require('nascent.rendezvous/envoy')
+    var Envoy = require('assignation/envoy')
 
     var Middleware = require('./middleware')
 
