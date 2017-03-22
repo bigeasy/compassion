@@ -20,7 +20,7 @@ function Conference (colleague) {
     this._colleague = colleague
 }
 
-Colleague.prototype.enqueue = cadence(function (async, envelope) {
+Colleague.prototype._read = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
@@ -65,7 +65,7 @@ function Colleague (ua, kibitzer) {
 
     this._write = this._client.write
 
-    server.read.pump(this)
+    server.read.pump(this, '_read')
 
     this.connected = new Signal
 
