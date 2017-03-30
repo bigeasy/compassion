@@ -1,11 +1,11 @@
 var cadence = require('cadence')
-var Inlet = require('inlet/dispatcher')
+var Reactor = require('reactor')
 
 function Conduit (rendezvous) {
-    var inlet = new Inlet(this)
-    inlet.dispatch('GET /', 'index')
-    inlet.dispatch('GET /health', 'health')
-    this.dispatcher = inlet
+    this.reactor = new Reactor(this, function (dispatcher) {
+        dispatcher.dispatch('GET /', 'index')
+        dispatcher.dispatch('GET /health', 'health')
+    })
     this._rendezvous = rendezvous
 }
 
@@ -15,7 +15,7 @@ Conduit.prototype.index = cadence(function (async) {
 
 Conduit.prototype.health = cadence(function (async) {
     return {
-        health: this.dispatcher.turnstile.health,
+        health: this.reactor.turnstile.health,
         paths: this._rendezvous.paths
     }
 })

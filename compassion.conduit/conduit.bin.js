@@ -29,7 +29,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var http = require('http')
 
-    var Conduit = require('./http')
+    var Middleware = require('./http')
     var Shuttle = require('prolific.shuttle')
 
     var logger = require('prolific.logger').createLogger('compassion.conduit')
@@ -47,7 +47,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var connect = require('connect')
     var app = require('connect')()
         .use(rendezvous.middleware.bind(rendezvous))
-        .use(new Conduit(rendezvous).dispatcher.createWrappedDispatcher())
+        .use(new Middleware(rendezvous).reactor.createMiddleware())
 
     var server = http.createServer(app)
 
