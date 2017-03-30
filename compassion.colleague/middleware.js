@@ -1,5 +1,5 @@
 // Common utilities.
-var coalesce = require('nascent.coalesce')
+var coalesce = require('extant')
 var assert = require('assert')
 
 // Control-flow utilities.

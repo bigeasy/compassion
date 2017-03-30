@@ -1,5 +1,5 @@
 // Common utilities.
-var coalesce = require('nascent.coalesce')
+var coalesce = require('extant')
 
 // Control-flow utilities.
 var cadence = require('cadence')

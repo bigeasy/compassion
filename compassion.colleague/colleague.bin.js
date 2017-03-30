@@ -42,7 +42,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
     var abend = require('abend')
-    var coalesce = require('nascent.coalesce')
+    var coalesce = require('extant')
 
     var logger = require('prolific.logger').createLogger('compassion.colleague')
 
