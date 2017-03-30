@@ -102,7 +102,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var startedAt = Date.now()
     var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer, colleague)
 
-    var envoy = new Envoy(middleware.dispatcher.createWrappedDispatcher())
+    var envoy = new Envoy(middleware.reactor.createMiddleware())
 
     var location = program.ultimate.conduit
     location = url.resolve(location + '/', program.ultimate.island)

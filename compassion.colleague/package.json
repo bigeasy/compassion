@@ -31,7 +31,6 @@
                             "delta":                        "1.2.x",
                             "destructible":                 "0.1.x",
                             "happenstance":                 "3.0.x",
-                            "inlet":                        "2.0.x",
                             "kibitz":                       "0.7.x",
                             "magazine":                     "3.0.x",
                             "nascent.coalesce":             "0.0.0",
@@ -39,7 +38,7 @@
                             "procession":                   "0.2.x",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
-                            "reactor":                      "2.4.x",
+                            "reactor":                      "4.0.x",
                             "signal":                       "1.8.x",
                             "vizsla":                       "3.0.x"
     },

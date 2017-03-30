@@ -7,7 +7,7 @@ var cadence = require('cadence')
 var abend = require('abend')
 
 // Sencha Connect middleware builder.
-var Dispatcher = require('inlet/dispatcher')
+var Reactor = require('reactor')
 
 // Event wrapper around our consensus algorithm.
 var Kibitzer = require('kibitz')
@@ -22,13 +22,13 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 //
 function Middleware (startedAt, island, kibitzer, colleague) {
-    var dispatcher = new Dispatcher(this)
-    dispatcher.dispatch('GET /', 'index')
-    dispatcher.dispatch('POST /oob', 'outOfBand')
-    dispatcher.dispatch('POST /socket', 'socket')
-    dispatcher.dispatch('POST /kibitz', 'kibitz')
-    dispatcher.dispatch('GET /health', 'health')
-    this.dispatcher = dispatcher
+    this.reactor  = new Reactor(this, function (dispatcher) {
+        dispatcher.dispatch('GET /', 'index')
+        dispatcher.dispatch('POST /oob', 'outOfBand')
+        dispatcher.dispatch('POST /socket', 'socket')
+        dispatcher.dispatch('POST /kibitz', 'kibitz')
+        dispatcher.dispatch('GET /health', 'health')
+    })
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
