@@ -28,7 +28,7 @@
                             "downgrader":                   "0.0.4",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
-                            "reactor":                      "4.0.x"
+                            "reactor":                      "4.3.x"
     },
     "devDependencies":
     {
