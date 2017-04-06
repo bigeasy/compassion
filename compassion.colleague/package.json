@@ -45,7 +45,7 @@
     "devDependencies":
     {
                             "compassion.conduit":           "0.4.x",
-                            "proof":                        "1.2.x"
+                            "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",
     "bin":
