@@ -40,7 +40,7 @@
                             "prolific.shuttle":             "9.0.x",
                             "reactor":                      "4.3.x",
                             "signal":                       "1.8.x",
-                            "vizsla":                       "3.4.x"
+                            "vizsla":                       "3.6.x"
     },
     "devDependencies":
     {
