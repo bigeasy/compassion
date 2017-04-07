@@ -22,7 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "arguable":                     "5.0.x",
-                            "assignation":                  "0.1.0",
+                            "assignation":                  "0.1.x",
                             "bintrees":                     "1.0.1",
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
@@ -30,7 +30,7 @@
                             "conduit":                      "0.4.x",
                             "delta":                        "1.2.x",
                             "destructible":                 "0.1.x",
-                            "extant":                       "1.0.1",
+                            "extant":                       "1.0.x",
                             "happenstance":                 "3.0.x",
                             "kibitz":                       "0.7.x",
                             "magazine":                     "3.0.x",
