@@ -20,6 +20,8 @@
     },
     "dependencies":
     {
+                            "conduit":                      "0.4.x",
+                            "kibitz":                       "0.7.x"
     },
     "devDependencies":
     {
