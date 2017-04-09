@@ -81,15 +81,12 @@ function Colleague (ua, kibitzer) {
     this.demolition = this._destructor.events
 }
 
-Colleague.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.async(async, 'conduit')(function () {
-        this._conduit = new Conduit(input, output)
-        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
-        this.write.pump(this._conduit.write)
-        this._conduit.read.pump(this.read)
-        this.connected.unlatch()
-        this._conduit.listen(async())
-    })
+Colleague.prototype.pump = function (pumpable) {
+    this.write.pump(pumpable.write)
+    pumpable.read.pump(this.read)
+}
+
+Colleague.prototype.log = cadence(function (async) {
     this._destructor.async(async, 'log')(function () {
         var shifter = this._kibitzer.islander.log.shifter()
         this._destructor.addDestructor('log', shifter.destroy.bind(shifter))
@@ -109,6 +106,17 @@ Colleague.prototype.listen = cadence(function (async, input, output) {
             })
         })()
     })
+})
+
+Colleague.prototype.listen = cadence(function (async, input, output) {
+    this._destructor.async(async, 'conduit')(function () {
+        this._conduit = new Conduit(input, output)
+        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+        this.pump(this._conduit)
+        this.connected.unlatch()
+        this._conduit.listen(async())
+    })
+    this.log(async())
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {
