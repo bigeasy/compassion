@@ -20,8 +20,10 @@
     },
     "dependencies":
     {
+                            "cadence":                      "1.0.x",
                             "conduit":                      "0.4.x",
-                            "kibitz":                       "0.7.x"
+                            "kibitz":                       "0.7.x",
+                            "compassion.colleague":         "0.7.x"
     },
     "devDependencies":
     {
