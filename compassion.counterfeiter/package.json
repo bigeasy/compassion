@@ -22,6 +22,7 @@
     {
                             "cadence":                      "1.0.x",
                             "conduit":                      "0.4.x",
+                            "destructible":                 "0.1.x",
                             "kibitz":                       "0.7.x",
                             "compassion.colleague":         "0.7.x"
     },
