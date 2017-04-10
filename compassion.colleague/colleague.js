@@ -1,7 +1,7 @@
 var delta = require('delta')
 var abend = require('abend')
 var cadence = require('cadence')
-var Destructor = require('destructible')
+var Destructible = require('destructible')
 var stream = require('stream')
 var coalesce = require('extant')
 var Signal = require('signal')
@@ -74,11 +74,11 @@ function Colleague (ua, kibitzer) {
 
     this.responses.pump(this, '_response')
 
-    this._destructor = new Destructor
-    this._destructor.markDestroyed(this, 'destroyed')
-    this._destructor.addDestructor('connected', { object: this.connected, method: 'unlatch' })
+    this._destructible = new Destructible
+    this._destructible.markDestroyed(this, 'destroyed')
+    this._destructible.addDestructor('connected', { object: this.connected, method: 'unlatch' })
 
-    this.demolition = this._destructor.events
+    this.demolition = this._destructible.events
 }
 
 Colleague.prototype.pump = function (pumpable) {
@@ -87,9 +87,9 @@ Colleague.prototype.pump = function (pumpable) {
 }
 
 Colleague.prototype.log = cadence(function (async) {
-    this._destructor.async(async, 'log')(function () {
+    this._destructible.async(async, 'log')(function () {
         var shifter = this._kibitzer.islander.log.shifter()
-        this._destructor.addDestructor('log', shifter.destroy.bind(shifter))
+        this._destructible.addDestructor('log', shifter.destroy.bind(shifter))
         var loop = async(function () {
             shifter.dequeue(async())
         }, function (entry) {
@@ -109,9 +109,9 @@ Colleague.prototype.log = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.async(async, 'conduit')(function () {
+    this._destructible.async(async, 'conduit')(function () {
         this._conduit = new Conduit(input, output)
-        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+        this._destructible.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
         this.pump(this._conduit)
         this.connected.unlatch()
         this._conduit.listen(async())
@@ -135,7 +135,7 @@ Colleague.prototype.request = cadence(function (async, envelope) {
 })
 
 Colleague.prototype.destroy = function () {
-    this._destructor.destroy()
+    this._destructible.destroy()
 }
 
 Colleague.prototype.getProperties = cadence(function (async) {
