@@ -25,7 +25,8 @@
                             "conduit":                      "0.7.x",
                             "destructible":                 "0.4.x",
                             "kibitz":                       "0.7.x",
-                            "compassion.colleague":         "0.7.x"
+                            "compassion.colleague":         "0.7.x",
+                            "signal":                       "1.10.x"
     },
     "devDependencies":
     {
