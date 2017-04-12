@@ -22,7 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "arguable":                     "5.0.x",
-                            "assignation":                  "0.1.x",
+                            "assignation":                  "0.2.x",
                             "cadence":                      "1.0.x",
                             "connect":                      "3.6.0",
                             "downgrader":                   "0.0.4",
