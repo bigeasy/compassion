@@ -20,6 +20,7 @@
     },
     "dependencies":
     {
+                            "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
                             "conduit":                      "0.7.x",
                             "destructible":                 "0.4.x",
