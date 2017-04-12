@@ -76,20 +76,20 @@ function Colleague (ua, kibitzer) {
 
     this._destructible = new Destructible
     this._destructible.markDestroyed(this, 'destroyed')
-    this._destructible.addDestructor('connected', { object: this.connected, method: 'unlatch' })
+    this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
     this.demolition = this._destructible.events
 }
 
 Colleague.prototype.pump = function (pumpable) {
-    this.write.pump(pumpable.write)
-    pumpable.read.pump(this.read)
+    this.write.pump(pumpable.write, 'enqueue')
+    pumpable.read.pump(this.read, 'enqueue')
 }
 
 Colleague.prototype.log = cadence(function (async) {
     this._destructible.async(async, 'log')(function () {
         var shifter = this._kibitzer.islander.log.shifter()
-        this._destructible.addDestructor('log', shifter.destroy.bind(shifter))
+        this._destructible.addDestructor('log', shifter, 'destroy')
         var loop = async(function () {
             shifter.dequeue(async())
         }, function (entry) {
@@ -111,7 +111,7 @@ Colleague.prototype.log = cadence(function (async) {
 Colleague.prototype.listen = cadence(function (async, input, output) {
     this._destructible.async(async, 'conduit')(function () {
         this._conduit = new Conduit(input, output)
-        this._destructible.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+        this._destructible.addDestructor('conduit', this._conduit, 'destroy')
         this.pump(this._conduit)
         this.connected.unlatch()
         this._conduit.listen(async())

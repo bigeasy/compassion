@@ -89,13 +89,13 @@ require('arguable')(module, require('cadence')(function (async, program) {
     logger.info('started', { parameters: program.utlimate, argv: program.argv })
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
-    var destructor = new Destructor('colleague')
+    var destructible = new Destructor('colleague')
 
-    destructor.events.pump(new Terminator(1000))
-    program.on('shutdown', destructor.destroy.bind(destructor))
+    destructible.events.pump(new Terminator(1000))
+    program.on('shutdown', destructible.destroy.bind(destructible))
 
-    destructor.addDestructor('shutdown', shuttle.close.bind(shuttle))
-    destructor.addDestructor('kibitzer', kibitzer.destroy.bind(kibitzer))
+    destructible.addDestructor('shutdown', shuttle, 'close')
+    destructible.addDestructor('kibitzer', kibitzer, 'destroy')
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
@@ -120,46 +120,39 @@ require('arguable')(module, require('cadence')(function (async, program) {
         startedAt: startedAt
     })
 
-    destructor.async(async, 'kibitzer')(function () {
-        destructor.addDestructor('kibitzer', kibitzer.destroy.bind(kibitzer))
-        kibitzer.listen(async())
-    })
-
-    destructor.async(async, 'envoy')(function () {
-        destructor.addDestructor('envoy', envoy.close.bind(envoy))
-        envoy.connect(location, async())
-    })
-
-    destructor.async(async, 'main')(function () {
-        envoy.connected.wait(async())
-    }, function () {
-        destructor.async(async, 'connected')(function () {
-            destructor.async(async, 'monitor')(function () {
-                destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
-                async(function () {
-                    monitor.run(program, async())
-                }, function (exitCode, signal) {
-                    logger.info('exited', { exitCode: exitCode, signal: signal })
-                })
-            })
-            async(function () {
-                monitor.started.wait(async())
-            }, function () {
-                destructor.async(async, 'colleague')(function () {
-                    destructor.addDestructor('colleague', colleague.destroy.bind(colleague))
-                    colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
-                })
-                async(function () {
-                    colleague.connected.wait(async())
-                }, function () {
-                    /*setTimeout(async(), 1000)*/
-                }, function () {
-                   destructor.async(async, 'chaperon')(function () {
-                        destructor.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
-                        chaperon.listen(async())
-                    })
-                })
-            })
+    cadence(function (async) {
+        destructible.async(async, 'kibitzer')(function (ready) {
+            kibitzer.listen(async())
+            ready.unlatch()
         })
-    })
+
+        destructible.async(async, 'envoy')(function (ready) {
+            destructible.addDestructor('envoy', envoy, 'close')
+            envoy.connect(location, async())
+            ready.unlatch()
+        })
+
+        destructible.async(async, 'monitor')(function (ready) {
+            destructible.addDestructor('monitor', monitor.destroy.bind(monitor))
+            async(function () {
+                monitor.run(program, async())
+            }, function (exitCode, signal) {
+                logger.info('exited', { exitCode: exitCode, signal: signal })
+            })
+            monitor.ready.wait(ready.unlatch.bind(ready))
+        })
+
+        destructible.async(async, 'colleague')(function (ready) {
+            destructible.addDestructor('colleague', colleague.destroy.bind(colleague))
+            colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
+            colleague.ready.wait(ready.unlatch.bind(ready))
+        })
+
+        destructible.async(async, 'chaperon')(function () {
+            destructible.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
+            chaperon.listen(async())
+        })
+    })(abend)
+
+    destructible.ready.wait(async())
 }))
