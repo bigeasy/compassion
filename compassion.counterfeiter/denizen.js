@@ -28,8 +28,7 @@ Denizen.prototype.bootstrap = cadence(function (async) {
     this._destructible.stack(async, 'log')(function (ready) {
         this._destructible.addDestructor('colleague', this._colleague, 'destroy')
         this._colleague.pump(this._conference)
-        this._colleague.log(async())
-        ready.unlatch()
+        this._colleague.log(ready, async())
     })
     this._destructible.rescue(async, 'bootstrap')(function () {
         async(function () {
