@@ -31,16 +31,15 @@ Denizen.prototype.bootstrap = cadence(function (async) {
         this._colleague.log(async())
         ready.unlatch()
     })
-    this._destructible.rescue(async)(function () {
-        this.ready.unlatch()
+    this._destructible.rescue(async, 'bootstrap')(function () {
         async(function () {
             this._colleague.getProperties(async())
         }, function (properties) {
-        console.log('here', properties)
             properties.location = this.kibitzer.paxos.id
             this.kibitzer.bootstrap(this._Date.now(), properties)
         })
     })
+    this._destructible.ready.wait(this.ready, 'unlatch')
 })
 
 Denizen.prototype.destroy = function () {

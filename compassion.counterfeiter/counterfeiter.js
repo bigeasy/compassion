@@ -10,13 +10,14 @@ function Counterfeiter (network, conference) {
     this._denizens = {}
     this._destructible = new Destructor('counterfeiter')
     this._destructible.markDestroyed(this, 'destroyed')
-    this._destructible.events.pump(new Terminator(1000), 'enqueue')
+    this._destructible.events.pump(new Terminator(1000), 'push')
+    this.done = this._destructible.done
 }
 
 Counterfeiter.prototype.bootstrap = cadence(function (async, conference, identifier) {
     var denizen = this._denizens[identifier] = new Denizen(conference, identifier, new UserAgent(this))
     this._destructible.addDestructor([ 'denizen', identifier ], denizen, 'destroy')
-    denizen.bootstrap(this._destructible.rescue())
+    denizen.bootstrap(this._destructible.rescue([ 'denizen', identifier ]))
     denizen.ready.wait(async())
 })
 
