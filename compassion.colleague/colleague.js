@@ -75,10 +75,11 @@ function Colleague (ua, kibitzer) {
     this.responses.pump(this, '_response')
 
     this._destructible = new Destructible
-    this._destructible.markDestroyed(this, 'destroyed')
+    this._destructible.markDestroyed(this)
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
     this.demolition = this._destructible.events
+    this.done = this._destructible.done
 }
 
 Colleague.prototype.pump = function (pumpable) {
@@ -86,10 +87,12 @@ Colleague.prototype.pump = function (pumpable) {
     pumpable.read.pump(this.read, 'enqueue')
 }
 
-Colleague.prototype.log = cadence(function (async) {
-    this._destructible.async(async, 'log')(function () {
+Colleague.prototype.log = cadence(function (async, ready) {
+    ready = coalesce(ready, new Signal)
+    this._destructible.stack(async, 'log')(function (ready) {
         var shifter = this._kibitzer.islander.log.shifter()
         this._destructible.addDestructor('log', shifter, 'destroy')
+        ready.unlatch()
         var loop = async(function () {
             shifter.dequeue(async())
         }, function (entry) {
@@ -106,17 +109,20 @@ Colleague.prototype.log = cadence(function (async) {
             })
         })()
     })
+    this._destructible.ready.wait(ready, 'unlatch')
 })
 
-Colleague.prototype.listen = cadence(function (async, input, output) {
-    this._destructible.async(async, 'conduit')(function () {
+Colleague.prototype.listen = cadence(function (async, input, output, ready) {
+    ready = coalesce(ready, new Signal)
+    this._destructible.stack(async, 'conduit')(function (ready) {
         this._conduit = new Conduit(input, output)
         this._destructible.addDestructor('conduit', this._conduit, 'destroy')
         this.pump(this._conduit)
         this.connected.unlatch()
         this._conduit.listen(async())
+        this._conduit.ready.wait(ready, 'unlatch')
     })
-    this.log(async())
+    this.log(ready, async())
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {
