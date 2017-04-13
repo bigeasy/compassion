@@ -23,7 +23,7 @@
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
                             "conduit":                      "0.7.x",
-                            "destructible":                 "0.7.x",
+                            "destructible":                 "0.8.x",
                             "kibitz":                       "0.8.x",
                             "compassion.colleague":         "0.7.x",
                             "signal":                       "1.10.x"
