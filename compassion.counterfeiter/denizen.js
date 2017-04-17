@@ -5,21 +5,25 @@ var Signal = require('signal')
 var Colleague = require('compassion.colleague/colleague')
 var Kibitzer = require('kibitz')
 
-function Denizen (conference, identifier, ua) {
-    var kibitzer = this.kibitzer = new Kibitzer({ id: identifier, ping: 1, timeout: 2 })
+function Denizen (options, ua) {
+    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1, timeout: 2 })
     var responder = new Responder(ua, 'kibitz', kibitzer.write, kibitzer.read)
-    this._colleague = new Colleague(null, kibitzer)
-    this._conference = conference
-    this._identifier = identifier
-    this._destructible = new Destructible([ 'denizen', identifier ])
+    this._ua = ua
+    this._colleague = new Colleague(null, kibitzer, { object: this, method: '_socket' })
+    this._conference = options.conference
+    this._identifier = options.id
+    this._destructible = new Destructible([ 'denizen', options.id ])
     this._destructible.markDestroyed(this)
     this.listening = new Signal
     this._Date = Date
     this.ready = new Signal
 }
 
+Denizen.prototype._socket = function (socket, header) {
+    this._ua.socket(header.to.url, header.body, socket)
+}
 
-Denizen.prototype.bootstrap = cadence(function (async) {
+Denizen.prototype._run = cadence(function (async) {
     this._destructible.stack(async, 'kibitzer')(function (ready) {
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
         this.kibitzer.listen(async())
@@ -30,12 +34,29 @@ Denizen.prototype.bootstrap = cadence(function (async) {
         this._colleague.pump(this._conference)
         this._colleague.log(ready, async())
     })
+})
+
+Denizen.prototype.bootstrap = cadence(function (async) {
+    this._run(async())
     this._destructible.rescue(async, 'bootstrap')(function () {
         async(function () {
             this._colleague.getProperties(async())
         }, function (properties) {
-            properties.location = this.kibitzer.paxos.id
+            properties.url = this.kibitzer.paxos.id
             this.kibitzer.bootstrap(this._Date.now(), properties)
+        })
+    })
+    this._destructible.ready.wait(this.ready, 'unlatch')
+})
+
+Denizen.prototype.join = cadence(function (async, leader, republic) {
+    this._run(async())
+    this._destructible.rescue(async, 'join')(function () {
+        async(function () {
+            this._colleague.getProperties(async())
+        }, function (properties) {
+            properties.url = this.kibitzer.paxos.id
+            this.kibitzer.join({ url: leader, republic: republic }, properties, async())
         })
     })
     this._destructible.ready.wait(this.ready, 'unlatch')

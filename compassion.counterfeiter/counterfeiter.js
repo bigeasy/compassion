@@ -6,18 +6,31 @@ var UserAgent = require('./ua')
 var Denizen = require('./denizen')
 var Terminator = require('destructible/terminator')
 
-function Counterfeiter (network, conference) {
+function Counterfeiter () {
     this._denizens = {}
+    this.events = {}
+    this.kibitzers = {}
     this._destructible = new Destructor('counterfeiter')
     this._destructible.markDestroyed(this, 'destroyed')
     this._destructible.events.pump(new Terminator(1000), 'push')
     this.done = this._destructible.done
 }
 
-Counterfeiter.prototype.bootstrap = cadence(function (async, conference, identifier) {
-    var denizen = this._denizens[identifier] = new Denizen(conference, identifier, new UserAgent(this))
-    this._destructible.addDestructor([ 'denizen', identifier ], denizen, 'destroy')
-    denizen.bootstrap(this._destructible.rescue([ 'denizen', identifier ]))
+Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
+    var denizen = this._denizens[options.id] = new Denizen(options, new UserAgent(this))
+    this.kibitzers[options.id] = denizen.kibitzer
+    this.events[options.id] = denizen.kibitzer.log.shifter()
+    this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
+    denizen.bootstrap(this._destructible.rescue([ 'denizen', options.id ]))
+    denizen.ready.wait(async())
+})
+
+Counterfeiter.prototype.join = cadence(function (async, options) {
+    var denizen = this._denizens[options.id] = new Denizen(options, new UserAgent(this))
+    this.kibitzers[options.id] = denizen.kibitzer
+    this.events[options.id] = denizen.kibitzer.log.shifter()
+    this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
+    denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ]))
     denizen.ready.wait(async())
 })
 

@@ -6,10 +6,16 @@ function UserAgent (counterfeiter) {
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
-        this._counterfeiter._denizens[envelope.to.location].kibitzer.request(envelope, async())
+        this._counterfeiter._denizens[envelope.to.url].kibitzer.request(envelope, async())
     }, function (body) {
         return [ body ]
     })
 })
+
+UserAgent.prototype.socket = function (url, header, socket) {
+    var to = this._counterfeiter._denizens[url]._colleague._client.connect(header)
+    to.read.pump(socket.write, 'enqueue')
+    socket.read.pump(to.write, 'enqueue')
+}
 
 module.exports = UserAgent
