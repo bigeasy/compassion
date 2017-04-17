@@ -16,8 +16,38 @@ var http = require('http')
 var url = require('url')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
-function Conference (colleague) {
-    this._colleague = colleague
+function Colleague (ua, kibitzer, server) {
+    this._ua = ua
+    this._kibitzer = kibitzer
+
+    this.read = new Procession
+    this.write = new Procession
+//    this.read.pump(function (envelope) { console.log('READ', envelope) })
+//    this.write.pump(function (envelope) { console.log('WRITE', envelope) })
+
+    this._requester = new Requester('colleague', this.read, this.write)
+//    this._requester.read.pump(function (envelope) { console.log('REQUESTER READ', envelope) })
+    var responder = new Responder(this, 'colleague', this._requester.read, this._requester.write)
+    var server = new Server(server || { object: this, method: '_connect' }, 'outgoing', responder.read, responder.write)
+    this._client = new Client('incoming', server.read, server.write)
+
+    this._write = this._client.write
+
+    server.read.pump(this, '_read')
+
+    this.connected = new Signal
+
+    this.chatter = new Procession
+    this.responses = new Procession
+
+    this.responses.pump(this, '_response')
+
+    this._destructible = new Destructible
+    this._destructible.markDestroyed(this)
+    this._destructible.addDestructor('connected', this.connected, 'unlatch')
+
+    this.demolition = this._destructible.events
+    this.done = this._destructible.done
 }
 
 Colleague.prototype._read = cadence(function (async, envelope) {
@@ -43,44 +73,6 @@ Colleague.prototype._read = cadence(function (async, envelope) {
         break
     }
 })
-
-Conference.prototype.request = function (envelope, callback) {
-    this._colleague._request(envelope, callback)
-}
-
-function Colleague (ua, kibitzer) {
-    this._ua = ua
-    this._kibitzer = kibitzer
-
-    this.read = new Procession
-    this.write = new Procession
-//    this.read.pump(function (envelope) { console.log('READ', envelope) })
-//    this.write.pump(function (envelope) { console.log('WRITE', envelope) })
-
-    this._requester = new Requester('colleague', this.read, this.write)
-//    this._requester.read.pump(function (envelope) { console.log('REQUESTER READ', envelope) })
-    var responder = new Responder(this, 'colleague', this._requester.read, this._requester.write)
-    var server = new Server({ object: this, method: '_connect' }, 'outgoing', responder.read, responder.write)
-    this._client = new Client('incoming', server.read, server.write)
-
-    this._write = this._client.write
-
-    server.read.pump(this, '_read')
-
-    this.connected = new Signal
-
-    this.chatter = new Procession
-    this.responses = new Procession
-
-    this.responses.pump(this, '_response')
-
-    this._destructible = new Destructible
-    this._destructible.markDestroyed(this)
-    this._destructible.addDestructor('connected', this.connected, 'unlatch')
-
-    this.demolition = this._destructible.events
-    this.done = this._destructible.done
-}
 
 Colleague.prototype.pump = function (pumpable) {
     this.write.pump(pumpable.write, 'enqueue')
