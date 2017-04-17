@@ -4,9 +4,11 @@ var Destructible = require('destructible')
 var Signal = require('signal')
 var Colleague = require('compassion.colleague/colleague')
 var Kibitzer = require('kibitz')
+var Timer = require('happenstance').Timer
 
 function Denizen (options, ua) {
-    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1, timeout: 2 })
+    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 2000 })
+    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
     var responder = new Responder(ua, 'kibitz', kibitzer.write, kibitzer.read)
     this._ua = ua
     this._colleague = new Colleague(null, kibitzer, { object: this, method: '_socket' })
