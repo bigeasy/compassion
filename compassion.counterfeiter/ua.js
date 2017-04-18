@@ -5,6 +5,9 @@ function UserAgent (counterfeiter) {
 }
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
+    if (this._counterfeiter._denizens[envelope.to.url] == null) {
+        return null
+    }
     async(function () {
         this._counterfeiter._denizens[envelope.to.url].kibitzer.request(envelope, async())
     }, function (body) {

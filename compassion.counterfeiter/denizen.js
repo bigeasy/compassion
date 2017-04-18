@@ -6,8 +6,9 @@ var Colleague = require('compassion.colleague/colleague')
 var Kibitzer = require('kibitz')
 var Timer = require('happenstance').Timer
 
-function Denizen (options, ua) {
-    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 2000 })
+function Denizen (counterfeiter, options, ua) {
+    this._counterfeiter = counterfeiter
+    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 250, timeout: 1000 })
     kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
     var responder = new Responder(ua, 'kibitz', kibitzer.write, kibitzer.read)
     this._ua = ua
@@ -16,9 +17,14 @@ function Denizen (options, ua) {
     this._identifier = options.id
     this._destructible = new Destructible([ 'denizen', options.id ])
     this._destructible.markDestroyed(this)
+    this._destructible.addDestructor('network', this, '_leaveNetwork')
     this.listening = new Signal
     this._Date = Date
     this.ready = new Signal
+}
+
+Denizen.prototype._leaveNetwork = function () {
+    delete this._counterfeiter._denizens[this._identifier]
 }
 
 Denizen.prototype._socket = function (socket, header) {

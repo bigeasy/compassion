@@ -16,7 +16,7 @@ function Counterfeiter () {
 }
 
 Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
-    var denizen = this._denizens[options.id] = new Denizen(options, new UserAgent(this))
+    var denizen = this._denizens[options.id] = new Denizen(this, options, new UserAgent(this))
     this.kibitzers[options.id] = denizen.kibitzer
     this.events[options.id] = denizen.kibitzer.log.shifter()
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
@@ -29,7 +29,8 @@ Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
 })
 
 Counterfeiter.prototype.join = cadence(function (async, options) {
-    var denizen = this._denizens[options.id] = new Denizen(options, new UserAgent(this))
+    // TODO Fold UserAgent into Counterfeiter.
+    var denizen = this._denizens[options.id] = new Denizen(this, options, new UserAgent(this))
     this.kibitzers[options.id] = denizen.kibitzer
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ]))
@@ -40,8 +41,8 @@ Counterfeiter.prototype.join = cadence(function (async, options) {
     })
 })
 
-Counterfeiter.prototype.stop = function (identifier) {
-    this._destructible.invokeDestructor([ 'denizen', identifier ])
+Counterfeiter.prototype.leave = function (id) {
+    this._destructible.invokeDestructor([ 'denizen', id ])
 }
 
 Counterfeiter.prototype.destroy = function () {
