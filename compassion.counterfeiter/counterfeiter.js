@@ -1,5 +1,4 @@
 var cadence = require('cadence')
-var Network = require('./network')
 var abend = require('abend')
 var Destructor = require('destructible')
 var UserAgent = require('./ua')
