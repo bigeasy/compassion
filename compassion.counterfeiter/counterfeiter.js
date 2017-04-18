@@ -22,16 +22,23 @@ Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
     this.events[options.id] = denizen.kibitzer.log.shifter()
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     denizen.bootstrap(this._destructible.rescue([ 'denizen', options.id ]))
-    denizen.ready.wait(async())
+    async(function () {
+        denizen.ready.wait(async())
+    }, function () {
+        this.events[options.id] = denizen.shifter
+    })
 })
 
 Counterfeiter.prototype.join = cadence(function (async, options) {
     var denizen = this._denizens[options.id] = new Denizen(options, new UserAgent(this))
     this.kibitzers[options.id] = denizen.kibitzer
-    this.events[options.id] = denizen.kibitzer.log.shifter()
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ]))
-    denizen.ready.wait(async())
+    async(function () {
+        denizen.ready.wait(async())
+    }, function () {
+        this.events[options.id] = denizen.shifter
+    })
 })
 
 Counterfeiter.prototype.stop = function (identifier) {

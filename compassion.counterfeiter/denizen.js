@@ -36,6 +36,9 @@ Denizen.prototype._run = cadence(function (async) {
         this._colleague.pump(this._conference)
         this._colleague.log(ready, async())
     })
+    this._destructible.rescue(async, 'events')(function () {
+        this.shifter = this.kibitzer.log.shifter()
+    })
 })
 
 Denizen.prototype.bootstrap = cadence(function (async) {
