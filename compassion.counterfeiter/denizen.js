@@ -5,6 +5,8 @@ var Signal = require('signal')
 var Colleague = require('compassion.colleague/colleague')
 var Kibitzer = require('kibitz')
 var Timer = require('happenstance').Timer
+var Procession = require('procession')
+var Recorder = require('./recorder')
 
 function Denizen (counterfeiter, options, ua) {
     this._counterfeiter = counterfeiter
@@ -18,6 +20,11 @@ function Denizen (counterfeiter, options, ua) {
     this._destructible = new Destructible([ 'denizen', options.id ])
     this._destructible.markDestroyed(this)
     this._destructible.addDestructor('network', this, '_leaveNetwork')
+    var logger = this.logger = new Procession
+    var done = false
+    kibitzer.played.pump(new Recorder('kibitz', logger), 'push')
+    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger), 'push')
+    kibitzer.islander.outbox.pump(new Recorder('islander', logger), 'push')
     this.listening = new Signal
     this._Date = Date
     this.ready = new Signal

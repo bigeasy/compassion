@@ -9,6 +9,7 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
         return null
     }
     async(function () {
+        envelope = JSON.parse(JSON.stringify(envelope))
         this._counterfeiter._denizens[envelope.to.url].kibitzer.request(envelope, async())
     }, function (body) {
         return [ body ]
