@@ -2,7 +2,6 @@ var cadence = require('cadence')
 
 var departure = require('departure')
 
-var Throttle = require('procession/throttle')
 var Procession = require('procession')
 
 var Destructor = require('destructible')
@@ -13,12 +12,14 @@ var Splitter = require('procession/splitter')
 
 var assert = require('assert')
 
+var Signal = require('signal')
+
 function Merger (kibitzer, channel) {
-    this._replay = this.replay = new Procession
-    this.replay = new Throttle(this._replay = new Procession, 1)
+    this.replay = new Procession
     this.play = new Procession
+    this.ready = new Signal
     this._destructor = new Destructor
-    this._destructor.markDestroyed(this, 'destroyed')
+    this._destructor.markDestroyed(this)
     this._kibitzer = kibitzer
     this._channel = channel
 }
@@ -47,9 +48,10 @@ Merger.prototype.destroy = function () {
 Merger.prototype.merge = cadence(function (async) {
     var responses = this._channel.responses.shifter()
     var chatter = this._chatter = this._channel.chatter.shifter()
-    var replay = this._replay = this._replay.shifter()
-    this._destructor.addDestructor('chatter', { object: chatter, method: 'destroy' })
-    this._destructor.addDestructor('replay', { object: replay, method: 'destroy' })
+    var replay = this.replay.shifter()
+    this.ready.unlatch()
+    this._destructor.addDestructor('chatter', chatter, 'destroy')
+    this._destructor.addDestructor('replay', replay, 'destroy')
     // var chatter = this._channel.chatter.shifter()
     var outboxes = {
         paxos: this._kibitzer.paxos.outbox.shifter(),
@@ -75,6 +77,9 @@ Merger.prototype.merge = cadence(function (async) {
                 departure.raise(properties, envelope.body.properties)
                 this._kibitzer.replay(envelope)
                 break
+            default:
+                throw new Error
+                break
             }
         })
     }, function () {
@@ -84,13 +89,13 @@ Merger.prototype.merge = cadence(function (async) {
             if (entry == null) {
                 return [ loop.break ]
             }
+            console.log('!!!', entry)
             var envelope = entry.$envelope
             switch (entry.source) {
             case 'colleague':
                 switch (envelope.method) {
                 case 'boundary':
                     async(function () {
-                        console.log(envelope)
                         if (envelope.entry != null) {
                             var entry = log.shift()
                             departure.raise(entry.promise, envelope.entry)
@@ -101,9 +106,7 @@ Merger.prototype.merge = cadence(function (async) {
                             }, async())
                         }
                     }, function () {
-                        console.log('JOINING', entry)
                         chatter.join(function (entry) {
-                            console.log(entry)
                             return entry.id == envelope.id
                         }, async())
                     }, function (envelope) {
@@ -135,7 +138,9 @@ Merger.prototype.merge = cadence(function (async) {
                 departure.raise(outboxes.paxos.shift(), envelope)
                 break
             case 'islander':
-                departure.raise(outboxes.islander.shift(), envelope)
+                var shifted = outboxes.islander.shift()
+                console.log('--------', envelope, shifted)
+                departure.raise(shifted, envelope)
                 break
             }
         })()

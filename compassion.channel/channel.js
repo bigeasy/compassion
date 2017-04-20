@@ -14,7 +14,7 @@ function Conference (channel) {
     this._channel = channel
 }
 
-Channel.prototype.enqueue = cadence(function (async, envelope) {
+Channel.prototype._enqueue = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
@@ -39,8 +39,6 @@ Channel.prototype.enqueue = cadence(function (async, envelope) {
 })
 
 function Channel (kibitzer) {
-    this.connected = new Signal
-
     this.read = new Procession
     this.write = new Procession
 
@@ -48,26 +46,34 @@ function Channel (kibitzer) {
     this._kibitzer = kibitzer
     this._destructor = new Destructor
     this._destructor.markDestroyed(this, 'destroyed')
-    this._destructor.addDestructor('connected', { object: this.connected, method: 'unlatch' })
 
     this._requester = new Requester('colleague', this.read, this.write)
 
-    this._requester.read.pump(this)
+    this._requester.read.pump(this, '_enqueue')
 
     this.requests = new Procession
     this.chatter = new Procession
     this.responses = new Procession
+
+    this.ready = new Signal
+    this._destructor.addDestructor('ready', this.ready, 'unlatch')
+}
+
+Channel.prototype.pump = function (read, write) {
+    console.log(!!read, !!write)
+    this.write.pump(read, 'enqueue')
+    write.pump(this.read, 'enqueue')
 }
 
 Channel.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.async(async, 'listen')(function () {
+    this._destructor.stack(async, 'listen')(function (ready) {
         this._conduit = new Conduit(input, output)
-        this.write.pump(this._conduit.write)
-        this._conduit.read.pump(this.read)
-        this.connected.unlatch()
+        this.pump(this._conduit.write, this.conduit.read)
         this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
         this._conduit.listen(async())
+        this._conduit.ready.wait(ready, 'unlatch')
     })
+    this._destructor.ready.wait(this.ready, 'unlatch')
 })
 
 Channel.prototype.destroy = function () {

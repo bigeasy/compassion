@@ -83,45 +83,43 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructor.addDestructor('shuttle', shuttle.close.bind(shuttle))
 
-    destructor.async(async, 'monitor')(function () {
-        destructor.addDestructor('monitor', monitor.destroy.bind(monitor))
+    destructor.stack(async, 'monitor')(function (ready) {
+        destructor.addDestructor('monitor', monitor, 'destroy')
         async(function () {
             monitor.run(program, async())
         }, function (exitCode, signal) {
             console.log('exit', exitCode)
             logger.info('exited', { exitCode: exitCode, signal: signal })
         })
+        monitor.ready.wait(ready, 'unlatch')
     })
 
-    async(function () {
-        monitor.started.wait(async())
-    }, function () {
-        destructor.async(async, 'connected')(function () {
-            destructor.addDestructor('channel', channel.destroy.bind(channel))
-            channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
-        })
-        async(function () {
-            channel.connected.wait(async())
-        }, function () {
-            destructor.async(async, 'readable')(function () {
-                var readable = new Staccato.Readable(byline(stream))
-                destructor.addDestructor('readable', readable.destroy.bind(readable))
-                var loop = async(function () {
-                    readable.read(async())
-                }, function (line) {
-                    async(function () {
-                        merger.replay.enqueue(line && JSON.parse(line.toString()), async())
-                    }, function () {
-                        if (line == null) {
-                            return [ loop.break ]
-                        }
-                    })
-                })()
+    destructor.stack(async, 'connected')(function (ready) {
+        destructor.addDestructor('channel', channel.destroy.bind(channel))
+        channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
+        channel.ready.wait(ready, 'unlatch')
+    })
+
+    destructor.stack(async, 'readable')(function (ready) {
+        var readable = new Staccato.Readable(byline(stream))
+        destructor.addDestructor('readable', readable.destroy.bind(readable))
+        var loop = async(function () {
+            readable.read(async())
+        }, function (line) {
+            async(function () {
+                merger.replay.enqueue(line && JSON.parse(line.toString()), async())
+            }, function () {
+                if (line == null) {
+                    return [ loop.break ]
+                }
             })
-            destructor.async(async, 'merger')(function () {
-                destructor.addDestructor('merger', { object: merger, method: 'destroy' })
-                merger.merge(async())
-            })
-        })
+        })()
+        ready.unlatch()
+    })
+
+    destructor.stack(async, 'merger')(function (ready) {
+        destructor.addDestructor('merger', merger, 'destroy')
+        merger.merge(async())
+        merger.ready.wait(ready, 'unlatch')
     })
 }))
