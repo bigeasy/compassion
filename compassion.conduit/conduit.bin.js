@@ -29,7 +29,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var http = require('http')
 
-    var Middleware = require('./http')
+    var Middleware = require('./middleware')
     var Shuttle = require('prolific.shuttle')
 
     var logger = require('prolific.logger').createLogger('compassion.conduit')

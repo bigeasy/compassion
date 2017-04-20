@@ -1,7 +1,7 @@
 require('proof')(2, require('cadence')(prove))
 
 function prove (async, assert) {
-    var Conduit = require('../http')
+    var Conduit = require('../middleware')
     var conduit = new Conduit({ paths: [ '/island/1' ] })
 
     async(function () {
