@@ -25,6 +25,7 @@ function Denizen (counterfeiter, options, ua) {
     kibitzer.played.pump(new Recorder('kibitz', logger), 'push')
     kibitzer.paxos.outbox.pump(new Recorder('paxos', logger), 'push')
     kibitzer.islander.outbox.pump(new Recorder('islander', logger), 'push')
+    this._colleague.chatter.pump(new Recorder('colleague', logger), 'push')
     this.listening = new Signal
     this._Date = Date
     this.ready = new Signal
