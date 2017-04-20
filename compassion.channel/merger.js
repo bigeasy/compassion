@@ -89,7 +89,6 @@ Merger.prototype.merge = cadence(function (async) {
             if (entry == null) {
                 return [ loop.break ]
             }
-            console.log('!!!', entry)
             var envelope = entry.$envelope
             switch (entry.source) {
             case 'colleague':
@@ -138,9 +137,7 @@ Merger.prototype.merge = cadence(function (async) {
                 departure.raise(outboxes.paxos.shift(), envelope)
                 break
             case 'islander':
-                var shifted = outboxes.islander.shift()
-                console.log('--------', envelope, shifted)
-                departure.raise(shifted, envelope)
+                departure.raise(outboxes.islander.shift(), envelope)
                 break
             }
         })()
