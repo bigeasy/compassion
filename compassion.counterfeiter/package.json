@@ -27,6 +27,7 @@
                             "happenstance":                 "3.4.x",
                             "kibitz":                       "0.8.x",
                             "compassion.colleague":         "0.7.x",
+                            "procession":                   "0.4.x",
                             "signal":                       "1.10.x"
     },
     "devDependencies":
