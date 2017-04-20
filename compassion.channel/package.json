@@ -31,6 +31,7 @@
                             "interrupt":                    "5.0.x",
                             "kibitz":                       "0.8.x",
                             "nascent.coalesce":             "0.0.0",
+                            "procession":                   "0.4.x",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
                             "signal":                       "1.10.x",
