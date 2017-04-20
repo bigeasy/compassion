@@ -11,7 +11,7 @@ function Monitor () {
     this.destroyed = false
     this._destructible = new Destructible
     this._destructible.markDestroyed(this)
-    this._destructible.addDestructor('started', { object: this.started, method: 'unlatch' })
+    this._destructible.addDestructor('started', this.started, 'unlatch')
 }
 
 Monitor.prototype._kill = function () {
@@ -31,7 +31,7 @@ Monitor.prototype.run = cadence(function (async, program) {
             env: env
         })
         this.started.unlatch()
-        this._destructible.addDestructor('kill', { object: this, method: '_kill' })
+        this._destructible.addDestructor('kill', this, '_kill')
         delta(async()).ee(this.child).on('exit')
     })
 })
