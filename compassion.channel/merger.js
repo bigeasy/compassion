@@ -112,12 +112,10 @@ Merger.prototype.merge = cadence(function (async) {
                         console.log('BOUNDARY FOUND', envelope)
                     })
                     break
-                case 'replay':
-                    console.log('sending', envelope)
+                case 'invoke':
                     this._channel.write.enqueue({
                         module: 'colleague',
-                        method: 'replay',
-                        id: envelope.id,
+                        method: 'invoke',
                         body: envelope.body
                     }, async())
                     break

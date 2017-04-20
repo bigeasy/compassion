@@ -60,7 +60,6 @@ function Channel (kibitzer) {
 }
 
 Channel.prototype.pump = function (read, write) {
-    console.log(!!read, !!write)
     this.write.pump(read, 'enqueue')
     write.pump(this.read, 'enqueue')
 }
