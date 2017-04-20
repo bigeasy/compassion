@@ -33,6 +33,7 @@
                             "nascent.coalesce":             "0.0.0",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "9.0.x",
+                            "signal":                       "1.10.x",
                             "staccato":                     "3.0.x"
     },
     "devDependencies":
