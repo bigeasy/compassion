@@ -50,7 +50,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var shuttle = Shuttle.shuttle(program, logger)
     var Monitor = require('compassion.colleague/monitor')
     var Kibitzer = require('kibitz')
-    var coalesce = require('nascent.coalesce')
+    var coalesce = require('extant')
     var Destructor = require('destructible')
     var Terminator = require('destructible/terminator')
     var cadence = require('cadence')
