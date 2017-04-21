@@ -80,18 +80,16 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var cadence = require('cadence')
 
-    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler))
+    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
 
-    kibitzer.played.pump(new Recorder('kibitz', logger))
-    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger))
-    kibitzer.islander.outbox.pump(new Recorder('islander', logger))
-
-    logger.info('started', { parameters: program.utlimate, argv: program.argv })
+    kibitzer.played.pump(new Recorder('kibitz', logger), 'push')
+    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger), 'push')
+    kibitzer.islander.outbox.pump(new Recorder('islander', logger), 'push')
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
     var destructible = new Destructor('colleague')
 
-    destructible.events.pump(new Terminator(1000))
+    destructible.events.pump(new Terminator(1000), 'push')
     program.on('shutdown', destructible.destroy.bind(destructible))
 
     destructible.addDestructor('shutdown', shuttle, 'close')
@@ -108,7 +106,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     location = url.resolve(location + '/', program.ultimate.island)
     location = url.resolve(location + '/',  program.ultimate.id)
 
-    colleague.chatter.pump(new Recorder('colleague', logger))
+    colleague.chatter.pump(new Recorder('colleague', logger), 'push')
     var monitor = new Monitor
 
     var chaperon = new Chaperon({
@@ -121,38 +119,43 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     cadence(function (async) {
-        destructible.async(async, 'kibitzer')(function (ready) {
+        destructible.stack(async, 'kibitzer')(function (ready) {
             kibitzer.listen(async())
-            ready.unlatch()
+            kibitzer.ready.wait(ready, 'unlatch')
         })
 
-        destructible.async(async, 'envoy')(function (ready) {
+        destructible.stack(async, 'envoy')(function (ready) {
             destructible.addDestructor('envoy', envoy, 'close')
             envoy.connect(location, async())
-            ready.unlatch()
+            envoy.ready.wait(ready, 'unlatch')
         })
 
-        destructible.async(async, 'monitor')(function (ready) {
-            destructible.addDestructor('monitor', monitor.destroy.bind(monitor))
+        destructible.stack(async, 'monitor')(function (ready) {
+            destructible.addDestructor('monitor', monitor, 'destroy')
             async(function () {
                 monitor.run(program, async())
             }, function (exitCode, signal) {
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
-            monitor.ready.wait(ready.unlatch.bind(ready))
+            monitor.ready.wait(ready, 'unlatch')
         })
 
-        destructible.async(async, 'colleague')(function (ready) {
+        destructible.stack(async, 'colleague')(function (ready) {
             destructible.addDestructor('colleague', colleague.destroy.bind(colleague))
-            colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], async())
-            colleague.ready.wait(ready.unlatch.bind(ready))
+            colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], ready, async())
         })
 
-        destructible.async(async, 'chaperon')(function () {
-            destructible.addDestructor('chaperon', chaperon.destroy.bind(chaperon))
+        destructible.stack(async, 'chaperon')(function (ready) {
+            console.log('---- chaperoning ---')
+            destructible.addDestructor('chaperon', chaperon, 'destroy')
             chaperon.listen(async())
+            ready.unlatch()
         })
     })(abend)
 
-    destructible.ready.wait(async())
+    async(function () {
+        destructible.ready.wait(async())
+    }, function () {
+        logger.info('started', { parameters: program.utlimate, argv: program.argv })
+    })
 }))
