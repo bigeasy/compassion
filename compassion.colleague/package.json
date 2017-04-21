@@ -32,6 +32,7 @@
                             "destructible":                 "0.8.x",
                             "extant":                       "1.0.x",
                             "happenstance":                 "3.4.x",
+                            "interrupt":                    "5.0.x",
                             "kibitz":                       "0.8.x",
                             "magazine":                     "3.0.x",
                             "operation":                    "1.4.x",
