@@ -166,8 +166,8 @@ Colleague.prototype.outOfBand = cadence(function (async, request) {
 
 Colleague.prototype._tunnel = function (tunnel, header) {
     var socket = this._client.connect(header.body)
-    tunnel.read.pump(socket.write)
-    socket.read.pump(tunnel.write)
+    tunnel.read.pump(socket.write, 'enqueue')
+    socket.read.pump(tunnel.write, 'enqueue')
 }
 
 Colleague.prototype._socket = cadence(function (async, socket, header) {
@@ -197,7 +197,7 @@ Colleague.prototype._socket = cadence(function (async, socket, header) {
             conduit.destroy()
         }
     })
-    socket.read.pump(tunnel.write)
+    socket.read.pump(tunnel.write, 'enqueue')
     tunnel.wrote.pump(function (envelope) {
         if (envelope == null) {
             setImmediate(function () { request.end() })
@@ -210,7 +210,7 @@ Colleague.prototype._socket = cadence(function (async, socket, header) {
             request.end()
         }
     })
-    tunnel.read.pump(socket.write)
+    tunnel.read.pump(socket.write, 'enqueue')
     conduit.listen(abend)
 })
 

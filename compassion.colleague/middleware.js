@@ -70,12 +70,13 @@ Middleware.prototype.socket = cadence(function (async, request) {
                 conduit.write.push(null)
             }
         })
+        require('assert')(this._colleague)
         var server = new Server({
             object: this._colleague,
             method: '_tunnel'
         }, 'tunnel', conduit.read, conduit.write)
         conduit.listen(abend)
-    }
+    }.bind(this)
 })
 
 // Pass Kibitz envelopes to our `Kibitzer`.
