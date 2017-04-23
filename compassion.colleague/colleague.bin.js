@@ -146,7 +146,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })
 
         destructible.stack(async, 'chaperon')(function (ready) {
-            console.log('---- chaperoning ---')
             destructible.addDestructor('chaperon', chaperon, 'destroy')
             chaperon.listen(async())
             ready.unlatch()

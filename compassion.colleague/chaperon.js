@@ -39,7 +39,7 @@ Chaperon.prototype.listen = cadence(function (async) {
     }
     var loop = async(function () {
         this._wait = null
-        this._ua.fetch(this._session, {
+        this._fetch = this._ua.fetch(this._session, {
             url: '/action',
             post: {
                 island: this._island,
@@ -50,6 +50,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             nullify: true
         }, async())
     }, breakIfShutdown, function (action) {
+        this._fetch = null
         if (action == null) {
             this._wait = this._signal.wait(1000, async())
             return
@@ -100,6 +101,9 @@ Chaperon.prototype.listen = cadence(function (async) {
 
 Chaperon.prototype.destroy = function () {
     this._shutdown = true
+    if (this._fetch != null) {
+        this._fetch.cancel()
+    }
     if (this._wait != null) {
         this._signal.cancel(this._wait)()
         this._wait = null
