@@ -91,7 +91,7 @@ Middleware.prototype.kibitz = cadence(function (async, request) {
 //
 Middleware.prototype.health = cadence(function (async) {
     return {
-        dispatcher: this.dispatcher.turnstile.health,
+        dispatcher: this.reactor.turnstile.health,
         startedAt: this._startedAt,
         island: this._island,
         id: this._kibitzer.paxos.id,
