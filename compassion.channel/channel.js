@@ -65,14 +65,12 @@ Channel.prototype.pump = function (read, write) {
 }
 
 Channel.prototype.listen = cadence(function (async, input, output) {
-    this._destructor.stack(async, 'listen')(function (ready) {
-        this._conduit = new Conduit(input, output)
-        this.pump(this._conduit.write, this.conduit.read)
-        this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
-        this._conduit.listen(async())
-        this._conduit.ready.wait(ready, 'unlatch')
-    })
-    this._destructor.ready.wait(this.ready, 'unlatch')
+    this._conduit = new Conduit(input, output)
+    this._conduit.ready.wait(this.ready, 'unlatch')
+    this.pump(this._conduit.write, this._conduit.read)
+    this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
+    this._conduit.listen(this._destructor.monitor('conduit'))
+    this._destructor.completed(async())
 })
 
 Channel.prototype.destroy = function () {

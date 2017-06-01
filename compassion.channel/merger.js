@@ -14,6 +14,9 @@ var assert = require('assert')
 
 var Signal = require('signal')
 
+// Cancelable series of function invocations.
+var Therefore = require('thereafter')
+
 function Merger (kibitzer, channel) {
     this.replay = new Procession
     this.play = new Procession
@@ -50,8 +53,10 @@ Merger.prototype.merge = cadence(function (async) {
     var chatter = this._chatter = this._channel.chatter.shifter()
     var replay = this.replay.shifter()
     this.ready.unlatch()
+
     this._destructor.addDestructor('chatter', chatter, 'destroy')
     this._destructor.addDestructor('replay', replay, 'destroy')
+
     // var chatter = this._channel.chatter.shifter()
     var outboxes = {
         paxos: this._kibitzer.paxos.outbox.shifter(),
