@@ -27,39 +27,53 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.validate(require('arguable/bindable'), 'bind')
 
+    var delta = require('delta')
+
     var http = require('http')
+
+    var Operation = require('operation/variadic')
 
     var Middleware = require('./middleware')
     var Shuttle = require('prolific.shuttle')
+
+    var Destructible = require('destructible')
+
+    var destructible = new Destructible('compassion.conduit')
+
+    program.on('shutdown', destructible.destroy.bind(destructible))
 
     var logger = require('prolific.logger').createLogger('compassion.conduit')
 
     var shuttle = Shuttle.shuttle(program, logger)
 
-    var Upgrader = require('downgrader')
-    var upgrader = new Upgrader
+    var Downgrader = require('downgrader')
+    var downgrader = new Downgrader
 
     var Rendezvous = require('assignation/rendezvous')
     var rendezvous = new Rendezvous
 
-    upgrader.on('socket', rendezvous.upgrade.bind(rendezvous))
+    downgrader.on('socket', Operation([ rendezvous, 'upgrade' ]))
 
     var connect = require('connect')
     var app = require('connect')()
-        .use(rendezvous.middleware.bind(rendezvous))
+        .use(Operation([ rendezvous, 'middleware' ]))
         .use(new Middleware(rendezvous).reactor.middleware)
 
     var server = http.createServer(app)
 
-    server.on('upgrade', upgrader.upgrade.bind(upgrader))
+    server.on('upgrade', Operation([ downgrader, 'upgrade' ]))
 
     var bind = program.ultimate.bind
 
-    program.on('shutdown', server.close.bind(server))
-    program.on('shutdown', shuttle.close.bind(shuttle))
-    program.on('shutdown', rendezvous.close.bind(rendezvous))
+    destructible.addDestructor('server', server, 'close')
+    destructible.addDestructor('shuttle', shuttle, 'close')
+    destructible.addDestructor('rendezvous', rendezvous, 'destroy')
 
-    server.listen(bind.port, bind.address, async())
-
-    logger.info('started', { bind: bind })
+    async(function () {
+        server.listen(bind.port, bind.address, async())
+    }, function () {
+        logger.info('started', { bind: bind })
+        delta(async()).ee(server).on('close')
+        program.ready.unlatch()
+    })
 }))
