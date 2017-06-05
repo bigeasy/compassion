@@ -32,7 +32,7 @@
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "11.0.x",
                             "happenstance":                 "3.4.x",
-                            "reactor":                      "4.6.x"
+                            "reactor":                      "4.9.x"
     },
     "devDependencies":
     {
