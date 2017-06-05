@@ -25,6 +25,7 @@
                             "assignation":                  "0.4.x",
                             "cadence":                      "1.0.x",
                             "connect":                      "3.6.2",
+                            "delta":                        "1.2.x",
                             "destructible":                 "0.12.x",
                             "downgrader":                   "0.1.x",
                             "operation":                    "1.4.x",
