@@ -33,7 +33,7 @@
                             "kibitz":                       "0.8.x",
                             "procession":                   "0.4.x",
                             "prolific.logger":              "3.0.x",
-                            "prolific.shuttle":             "9.0.x",
+                            "prolific.shuttle":             "11.0.x",
                             "signal":                       "1.10.x",
                             "staccato":                     "3.6.x",
                             "thereafter":                   "0.0.x"
