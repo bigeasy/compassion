@@ -24,7 +24,7 @@
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.7.x",
-                            "conduit":                      "0.7.x",
+                            "conduit":                      "0.8.x",
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.3",
                             "destructible":                 "0.12.x",
