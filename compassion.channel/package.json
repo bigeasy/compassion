@@ -28,7 +28,7 @@
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.3",
                             "destructible":                 "0.12.x",
-                            "extant":                       "1.0.0",
+                            "extant":                       "1.0.x",
                             "interrupt":                    "5.0.x",
                             "kibitz":                       "0.8.x",
                             "procession":                   "0.4.x",
