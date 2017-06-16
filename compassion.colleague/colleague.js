@@ -48,6 +48,8 @@ function Colleague (ua, kibitzer, server) {
 
     this.demolition = this._destructible.events
     this.done = this._destructible.done
+
+    this.ready = new Signal
 }
 
 Colleague.prototype._read = cadence(function (async, envelope) {
@@ -74,47 +76,29 @@ Colleague.prototype._read = cadence(function (async, envelope) {
     }
 })
 
-Colleague.prototype.pump = function (pumpable) {
-    this.write.pump(pumpable.write, 'enqueue')
-    pumpable.read.pump(this.read, 'enqueue')
-}
-
-Colleague.prototype.log = cadence(function (async, ready) {
-    ready = coalesce(ready, new Signal)
-    this._destructible.stack(async, 'log')(function (ready) {
-        var shifter = this._kibitzer.islander.log.shifter()
-        this._destructible.addDestructor('log', shifter, 'destroy')
-        ready.unlatch()
-        var loop = async(function () {
-            shifter.dequeue(async())
-        }, function (entry) {
-            async(function () {
-                this._write.enqueue(entry && {
-                    module: 'colleague',
-                    method: 'entry',
-                    body: entry
-                }, async())
-            }, function () {
-                if (entry == null) {
-                    return [ loop.break ]
-                }
-            })
-        })()
-    })
-    this._destructible.ready.wait(ready, 'unlatch')
+Colleague.prototype._log = cadence(function (async) {
+    var shifter = this._kibitzer.islander.log.shifter()
+    this._destructible.addDestructor('log', shifter, 'destroy')
+    var loop = async(function () {
+        shifter.dequeue(async())
+        this.ready.unlatch()
+    }, function (entry) {
+        async(function () {
+            this._write.enqueue(entry && {
+                module: 'colleague',
+                method: 'entry',
+                body: entry
+            }, async())
+        }, function () {
+            if (entry == null) {
+                return [ loop.break ]
+            }
+        })
+    })()
 })
 
-Colleague.prototype.listen = cadence(function (async, input, output, ready) {
-    ready = coalesce(ready, new Signal)
-    this._destructible.stack(async, 'conduit')(function (ready) {
-        this._conduit = new Conduit(input, output)
-        this._destructible.addDestructor('conduit', this._conduit, 'destroy')
-        this.pump(this._conduit)
-        this.connected.unlatch()
-        this._conduit.listen(async())
-        this._conduit.ready.wait(ready, 'unlatch')
-    })
-    this.log(ready, async())
+Colleague.prototype.listen = cadence(function (async) {
+    this._log(this._destructible.monitor('log'))
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {

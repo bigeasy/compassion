@@ -93,7 +93,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.on('shutdown', destructible.destroy.bind(destructible))
 
     destructible.addDestructor('shutdown', shuttle, 'close')
-    destructible.addDestructor('kibitzer', kibitzer, 'destroy')
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
@@ -101,6 +100,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer, colleague)
 
     var envoy = new Envoy(middleware.reactor.middleware)
+
+    var Thereafter = require('thereafter')
 
     var location = program.ultimate.conduit
     location = url.resolve(location + '/', program.ultimate.island)
@@ -118,43 +119,60 @@ require('arguable')(module, require('cadence')(function (async, program) {
         startedAt: startedAt
     })
 
-    cadence(function (async) {
-        destructible.stack(async, 'kibitzer')(function (ready) {
-            kibitzer.listen(async())
-            kibitzer.ready.wait(ready, 'unlatch')
-        })
+    destructible.addDestructor('thereafter', thereafter, 'cancel')
 
-        destructible.stack(async, 'envoy')(function (ready) {
-            destructible.addDestructor('envoy', envoy, 'close')
-            envoy.connect(location, async())
-            envoy.ready.wait(ready, 'unlatch')
-        })
+    thereafter.run(this, function (ready) {
+        destructible.addDestructor('kibitzer', kibitzer, 'destroy')
+        kibitzer.listen(destructible.monitor('kibitzer'))
+        kibitzer.ready.wait(ready, 'unlatch')
+    })
 
-        destructible.stack(async, 'monitor')(function (ready) {
-            destructible.addDestructor('monitor', monitor, 'destroy')
-            async(function () {
-                monitor.run(program, async())
-            }, function (exitCode, signal) {
-                logger.info('exited', { exitCode: exitCode, signal: signal })
-            })
-            monitor.ready.wait(ready, 'unlatch')
-        })
+    thereafter.run(this, function (ready) {
+        destructible.addDestructor('envoy', envoy, 'close')
+        envoy.connect(location, destructible.monitor('envoy'))
+        envoy.ready.wait(ready, 'unlatch')
+    })
 
-        destructible.stack(async, 'colleague')(function (ready) {
-            destructible.addDestructor('colleague', colleague.destroy.bind(colleague))
-            colleague.listen(monitor.child.stdio[3], monitor.child.stdio[3], ready, async())
+    thereafter.run(this, function (ready) {
+        destructible.addDestructor('monitor', monitor, 'destroy')
+        async(function () {
+            monitor.run(program, destructible.monitor('monitor'))
+        }, function (exitCode, signal) {
+            logger.info('exited', { exitCode: exitCode, signal: signal })
         })
+        monitor.ready.wait(ready, 'unlatch')
+    })
 
-        destructible.stack(async, 'chaperon')(function (ready) {
-            destructible.addDestructor('chaperon', chaperon, 'destroy')
-            chaperon.listen(async())
-            ready.unlatch()
-        })
-    })(abend)
+    thereafter.run(this, function (ready) {
+        destructible.addDestructor('colleague', colleague, 'destroy')
+        colleague.listen(destructible.monitor('colleague'))
+        colleague.ready.wait(ready, 'unlatch')
+    })
+
+    thereafter.run(this, function (ready) {
+        var conduit = new Conduit(output) monitor.child.stdio[3], monitor.child.stdio[3])
+
+        destructible.addDestructor('conduit', conduit, 'destroy')
+
+        colleague.write.pump(conduit.write, 'enqueue')
+        conduit.read.pump(colleague.read, 'enqueue')
+
+        conduit.listen(destructible.monitor('conduit'))
+
+        conduit.ready.wait(ready, 'unlatch')
+    })
+
+    thereafter.run(this, function (ready) {
+        destructible.addDestructor('chaperon', chaperon, 'destroy')
+        chaperon.listen(destructible.monitor('chaperon'))
+        ready.unlatch()
+    })
 
     async(function () {
-        destructible.ready.wait(async())
+        thereafter.ready.wait(async())
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
+        program.unlatch()
+        destructible.completed(3000, async())
     })
 }))
