@@ -37,7 +37,7 @@ Monitor.prototype.run = cadence(function (async, program) {
             delta(async()).ee(this.child).on('exit')
             ready.unlatch()
         }, function (exitCode, signal) {
-            interrupt(exitCode == 0 || signal == 'SIGTERM', 'childExit', {
+            interrupt.assert(exitCode == 0 || signal == 'SIGTERM', 'childExit', {
                 exitCode: coalesce(exitCode),
                 signal: coalesce(signal)
             })
