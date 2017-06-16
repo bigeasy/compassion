@@ -30,7 +30,7 @@ Monitor.prototype.run = cadence(function (async, program) {
         var env = JSON.parse(JSON.stringify(program.env))
         env.COMPASSION_COLLEAGUE_FD = 3
         this.child = children.spawn(argv.shift(), argv, {
-            stdio: [ 'inherit', 'inherit', 'inherit', 'pipe' ],
+            stdio: [ 0, 1, 2, 'pipe' ],
             env: env
         })
         async(function () {
