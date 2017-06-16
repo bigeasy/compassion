@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "arguable":                     "5.0.x",
+                            "arguable":                     "5.2.x",
                             "assignation":                  "0.2.x",
                             "bintrees":                     "1.0.1",
                             "byline":                       "5.0.0",
