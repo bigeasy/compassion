@@ -39,7 +39,7 @@
                             "procession":                   "0.4.x",
                             "prolific.logger":              "3.0.x",
                             "prolific.shuttle":             "11.0.x",
-                            "reactor":                      "4.9.x",
+                            "reactor":                      "5.0.x",
                             "signal":                       "1.10.x",
                             "vizsla":                       "4.0.x"
     },
