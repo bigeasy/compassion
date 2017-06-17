@@ -115,6 +115,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 async(function () {
                     merger.replay.enqueue(line && JSON.parse(line.toString()), async())
                 }, function () {
+                    console.log('done')
                     if (line == null) {
                         return [ loop.break ]
                     }
@@ -123,16 +124,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })(destructor.monitor('readable'))
     })
 
-    false && thereafter.run(function (ready) {
+    thereafter.run(function (ready) {
         destructor.addDestructor('merger', merger, 'destroy')
         merger.ready.wait(ready, 'unlatch')
         merger.merge(destructor.monitor('merger'))
     })
 
-    async(function () {
-                console.log('here')
-        destructor.completed(1000, async())
-    }, function () {
-        console.log('x')
-    })
+    destructor.completed(1000, async())
 }))

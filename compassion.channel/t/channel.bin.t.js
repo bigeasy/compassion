@@ -4,6 +4,7 @@ function prove (async, assert) {
     var fs = require('fs')
     var bin = require('../channel.bin')
     var path = require('path')
+    var example = path.join(__dirname, 'fixtures/example.js')
     var log = path.join(__dirname, 'fixtures/log.json')
     var program
     async(function () {
@@ -12,17 +13,10 @@ function prove (async, assert) {
                 log: log,
                 island: 'island',
                 id: '1',
-                argv: [ 'example' ]
+                argv: [ 'node', example ]
             }, async())
         }, function () {
             console.log('done')
-        })
-        return
-        async(function () {
-            program.ready.wait(async())
-        }, function () {
-            console.log('done')
-            program.emit('SIGTERM')
         })
     }, function () {
         return [ async.break ]
