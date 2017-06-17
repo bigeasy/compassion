@@ -44,7 +44,7 @@ function Channel (kibitzer) {
 
     this._channel = null
     this._kibitzer = kibitzer
-    this._destructor = new Destructor
+    this._destructor = new Destructor('channel')
     this._destructor.markDestroyed(this, 'destroyed')
 
     this._requester = new Requester('colleague', this.read, this.write)

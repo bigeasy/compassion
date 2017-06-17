@@ -76,7 +76,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.paxos.outbox.pump(new Recorder('paxos', logger, merger.play), 'enqueue')
     kibitzer.islander.outbox.pump(new Recorder('islander', logger, merger.play), 'enqueue')
 
-    var destructor = new Destructor
+    var destructor = new Destructor('channel.bin')
 
     program.on('shutdown', destructor.destroy.bind(destructor))
 
@@ -123,11 +123,16 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })(destructor.monitor('readable'))
     })
 
-    thereafter.run(function (ready) {
+    false && thereafter.run(function (ready) {
         destructor.addDestructor('merger', merger, 'destroy')
         merger.ready.wait(ready, 'unlatch')
         merger.merge(destructor.monitor('merger'))
     })
 
-    destructor.completed(1000, async())
+    async(function () {
+                console.log('here')
+        destructor.completed(1000, async())
+    }, function () {
+        console.log('x')
+    })
 }))

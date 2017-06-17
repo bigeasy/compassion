@@ -21,7 +21,7 @@ function Merger (kibitzer, channel) {
     this.replay = new Procession
     this.play = new Procession
     this.ready = new Signal
-    this._destructor = new Destructor
+    this._destructor = new Destructor('merger')
     this._destructor.markDestroyed(this)
     this._kibitzer = kibitzer
     this._channel = channel
