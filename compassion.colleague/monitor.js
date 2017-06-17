@@ -44,7 +44,7 @@ Monitor.prototype._run = cadence(function (async, program) {
 })
 
 Monitor.prototype.run = cadence(function (async, program) {
-    this._run(program, this._destructible.monitor('unlatch'))
+    this._run(program, this._destructible.monitor('run'))
     this._destructible.completed(1000, async())
 })
 

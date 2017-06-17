@@ -64,6 +64,11 @@ Merger.prototype.merge = cadence(function (async) {
     }
     var log = this._kibitzer.islander.log.shifter()
     async(function () {
+        replay.dequeue(async())
+    }, function (envelope) {
+        if (envelope == null) {
+            return [ async.break ]
+        }
         this._channel.getProperties(this._kibitzer.paxos.id, async())
     }, function (properties) {
         async(function () {

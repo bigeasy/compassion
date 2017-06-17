@@ -92,7 +92,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
             async(function () {
                 monitor.run(program, async())
             }, function (exitCode, signal) {
-                console.log('exit', exitCode)
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
         })(destructor.monitor('monitor'))
@@ -123,16 +122,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })(destructor.monitor('readable'))
     })
 
-    false && thereafter.run(function (ready) {
+    thereafter.run(function (ready) {
         destructor.addDestructor('merger', merger, 'destroy')
         merger.ready.wait(ready, 'unlatch')
         merger.merge(destructor.monitor('merger'))
     })
 
-    async(function () {
-                console.log('here')
-        destructor.completed(1000, async())
-    }, function () {
-        console.log('x')
-    })
+    destructor.completed(1000, async())
 }))
