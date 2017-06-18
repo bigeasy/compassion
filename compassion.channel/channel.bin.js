@@ -92,7 +92,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
             async(function () {
                 monitor.run(program, async())
             }, function (exitCode, signal) {
-                console.log('exit', exitCode)
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
         })(destructor.monitor('monitor'))
@@ -115,7 +114,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 async(function () {
                     merger.replay.enqueue(line && JSON.parse(line.toString()), async())
                 }, function () {
-                    console.log('done')
                     if (line == null) {
                         return [ loop.break ]
                     }
