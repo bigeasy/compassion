@@ -16,4 +16,4 @@ branches:
 before_install:
 #  - for dir in compassion.*; do (cd $dir && npm install); done
   - (cd compassion.root && npm install)
-  - npm install istanbul coveralls
+#  - npm install istanbul coveralls
