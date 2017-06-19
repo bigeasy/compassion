@@ -353,6 +353,12 @@ Program.prototype.delegate = cadence(function (async, format, argv) {
     }
     var arguable
     try {
+        arguable = require(pkg)
+        console.log('did got')
+    } catch (error) {
+        console.log(error.stack)
+    }
+    try {
         console.log(this._module)
         arguable = this._module.require(pkg)
     } catch (error) {
