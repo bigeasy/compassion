@@ -3,7 +3,7 @@ var abend = require('abend')
 var Destructor = require('destructible')
 var UserAgent = require('./ua')
 var Denizen = require('./denizen')
-var Terminator = require('destructible/terminator')
+var interrupt = require('interrupt').createInterrupter('compassion.counterfeiter')
 
 function Counterfeiter () {
     this._denizens = {}
@@ -13,11 +13,10 @@ function Counterfeiter () {
     this.loggers = {}
     this._destructible = new Destructor('counterfeiter')
     this._destructible.markDestroyed(this, 'destroyed')
-    this._destructible.events.pump(new Terminator(1000), 'push')
-    this.done = this._destructible.done
 }
 
 Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
+    interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
     var denizen = this._denizens[options.id] = new Denizen(this, options, new UserAgent(this))
     this.kibitzers[options.id] = denizen.kibitzer
     this.events[options.id] = denizen.kibitzer.log.shifter()
@@ -32,9 +31,11 @@ Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
 })
 
 Counterfeiter.prototype.join = cadence(function (async, options) {
+    interrupt.assert(!this.destroyed, 'destroyed', this._destructible.errors[0])
     // TODO Fold UserAgent into Counterfeiter.
     var denizen = this._denizens[options.id] = new Denizen(this, options, new UserAgent(this))
     this.kibitzers[options.id] = denizen.kibitzer
+
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     this.loggers[options.id] = denizen.logger.shifter()
     denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ]))
@@ -46,6 +47,7 @@ Counterfeiter.prototype.join = cadence(function (async, options) {
 })
 
 Counterfeiter.prototype.leave = function (id) {
+    interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
     this._destructible.invokeDestructor([ 'denizen', id ])
 }
 

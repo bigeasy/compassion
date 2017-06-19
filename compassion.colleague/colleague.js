@@ -83,7 +83,6 @@ Colleague.prototype._log = cadence(function (async) {
         shifter.dequeue(async())
         this.ready.unlatch()
     }, function (entry) {
-        console.log('ENTRY', entry)
         async(function () {
             this._write.enqueue(entry && {
                 module: 'colleague',

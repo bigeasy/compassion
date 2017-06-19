@@ -7,6 +7,7 @@ var Kibitzer = require('kibitz')
 var Timer = require('happenstance').Timer
 var Procession = require('procession')
 var Recorder = require('./recorder')
+var Thereafter = require('thereafter')
 
 function Denizen (counterfeiter, options, ua) {
     this._counterfeiter = counterfeiter
@@ -18,6 +19,8 @@ function Denizen (counterfeiter, options, ua) {
     this._conference = options.conference
     this._identifier = options.id
     this._destructible = new Destructible([ 'denizen', options.id ])
+    this._thereafter = new Thereafter
+    this._destructible.addDestructor('thereafter', this._thereafter, 'cancel')
     this._destructible.markDestroyed(this)
     this._destructible.addDestructor('network', this, '_leaveNetwork')
     var logger = this.logger = new Procession
@@ -39,46 +42,66 @@ Denizen.prototype._socket = function (socket, header) {
     this._ua.socket(header.to.url, header.body, socket)
 }
 
-Denizen.prototype._run = cadence(function (async) {
-    this._destructible.stack(async, 'kibitzer')(function (ready) {
+Denizen.prototype._run = function () {
+    this._thereafter.run(this, function (ready) {
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
-        this.kibitzer.listen(async())
+        this.kibitzer.ready.wait(ready, 'unlatch')
+        this.kibitzer.listen(this._destructible.monitor('kibitzer'))
+    })
+    this._thereafter.run(this, function (ready) {
+        this._destructible.addDestructor('colleague', this._colleague, 'destroy')
+        this._colleague.write.pump(this._conference.write, 'enqueue')
+        this._conference.read.pump(this._colleague.read, 'enqueue')
+        this._colleague.ready.wait(ready, 'unlatch')
+        this._colleague.ready.wait(function () {
+            console.log('unlatched')
+        })
+        this._colleague.listen(this._destructible.monitor('colleague'))
+    })
+    this._thereafter.run(this, function (ready) {
+        console.log('here')
+        this.shifter = this.kibitzer.log.shifter()
         ready.unlatch()
     })
-    this._destructible.stack(async, 'log')(function (ready) {
-        this._destructible.addDestructor('colleague', this._colleague, 'destroy')
-        this._colleague.pump(this._conference)
-        this._colleague.log(ready, async())
-    })
-    this._destructible.rescue(async, 'events')(function () {
-        this.shifter = this.kibitzer.log.shifter()
+}
+
+Denizen.prototype._bootstrap = cadence(function (async, ready) {
+    async(function () {
+        this._colleague.getProperties(async())
+    }, function (properties) {
+        properties.url = this.kibitzer.paxos.id
+        this.kibitzer.bootstrap(this._Date.now(), properties)
+        ready.unlatch()
     })
 })
 
 Denizen.prototype.bootstrap = cadence(function (async) {
-    this._run(async())
-    this._destructible.rescue(async, 'bootstrap')(function () {
-        async(function () {
-            this._colleague.getProperties(async())
-        }, function (properties) {
-            properties.url = this.kibitzer.paxos.id
-            this.kibitzer.bootstrap(this._Date.now(), properties)
-        })
+    this._run()
+    this._thereafter.run(this, function (ready) {
+        this._bootstrap(ready, this._destructible.rescue('bootstrap'))
     })
-    this._destructible.ready.wait(this.ready, 'unlatch')
+    this._thereafter.ready.wait(this.ready, 'unlatch')
+    this._destructible.completed(1000, async())
+})
+
+Denizen.prototype._join = cadence(function (async, ready, leader, republic) {
+    async(function () {
+        this._colleague.getProperties(async())
+    }, function (properties) {
+        properties.url = this.kibitzer.paxos.id
+        this.kibitzer.join({ url: leader, republic: republic }, properties, async())
+    }, function () {
+        ready.unlatch()
+    })
 })
 
 Denizen.prototype.join = cadence(function (async, leader, republic) {
-    this._run(async())
-    this._destructible.rescue(async, 'join')(function () {
-        async(function () {
-            this._colleague.getProperties(async())
-        }, function (properties) {
-            properties.url = this.kibitzer.paxos.id
-            this.kibitzer.join({ url: leader, republic: republic }, properties, async())
-        })
+    this._run()
+    this._thereafter.run(this, function (ready) {
+        this._join(ready, leader, republic, this._destructible.rescue('join'))
     })
-    this._destructible.ready.wait(this.ready, 'unlatch')
+    this._thereafter.ready.wait(this.ready, 'unlatch')
+    this._destructible.completed(1000, async())
 })
 
 Denizen.prototype.destroy = function () {
