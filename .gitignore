@@ -3,7 +3,7 @@
 /node_modules/*
 /*/node_modules/*
 !/compassion.channel/node_modules/example.js
-!/compassion.root/node_modules/compassion.test/index.js
+!/compassion.root/node_modules/compassion.test.js
 /.proof.out
 /coverage
 /*/coverage
