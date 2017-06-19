@@ -13,10 +13,9 @@ set -e
 
 git checkout compassion.root/node_modules/compassion.test.js
 ls compassion.root/node_modules
-cp program.js compassion.root/node_modules/arguable/program.js
 node compassion.root/t/compassion.bin.t.js
 
-exit 1
+exit 0
 
 echo ""
 
