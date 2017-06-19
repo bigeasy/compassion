@@ -1,5 +1,7 @@
 require('proof')(1, require('cadence')(prove))
 
+require('compassion.test')
+
 function prove (async, assert) {
     var supervisor = require('../compassion.bin')
 
