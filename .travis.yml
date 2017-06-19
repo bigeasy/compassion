@@ -15,5 +15,6 @@ branches:
 
 install:
   - for dir in compassion.*; do (cd $dir && npm install); done
+  - npm install
   - npm install istanbul coveralls
   - git checkout .
