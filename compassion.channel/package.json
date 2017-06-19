@@ -24,7 +24,7 @@
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.9.x",
-                            "conduit":                      "0.8.x",
+                            "conduit":                      "0.9.x",
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.12.x",
@@ -34,12 +34,16 @@
                             "procession":                   "0.4.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "11.0.x",
+                            "rescue":                       "3.0.x",
                             "signal":                       "1.10.x",
                             "staccato":                     "3.6.x",
                             "thereafter":                   "0.1.x"
     },
     "devDependencies":
     {
+                            "abend":                        "1.0.x",
+                            "colleague":                    "0.6.x",
+                            "conference":                   "0.8.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "channel.bin",

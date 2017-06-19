@@ -19,7 +19,9 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
         return
     }
     this.chatter.push(envelope)
+    console.log('envelopeay', envelope)
     switch (envelope.method) {
+    case 'pipe':
     case 'boundary':
     case 'record':
     case 'retry':

@@ -11,12 +11,6 @@ PATH="$PATH:$node_modules/.bin"
 
 set -e
 
-git checkout compassion.root/node_modules/compassion.test.js
-ls compassion.root/node_modules
-node compassion.root/t/compassion.bin.t.js
-
-exit 0
-
 echo ""
 
 (proof run */t/*.t.js | tee .proof.out | proof progress) \

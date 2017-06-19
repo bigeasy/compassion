@@ -2,6 +2,8 @@ var cadence = require('cadence')
 
 var departure = require('departure')
 
+var rescue = require('rescue')
+
 var Procession = require('procession')
 
 var Destructor = require('destructible')
@@ -63,14 +65,11 @@ Merger.prototype.merge = cadence(function (async) {
         islander: this._kibitzer.islander.outbox.shifter()
     }
     var log = this._kibitzer.islander.log.shifter()
-    async(function () {
-        replay.dequeue(async())
-    }, function (envelope) {
-        if (envelope == null) {
-            return [ async.break ]
-        }
+    async([function () {
         this._channel.getProperties(this._kibitzer.paxos.id, async())
-    }, function (properties) {
+    }, rescue(/^conduit#endOfStream/m, function (error) {
+        return [ async.break ]
+    })], function (properties) {
         async(function () {
             replay.dequeue(async())
         }, function (entry) {

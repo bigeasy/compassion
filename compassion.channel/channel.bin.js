@@ -44,6 +44,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Recorder = require('./recorder')
     var byline = require('byline')
 
+    var Conduit = require('conduit')
+
     var logger = require('prolific.logger').createLogger('compassion.channel')
 
     var shuttle = Shuttle.shuttle(program, logger)
@@ -54,6 +56,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var cadence = require('cadence')
 
     var Thereafter = require('thereafter')
+
+    var Reader = require('./reader')
 
     program.helpIf(program.ultimate.help)
 
@@ -76,57 +80,58 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.paxos.outbox.pump(new Recorder('paxos', logger, merger.play), 'enqueue')
     kibitzer.islander.outbox.pump(new Recorder('islander', logger, merger.play), 'enqueue')
 
-    var destructor = new Destructor('channel.bin')
+    var destructible = new Destructor('channel.bin')
 
-    program.on('shutdown', destructor.destroy.bind(destructor))
+    program.on('shutdown', destructible.destroy.bind(destructible))
 
-    destructor.addDestructor('shuttle', shuttle.close.bind(shuttle))
+    destructible.addDestructor('shuttle', shuttle, 'close')
 
     var thereafter = new Thereafter
-    destructor.addDestructor('thereafter', thereafter, 'cancel')
+    destructible.addDestructor('thereafter', thereafter, 'cancel')
 
     thereafter.run(function (ready) {
         cadence(function (async) {
-            destructor.addDestructor('monitor', monitor, 'destroy')
+            destructible.addDestructor('monitor', monitor, 'destroy')
             monitor.ready.wait(ready, 'unlatch')
             async(function () {
                 monitor.run(program, async())
             }, function (exitCode, signal) {
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
-        })(destructor.monitor('monitor'))
+        })(destructible.monitor('monitor'))
+    })
+
+    destructible.addDestructor('channel', channel, 'destroy')
+
+    // Gives an `ENOENT` time to report and cancel the series.
+    thereafter.run(function (ready) {
+        cadence(function () {
+            setImmediate(async())
+        }, function () {
+            ready.unlatch()
+        })(destructible.rescue('startup'))
     })
 
     thereafter.run(function (ready) {
-        destructor.addDestructor('channel', channel.destroy.bind(channel))
-        channel.ready.wait(ready, 'unlatch')
-        channel.listen(monitor.child.stdio[3], monitor.child.stdio[3], destructor.monitor('connected'))
+        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3])
+        channel.pump(conduit.write, conduit.read)
+        destructible.addDestructor('conduit', conduit, 'destroy')
+        conduit.ready.wait(ready, 'unlatch')
+        conduit.listen(destructible.monitor('conduit'))
     })
 
     thereafter.run(function (ready) {
-        cadence(function (async) {
-            var readable = new Staccato.Readable(byline(stream))
-            destructor.addDestructor('readable', readable.destroy.bind(readable))
-            var loop = async(function () {
-                readable.read(async())
-                ready.unlatch()
-            }, function (line) {
-                async(function () {
-                    merger.replay.enqueue(line && JSON.parse(line.toString()), async())
-                }, function () {
-                    if (line == null) {
-                        return [ loop.break ]
-                    }
-                })
-            })()
-        })(destructor.monitor('readable'))
+        var reader = new Reader
+        destructible.addDestructor('reader', reader, 'destroy')
+        reader.ready.wait(ready, 'unlatch')
+        reader.read(stream, merger, destructible.monitor('readable'))
     })
 
     thereafter.run(function (ready) {
-        destructor.addDestructor('merger', merger, 'destroy')
+        destructible.addDestructor('merger', merger, 'destroy')
         merger.ready.wait(ready, 'unlatch')
-        merger.merge(destructor.monitor('merger'))
+        merger.merge(destructible.monitor('merger'))
     })
 
-    destructor.completed(1000, async())
+    destructible.completed(1000, async())
 }))

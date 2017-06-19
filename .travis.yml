@@ -13,7 +13,7 @@ branches:
     - master
     - travis-ci
 
-before_install:
+install:
   - for dir in compassion.*; do (cd $dir && npm install); done
-  - git checkout .
   - npm install istanbul coveralls
+  - git checkout .
