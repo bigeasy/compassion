@@ -11,7 +11,8 @@ PATH="$PATH:$node_modules/.bin"
 
 set -e
 
-ls /home/travis/build/bigeasy/compassion/compassion.root/node_modules
+git checkout compassion.root/node_modules
+ls compassion.root/node_modules
 cp program.js compassion.root/node_modules/arguable/program.js
 node compassion.root/t/compassion.bin.t.js
 
