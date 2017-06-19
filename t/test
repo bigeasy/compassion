@@ -9,6 +9,8 @@ fi
 
 PATH="$PATH:$node_modules/.bin"
 
+node compassion.channel/t/channel.bin.t.js
+
 set -e
 
 echo ""
