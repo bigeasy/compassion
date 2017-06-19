@@ -334,6 +334,7 @@ Program.prototype.helpIf = function (help) {
 // We're only going to support accepting a package name, but leave the
 // formatting logic in for now to see where it's being used.
 Program.prototype.delegate = cadence(function (async, format, argv) {
+    console.log('delegate ->', format, argv)
     if (argv == null) {
         if (this.argv.length == 0) {
             this.abend('sub command missing')
