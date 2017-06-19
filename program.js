@@ -353,6 +353,7 @@ Program.prototype.delegate = cadence(function (async, format, argv) {
     }
     var arguable
     try {
+        console.log(this._module)
         arguable = this._module.require(pkg)
     } catch (error) {
         if (error.code == 'MODULE_NOT_FOUND') {
