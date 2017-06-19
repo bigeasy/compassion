@@ -18,6 +18,5 @@
 */
 require('arguable')(module, require('cadence')(function (async, program) {
     program.helpIf(program.ultimate.help)
-    console.log(program.argv)
     program.delegate('compassion.' + program.argv.shift(), program.argv, async())
 }))
