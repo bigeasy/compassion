@@ -1,5 +1,6 @@
 var delta = require('delta')
 var abend = require('abend')
+var rescue = require('rescue')
 var cadence = require('cadence')
 var Destructible = require('destructible')
 var stream = require('stream')
@@ -83,13 +84,20 @@ Colleague.prototype._log = cadence(function (async) {
         shifter.dequeue(async())
         this.ready.unlatch()
     }, function (entry) {
-        async(function () {
+        async([function () {
+            console.log('writing a null')
             this._write.enqueue(entry && {
                 module: 'colleague',
                 method: 'entry',
                 body: entry
             }, async())
-        }, function () {
+        }, function (error) {
+            console.log(error.cause.code)
+            rescue(/^code:EPIPE$/, function (error) {
+                console.log('hello')
+            })(coalesce(error.cause, error))
+            console.log('passed')
+        }], function () {
             if (entry == null) {
                 return [ loop.break ]
             }
@@ -118,10 +126,12 @@ Colleague.prototype.request = cadence(function (async, envelope) {
 })
 
 Colleague.prototype.destroy = function () {
+    console.log(Object.keys(this._destructible._destructors))
     this._destructible.destroy()
 }
 
 Colleague.prototype.getProperties = cadence(function (async) {
+    console.log('GETTING PROPERTIES')
     async(function () {
         this._requester.request('colleague', {
             module: 'colleague',

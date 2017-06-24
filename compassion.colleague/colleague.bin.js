@@ -41,7 +41,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
     // TODO Assert that these are integers.
     program.validate(require('arguable/numeric'), 'timeout', 'ping')
 
-    var abend = require('abend')
+    var http = require('http')
+    var delta = require('delta')
+
     var coalesce = require('extant')
 
     var logger = require('prolific.logger').createLogger('compassion.colleague')
@@ -56,9 +58,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
     var Destructor = require('destructible')
-    var Terminator = require('destructible/terminator')
+    var Thereafter = require('thereafter')
     var Vizsla = require('vizsla')
     var UserAgent = require('./ua')
+    var Conduit = require('conduit')
 
     var Kibitzer = require('kibitz')
     var Recorder = require('./recorder')
@@ -88,11 +91,15 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
     var destructible = new Destructor('colleague')
+    var thereafter = new Thereafter
+    destructible.addDestructor('thereafter', thereafter, 'cancel')
 
-    destructible.events.pump(new Terminator(1000), 'push')
     program.on('shutdown', destructible.destroy.bind(destructible))
 
     destructible.addDestructor('shutdown', shuttle, 'close')
+    destructible.addDestructor('hello', function () {
+        console.log('DESTRUCIBLED')
+    })
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
@@ -101,7 +108,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var envoy = new Envoy(middleware.reactor.middleware)
 
-    var Thereafter = require('thereafter')
 
     var location = program.ultimate.conduit
     location = url.resolve(location + '/', program.ultimate.island)
@@ -121,16 +127,30 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('thereafter', thereafter, 'cancel')
 
-    thereafter.run(this, function (ready) {
+    thereafter.run(function (ready) {
         destructible.addDestructor('kibitzer', kibitzer, 'destroy')
         kibitzer.listen(destructible.monitor('kibitzer'))
         kibitzer.ready.wait(ready, 'unlatch')
     })
 
-    thereafter.run(this, function (ready) {
-        destructible.addDestructor('envoy', envoy, 'close')
-        envoy.connect(location, destructible.monitor('envoy'))
-        envoy.ready.wait(ready, 'unlatch')
+    thereafter.run(function (ready) {
+        cadence(function () {
+            var parsed = url.parse(program.ultimate.conduit)
+            // TODO Assert port.
+            var request = http.request({
+                host: parsed.hostname,
+                port: parsed.port,
+                headers: Envoy.headers('/identifier', {
+                    host: parsed.hostname + ':' + parsed.port
+                })
+            })
+            delta(async()).ee(request).on('upgrade')
+            request.end()
+        }, function (request, socket, head) {
+            destructible.addDestructor('envoy', envoy, 'close')
+            envoy.ready.wait(ready, 'unlatch')
+            envoy.connect(request, socket, head, async())
+        })(destructible.monitor('envoy'))
     })
 
     thereafter.run(this, function (ready) {
@@ -143,6 +163,15 @@ require('arguable')(module, require('cadence')(function (async, program) {
         monitor.ready.wait(ready, 'unlatch')
     })
 
+    // Gives an `ENOENT` time to report and cancel the series.
+    thereafter.run(function (ready) {
+        cadence(function () {
+            setImmediate(async())
+        }, function () {
+            ready.unlatch()
+        })(destructible.rescue('startup'))
+    })
+
     thereafter.run(this, function (ready) {
         destructible.addDestructor('colleague', colleague, 'destroy')
         colleague.listen(destructible.monitor('colleague'))
@@ -150,13 +179,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     thereafter.run(this, function (ready) {
-        var conduit = new Conduit(output) monitor.child.stdio[3], monitor.child.stdio[3])
+        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3])
 
         destructible.addDestructor('conduit', conduit, 'destroy')
 
         colleague.write.pump(conduit.write, 'enqueue')
         conduit.read.pump(colleague.read, 'enqueue')
 
+        console.log('LISTENING')
         conduit.listen(destructible.monitor('conduit'))
 
         conduit.ready.wait(ready, 'unlatch')
@@ -172,7 +202,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         thereafter.ready.wait(async())
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
-        program.unlatch()
+        program.ready.unlatch()
         destructible.completed(3000, async())
     })
 }))

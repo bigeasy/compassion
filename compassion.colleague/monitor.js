@@ -11,7 +11,7 @@ function Monitor () {
     this.ready = new Signal
     this.child = null
     this.destroyed = false
-    this._destructible = new Destructible
+    this._destructible = new Destructible('monitor')
     this._destructible.markDestroyed(this)
     this._destructible.addDestructor('started', this.ready, 'unlatch')
     this._destructible.addDestructor('kill', this, '_kill')

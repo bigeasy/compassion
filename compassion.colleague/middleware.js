@@ -4,7 +4,7 @@ var assert = require('assert')
 
 // Control-flow utilities.
 var cadence = require('cadence')
-var abend = require('abend')
+var abend = null // require('abend')
 
 // Sencha Connect middleware builder.
 var Reactor = require('reactor')
