@@ -23,7 +23,7 @@
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
                             "conduit":                      "0.11.x",
-                            "destructible":                 "0.12.x",
+                            "destructible":                 "0.13.x",
                             "happenstance":                 "3.4.x",
                             "interrupt":                    "5.0.x",
                             "kibitz":                       "0.8.x",
