@@ -42,7 +42,7 @@
     "devDependencies":
     {
                             "abend":                        "1.0.x",
-                            "colleague":                    "0.6.x",
+                            "colleague":                    "0.7.x",
                             "conference":                   "0.8.x",
                             "proof":                        "3.0.x"
     },
