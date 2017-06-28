@@ -183,6 +183,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
         destructible.addDestructor('conduit', conduit, 'destroy')
 
+        monitor.child.stdio[3].on('error', function () {
+            console.log('done did error', arguments)
+        })
+
         colleague.write.pump(conduit.write, 'enqueue')
         conduit.read.pump(colleague.read, 'enqueue')
 
@@ -192,7 +196,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
         conduit.ready.wait(ready, 'unlatch')
     })
 
-    thereafter.run(this, function (ready) {
+    // TODO WHy won't Chaperon die correctly?
+    false && thereafter.run(this, function (ready) {
         destructible.addDestructor('chaperon', chaperon, 'destroy')
         chaperon.listen(destructible.monitor('chaperon'))
         ready.unlatch()

@@ -24,7 +24,7 @@ function prove (async, assert) {
         ], abend)
         mingle.ready.wait(async())
     }, [function () {
-        chaperon.emit('SIGTERM')
+        mingle.emit('SIGTERM')
     }], function () {
         var Chaperon = require('chaperon/chaperon.bin')
         chaperon = Chaperon({
@@ -36,13 +36,18 @@ function prove (async, assert) {
     }, [function () {
         chaperon.emit('SIGTERM')
     }], function () {
-        bin({
+        var io = bin({
             conduit: 'http://127.0.0.1:8808',
             chaperon: 'http://127.0.0.1:8088',
             island: 'island',
             id: '1',
             argv: [ 'node', example ]
         }, { env: process.env }, async())
+        async(function () {
+            io.ready.wait(async())
+        }, function () {
+            io.emit('SIGTERM')
+        })
     }, function () {
         assert(true, 'ran')
     })
