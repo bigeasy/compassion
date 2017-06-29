@@ -97,9 +97,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     program.on('shutdown', destructible.destroy.bind(destructible))
 
     destructible.addDestructor('shutdown', shuttle, 'close')
-    destructible.addDestructor('hello', function () {
-        console.log('DESTRUCIBLED')
-    })
 
     var colleague = new Colleague(new Vizsla, kibitzer)
 
@@ -190,7 +187,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         colleague.write.pump(conduit.write, 'enqueue')
         conduit.read.pump(colleague.read, 'enqueue')
 
-        console.log('LISTENING')
         conduit.listen(destructible.monitor('conduit'))
 
         conduit.ready.wait(ready, 'unlatch')

@@ -85,7 +85,6 @@ Colleague.prototype._log = cadence(function (async) {
         this.ready.unlatch()
     }, function (entry) {
         async([function () {
-            console.log('writing a null')
             this._write.enqueue(entry && {
                 module: 'colleague',
                 method: 'entry',
@@ -126,7 +125,6 @@ Colleague.prototype.request = cadence(function (async, envelope) {
 })
 
 Colleague.prototype.destroy = function () {
-    console.log(Object.keys(this._destructible._destructors))
     this._destructible.destroy()
 }
 
