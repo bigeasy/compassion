@@ -193,7 +193,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     // TODO WHy won't Chaperon die correctly?
-    false && thereafter.run(this, function (ready) {
+    thereafter.run(this, function (ready) {
         destructible.addDestructor('chaperon', chaperon, 'destroy')
         chaperon.listen(destructible.monitor('chaperon'))
         ready.unlatch()

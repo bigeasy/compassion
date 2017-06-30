@@ -100,14 +100,11 @@ Chaperon.prototype.listen = cadence(function (async) {
 })
 
 Chaperon.prototype.destroy = function () {
-    console.log('deseetroying')
     this._shutdown = true
+    console.log(!! this._wait, !! this._fetch)
+    this._signal.unlatch()
     if (this._fetch != null) {
         this._fetch.cancel()
-    }
-    if (this._wait != null) {
-        this._signal.cancel(this._wait)()
-        this._wait = null
     }
 }
 
