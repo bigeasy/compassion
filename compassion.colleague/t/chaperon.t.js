@@ -18,11 +18,12 @@ function prove (async, assert) {
     }, function () {
         chaperon._action({ name: 'recoverable' }, 1, async())
     }, function () {
-        chaperon._action({ name: 'splitBrain' }, null, async())
-    }, function () {
         chaperon._action({ name: 'bootstrap', url: { self: 'x' } }, 1, async())
     }, function () {
+        chaperon._action({ name: 'splitBrain' }, null, async())
+    }, function () {
         assert(chaperon.destroyed, 'self-destruct')
+        chaperon.destroy()
         chaperon = new Chaperon({
             kibitzer: {
                 join: function (leader, properties, callback) {
@@ -49,6 +50,7 @@ function prove (async, assert) {
             republic: 1
         }, 1, async())
     }, function () {
+        chaperon.destroy()
         chaperon = new Chaperon({
             kibitzer: {
                 join: function (leader, properties, callback) {

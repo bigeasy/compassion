@@ -106,10 +106,12 @@ Chaperon.prototype._action = cadence(function (async, action, second) {
 })
 
 Chaperon.prototype.destroy = function () {
-    this.destroyed = true
-    this._signal.unlatch()
-    if (this._fetch != null) {
-        this._fetch.cancel()
+    if (!this.destroyed) {
+        this.destroyed = true
+        this._signal.unlatch()
+        if (this._fetch != null) {
+            this._fetch.cancel()
+        }
     }
 }
 
