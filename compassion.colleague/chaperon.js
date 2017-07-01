@@ -16,11 +16,11 @@ function Chaperon (options) {
     this._session = { url: options.chaperon }
     this._island = options.island
     this._kibitzer = options.kibitzer
+    this._kibitzer = options.kibitzer
     this._colleague = options.colleague
     this._startedAt = options.startedAt
     this._signal = new Signal
-    this._wait = null
-    this._shutdown = false
+    this.destroyed = false
 }
 
 Chaperon.prototype.listen = cadence(function (async) {
@@ -32,13 +32,10 @@ Chaperon.prototype.listen = cadence(function (async) {
     // break this up further. Can't help it if someone else wants to use Cadence
     // and gets the idea that a sub-cadence is a reuse facility. Can't help it
     // if someone want to make a bunch of wrappery nonsense for Cadence.
-    var breakIfShutdown = function () {
-        if (this._shutdown) {
-            return loop.break
-        }
-    }
     var loop = async(function () {
-        this._wait = null
+        if (this.destroyed) {
+            return [ loop.break ]
+        }
         this._fetch = this._ua.fetch(this._session, {
             url: '/action',
             post: {
@@ -49,59 +46,67 @@ Chaperon.prototype.listen = cadence(function (async) {
             },
             nullify: true
         }, async())
-    }, breakIfShutdown, function (action) {
+    }, function (action) {
         this._fetch = null
         if (action == null) {
-            this._wait = this._signal.wait(1000, async())
+            this._signal.wait(1000, async())
             return
         }
         console.log(action)
-        switch (action.name) {
-        case 'unstable':
-        case 'unreachable':
-            this._wait = this._signal.wait(1000, async())
-            break
-        case 'recoverable':
-            this._wait = this._signal.wait(60 * 1000, async())
-            break
-        case 'bootstrap':
-            // TODO Am I really supposed to do this?
-            this._kibitzer.paxos.naturalized = true
-            async(function () {
-                console.log('GETTING PROPERTIES')
-                this._colleague.getProperties(async())
-            }, function (properties) {
-                console.log('GOT PROPERTIES', properties)
-                properties.url = action.url.self
-                this._kibitzer.bootstrap(this._startedAt, properties)
-                this._wait = this._signal.wait(1000, async())
-            })
-            break
-        case 'join':
-            async(function () {
-                this._colleague.getProperties(async())
-            }, function (properties) {
-                properties.url = action.url.self
-                this._kibitzer.join({
-                    url: action.url.leader,
-                    republic: action.republic
-                }, properties, async())
-            }, function (enqueued) {
-                this._wait = this._signal.wait((enqueued ? 5 : 60) * 1000, async())
-            })
-            break
-        case 'splitBrain':
-        case 'unrecoverable':
-            this._kibizter.shutdown()
-            this._stopped = true
-            break
-        }
-    }, breakIfShutdown)()
+        this._action(action, 1000)
+    })()
+})
+
+Chaperon.prototype._action = cadence(function (async, action, second) {
+    switch (action.name) {
+    case 'unstable':
+    case 'unreachable':
+        this._signal.wait(second, async())
+        break
+    case 'recoverable':
+        this._signal.wait(60 * second, async())
+        break
+    case 'bootstrap':
+        // TODO Am I really supposed to do this?
+        this._kibitzer.paxos.naturalized = true
+        // TODO What to do about errors? If we're not able to successfully
+        // `getProperties` what do we do then? Is it an error that is not
+        // going to happen or not manifest itself here? There might be an
+        // end of stream error that would raise an exception ending the loop
+        // that way.
+        async(function () {
+            console.log('GETTING PROPERTIES')
+            this._colleague.getProperties(async())
+        }, function (properties) {
+            console.log('GOT PROPERTIES', properties)
+            properties.url = action.url.self
+            this._kibitzer.bootstrap(this._startedAt, properties)
+            this._signal.wait(second, async())
+        })
+        break
+    case 'join':
+        async(function () {
+            this._colleague.getProperties(async())
+        }, function (properties) {
+            properties.url = action.url.self
+            this._kibitzer.join({
+                url: action.url.leader,
+                republic: action.republic
+            }, properties, async())
+        }, function (enqueued) {
+            this._signal.wait((enqueued ? 5 : 60) * second, async())
+        })
+        break
+    case 'splitBrain':
+    case 'unrecoverable':
+        this._kibitzer.destroy()
+        this.destroyed = true
+        break
+    }
 })
 
 Chaperon.prototype.destroy = function () {
-    this._shutdown = true
-    console.log(!! this._wait, !! this._fetch)
+    this.destroyed = true
     this._signal.unlatch()
     if (this._fetch != null) {
         this._fetch.cancel()
