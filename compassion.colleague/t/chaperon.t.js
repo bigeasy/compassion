@@ -1,7 +1,9 @@
-require('proof')(4, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, assert) {
     var Kibitzer = require('kibitz')
+
+    var UserAgent = require('vizsla')
 
     var Chaperon = require('../chaperon')
     assert(Chaperon, 'require')
@@ -76,5 +78,18 @@ function prove (async, assert) {
             },
             republic: 1
          }, 1, async())
+    }, function () {
+        var ua = new UserAgent(function (request, response) {
+            response.writeHead(200, { 'content-type': 'application/json' })
+            response.end(new Buffer(JSON.stringify({ name: 'unrecoverable' })))
+        })
+        chaperon = new Chaperon({
+            chaperon: 'http://127.0.0.1:8080',
+            ua: ua,
+            kibitzer: { paxos: {}, destroy: function () {} }
+        })
+        chaperon.listen(async())
+    }, function () {
+        assert(chaperon.destroyed, 'polled unrecoverable')
     })
 }

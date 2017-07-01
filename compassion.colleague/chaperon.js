@@ -53,7 +53,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             return
         }
         console.log(action)
-        this._action(action, 1000)
+        this._action(action, 1000, async())
     })()
 })
 
