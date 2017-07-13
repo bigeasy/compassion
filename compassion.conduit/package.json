@@ -31,7 +31,7 @@
                             "operation":                    "1.4.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "11.0.x",
-                            "happenstance":                 "3.4.x",
+                            "happenstance":                 "3.6.x",
                             "reactor":                      "5.0.x"
     },
     "devDependencies":
