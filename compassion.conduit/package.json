@@ -28,7 +28,7 @@
                             "delta":                        "1.2.x",
                             "destructible":                 "0.13.x",
                             "downgrader":                   "0.1.x",
-                            "operation":                    "1.4.x",
+                            "operation":                    "1.6.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "11.0.x",
                             "happenstance":                 "3.6.x",
