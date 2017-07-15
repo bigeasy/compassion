@@ -27,14 +27,14 @@
                             "happenstance":                 "5.0.x",
                             "interrupt":                    "5.0.x",
                             "kibitz":                       "0.10.x",
-                            "compassion.colleague":         "0.9.x",
+                            "compassion.colleague":         "0.10.x",
                             "procession":                   "0.9.x",
                             "signal":                       "3.0.x",
                             "thereafter":                   "0.1.x"
     },
     "devDependencies":
     {
-                            "conference":                   "0.9.x",
+                            "conference":                   "0.10.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "counterfeiter",
