@@ -46,34 +46,18 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var shuttle = Shuttle.shuttle(program, logger)
 
-    var Downgrader = require('downgrader')
-    var downgrader = new Downgrader
+    var Conduit = require('./conduit')
+    var conduit = new Conduit()
 
-    var Rendezvous = require('assignation/rendezvous')
-    var rendezvous = new Rendezvous
+    destructible.addDestructor('shuttle', shuttle, 'close')
+    destructible.addDestructor('conduit', conduit, 'destroy')
 
-    downgrader.on('socket', Operation([ rendezvous, 'upgrade' ]))
-
-    var connect = require('connect')
-    var app = require('connect')()
-        .use(Operation([ rendezvous, 'middleware' ]))
-        .use(new Middleware(rendezvous).reactor.middleware)
-
-    var server = http.createServer(app)
-
-    server.on('upgrade', Operation([ downgrader, 'upgrade' ]))
+    conduit.ready.wait(function () {
+        logger.info('started', { bind: bind })
+        program.ready.unlatch()
+    })
 
     var bind = program.ultimate.bind
 
-    destructible.addDestructor('server', server, 'close')
-    destructible.addDestructor('shuttle', shuttle, 'close')
-    destructible.addDestructor('rendezvous', rendezvous, 'destroy')
-
-    async(function () {
-        server.listen(bind.port, bind.address, async())
-    }, function () {
-        logger.info('started', { bind: bind })
-        delta(async()).ee(server).on('close')
-        program.ready.unlatch()
-    })
+    conduit.listen(bind.port, bind.address, async())
 }))
