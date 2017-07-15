@@ -1,4 +1,5 @@
 var cadence = require('cadence')
+var Procession = require('procession')
 
 function UserAgent (counterfeiter) {
     this._counterfeiter = counterfeiter
@@ -16,10 +17,10 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
     })
 })
 
-UserAgent.prototype.socket = function (url, header, socket) {
-    var to = this._counterfeiter._denizens[url]._colleague._client.connect(header)
-    to.read.pump(socket.write, 'enqueue')
-    socket.read.pump(to.write, 'enqueue')
+UserAgent.prototype.socket = function (url, header) {
+    var receiver = { read: new Procession, write: new Procession }
+    this._counterfeiter._denizens[url]._colleague._client.connect(header, receiver)
+    return { read: receiver.write, write: receiver.read }
 }
 
 module.exports = UserAgent

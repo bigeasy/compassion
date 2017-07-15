@@ -7,6 +7,8 @@ function prove (async, assert) {
 
     var reduced = null, logger = null
 
+    var Procession = require('procession')
+
     var cadence = require('cadence')
     var reactor = {
         socket: cadence(function (async, conference, socket, header) {
@@ -30,7 +32,9 @@ function prove (async, assert) {
             }
             var shifter = null
             if (!conference.replaying) {
-                var socket = conference.socket({ from: conference.id })
+                var socket = { read: new Procession, write: new Procession }
+                conference.socket('first', { from: conference.id }, socket)
+                socket = { read: socket.write, write: socket.read }
                 shifter = socket.read.shifter()
                 socket.write.push(null)
             }

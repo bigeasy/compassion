@@ -13,35 +13,37 @@ var Responder = require('conduit/responder')
 var Server = require('conduit/server')
 var Client = require('conduit/client')
 var Conduit = require('conduit')
+var Multiplexer = require('conduit/multiplexer')
 var http = require('http')
 var url = require('url')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
+var assert = require('assert')
 
 function Colleague (ua, kibitzer, server) {
     this._ua = ua
     this._kibitzer = kibitzer
 
-    this.read = new Procession
-    this.write = new Procession
-//    this.read.pump(function (envelope) { console.log('READ', envelope) })
-//    this.write.pump(function (envelope) { console.log('WRITE', envelope) })
+    this._multiplexer = new Multiplexer
 
-    this._requester = new Requester('colleague', this.read, this.write)
-//    this._requester.read.pump(function (envelope) { console.log('REQUESTER READ', envelope) })
-    var responder = new Responder(this, 'colleague', this._requester.read, this._requester.write)
-    var server = new Server(server || { object: this, method: '_connect' }, 'outgoing', responder.read, responder.write)
-    this._client = new Client('incoming', server.read, server.write)
+    this.read = this._multiplexer.read
+    this.write = this._multiplexer.write
 
-    this._write = this._client.write
+    this._multiplexer.route('conference', this._requester = new Requester)
+    this._multiplexer.route('colleague', new Responder(this))
 
-    server.read.pump(this, '_read')
+    this._multiplexer.route('outgoing', server ? new Server(server) : new Server(this, '_connect'))
+    this._multiplexer.route('incoming', this._client = new Client)
+
+    this._write = this.read
+
+    this.write.shifter().pump(this, '_read')
 
     this.connected = new Signal
 
     this.chatter = new Procession
     this.responses = new Procession
 
-    this.responses.pump(this, '_response')
+    this.responses.shifter().pump(this, '_response')
 
     this._destructible = new Destructible
     this._destructible.markDestroyed(this)
@@ -105,12 +107,13 @@ Colleague.prototype._log = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async) {
-    this._log(this._destructible.monitor('log'))
-    this._destructible.completed(1000, async())
+        this._log(this._destructible.monitor('log'))
+        this._destructible.completed(1000, async())
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {
     var properties = this._kibitzer.paxos.government.properties[envelope.to]
+    console.log('>', envelope)
     async(function () {
         this._ua.fetch({
             url: properties.url
@@ -131,7 +134,7 @@ Colleague.prototype.destroy = function () {
 Colleague.prototype.getProperties = cadence(function (async) {
     console.log('GETTING PROPERTIES')
     async(function () {
-        this._requester.request('colleague', {
+        this._requester.request({
             module: 'colleague',
             method: 'properties',
             body: {

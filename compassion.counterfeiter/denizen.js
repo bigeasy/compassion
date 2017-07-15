@@ -12,10 +12,12 @@ var Thereafter = require('thereafter')
 function Denizen (counterfeiter, options, ua) {
     this._counterfeiter = counterfeiter
     var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 250, timeout: 1000 })
-    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
-    var responder = new Responder(ua, 'kibitz', kibitzer.write, kibitzer.read)
+    kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
+    var responder = new Responder(ua)
+    kibitzer.read.shifter().pump(responder.write, 'enqueue')
+    responder.read.shifter().pump(kibitzer.write, 'enqueue')
     this._ua = ua
-    this._colleague = new Colleague(null, kibitzer, { object: this, method: '_socket' })
+    this._colleague = new Colleague(null, kibitzer, [ this, '_socket' ])
     this._conference = options.conference
     this._identifier = options.id
     this._destructible = new Destructible([ 'denizen', options.id ])
@@ -25,10 +27,10 @@ function Denizen (counterfeiter, options, ua) {
     this._destructible.addDestructor('network', this, '_leaveNetwork')
     var logger = this.logger = new Procession
     var done = false
-    kibitzer.played.pump(new Recorder('kibitz', logger), 'push')
-    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger), 'push')
-    kibitzer.islander.outbox.pump(new Recorder('islander', logger), 'push')
-    this._colleague.chatter.pump(new Recorder('colleague', logger), 'push')
+    kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
+    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
+    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
+    this._colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
     this.listening = new Signal
     this._Date = Date
     this.ready = new Signal
@@ -38,8 +40,8 @@ Denizen.prototype._leaveNetwork = function () {
     delete this._counterfeiter._denizens[this._identifier]
 }
 
-Denizen.prototype._socket = function (socket, header) {
-    this._ua.socket(header.to.url, header.body, socket)
+Denizen.prototype._socket = function (header) {
+    return this._ua.socket(header.to.url, header.body)
 }
 
 Denizen.prototype._run = function () {
@@ -50,16 +52,12 @@ Denizen.prototype._run = function () {
     })
     this._thereafter.run(this, function (ready) {
         this._destructible.addDestructor('colleague', this._colleague, 'destroy')
-        this._colleague.write.pump(this._conference.write, 'enqueue')
-        this._conference.read.pump(this._colleague.read, 'enqueue')
+        this._colleague.read.shifter().pump(this._conference.write, 'enqueue')
+        this._conference.read.shifter().pump(this._colleague.write, 'enqueue')
         this._colleague.ready.wait(ready, 'unlatch')
-        this._colleague.ready.wait(function () {
-            console.log('unlatched')
-        })
         this._colleague.listen(this._destructible.monitor('colleague'))
     })
     this._thereafter.run(this, function (ready) {
-        console.log('here')
         this.shifter = this.kibitzer.log.shifter()
         ready.unlatch()
     })

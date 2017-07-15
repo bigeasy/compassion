@@ -38,7 +38,7 @@ Counterfeiter.prototype.join = cadence(function (async, options) {
 
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     this.loggers[options.id] = denizen.logger.shifter()
-    denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ]))
+    denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ], denizen.ready, 'unlatch'))
     async(function () {
         denizen.ready.wait(async())
     }, function () {
