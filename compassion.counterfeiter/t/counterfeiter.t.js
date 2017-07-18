@@ -1,8 +1,10 @@
-require('proof')(6, require('cadence')(prove))
+require('proof')(2, require('cadence')(prove))
 
 function prove (async, assert) {
     var abend = require('abend')
-    var Counterfeiter = require('..')
+    var Colleague = require('../../compassion.colleague/colleague')
+    var Conduit = require('../../compassion.conduit')
+    var Counterfeiter = require('../counterfeiter.generic')(Colleague, Conduit)
     var counterfeiter = new Counterfeiter
     var Vizsla = require('vizsla')
 
@@ -104,9 +106,11 @@ function prove (async, assert) {
         counterfeiter.listen(8888, '127.0.0.1', async())
     }, [function () {
         counterfeiter.destroy()
+        counterfeiter.completed(async())
     }], function () {
         counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
     }, function () {
+        return [ async.break ]
         counterfeiter.events['first'].dequeue(async())
     }, function () {
         counterfeiter.join({

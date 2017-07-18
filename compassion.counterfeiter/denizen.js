@@ -8,11 +8,8 @@ var Timer = require('happenstance').Timer
 var Procession = require('procession')
 var Recorder = require('./recorder')
 var Thereafter = require('thereafter')
-var Envoy = require('assignation/envoy')
-var Middleware = require('compassion.colleague/middleware')
 var http = require('http')
 var url = require('url')
-var delta = require('delta')
 var Vizsla = require('vizsla')
 var UserAgent = require('compassion.colleague/ua')
 
@@ -20,11 +17,6 @@ function Denizen (counterfeiter, options, ua) {
     this._counterfeiter = counterfeiter
 
     var thereafter = new Thereafter
-
-    var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 2500, timeout: 3000 })
-    this._colleague = this._colleague = new Colleague(null, kibitzer)
-    var middleware = new Middleware(Date.now(), 'island', kibitzer, this._colleague)
-    this._envoy = new Envoy(middleware.reactor.middleware)
 
     var responder = new Responder(new UserAgent(new Vizsla))
 
@@ -69,44 +61,6 @@ Denizen.prototype._leaveNetwork = function () {
 
 Denizen.prototype._socket = function (header) {
     return this._ua.socket(header.to.url, header.body)
-}
-
-Denizen.prototype._startEnvoy = cadence(function (async, ready, id, host, port) {
-    async(function () {
-        var request = http.request({
-            host: host,
-            port: port,
-            headers: Envoy.headers('/' + id, { host: host + ':' + port })
-        })
-        delta(async()).ee(request).on('upgrade')
-        request.end()
-    }, function (request, socket, head) {
-        console.log('got', !! this._envoy)
-        this._destructible.addDestructor('envoy', this._envoy, 'close')
-        this._envoy.ready.wait(ready, 'unlatch')
-        this._envoy.connect(request, socket, head, async())
-    })
-})
-
-Denizen.prototype._run = function (id, host, port) {
-        console.log('--- started ', id)
-    this._thereafter.run(this, function (ready) {
-        this._startEnvoy(ready, id, host, port, this._destructible.monitor('envoy'))
-    })
-    this._thereafter.run(this, function (ready) {
-        this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
-        this.kibitzer.ready.wait(ready, 'unlatch')
-        this.kibitzer.listen(this._destructible.monitor('kibitzer'))
-    })
-    this._thereafter.run(this, function (ready) {
-        this._destructible.addDestructor('colleague', this._colleague, 'destroy')
-        this._colleague.ready.wait(ready, 'unlatch')
-        this._colleague.listen(this._destructible.monitor('colleague'))
-    })
-    this._thereafter.run(this, function (ready) {
-        this.shifter = this.kibitzer.log.shifter()
-        ready.unlatch()
-    })
 }
 
 Denizen.prototype._bootstrap = cadence(function (async, ready) {

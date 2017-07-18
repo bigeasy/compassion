@@ -55,7 +55,6 @@ Middleware.prototype._request = cadence(function (async, request, response) {
         var loop = async(function () {
             queue.dequeue(async())
         }, function (entry) {
-            console.log('ARGLE BARGLE', entry)
             if (entry == null) {
                 response.end()
                 return [ loop.break ]

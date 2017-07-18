@@ -1,27 +1,37 @@
-var delta = require('delta')
 var abend = require('abend')
 var rescue = require('rescue')
 var cadence = require('cadence')
+var delta = require('delta')
+
+var Thereafter = require('thereafter')
 var Destructible = require('destructible')
-var stream = require('stream')
+
 var coalesce = require('extant')
+
 var Signal = require('signal')
+
+var Conduit = require('conduit')
 var Procession = require('procession')
-var assert = require('assert')
+
 var Requester = require('conduit/requester')
 var Responder = require('conduit/responder')
+
 var Server = require('conduit/server')
 var Client = require('conduit/client')
-var Conduit = require('conduit')
-var Multiplexer = require('conduit/multiplexer')
-var http = require('http')
-var url = require('url')
-var logger = require('prolific.logger').createLogger('compassion.colleague')
-var assert = require('assert')
 
-function Colleague (ua, kibitzer, server) {
+var Multiplexer = require('conduit/multiplexer')
+
+var Envoy = require('assignation/envoy')
+var Middleware = require('./middleware')
+
+var http = require('http')
+
+function Colleague (ua, kibitzer, server, island) {
     this._ua = ua
-    this._kibitzer = kibitzer
+
+    this._Date = Date
+
+    this.kibitzer = kibitzer
 
     this._multiplexer = new Multiplexer
 
@@ -38,8 +48,6 @@ function Colleague (ua, kibitzer, server) {
 
     this.write.shifter().pump(this, '_read')
 
-    this.connected = new Signal
-
     this.chatter = new Procession
     this.responses = new Procession
 
@@ -47,13 +55,39 @@ function Colleague (ua, kibitzer, server) {
 
     this._destructible = new Destructible('colleague')
     this._destructible.markDestroyed(this)
+
+    this._thereafter = new Thereafter
+    this._destructible.addDestructor('thereafter', this._thereafter, 'cancel')
+
+    this.connected = new Signal
+
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
     this.demolition = this._destructible.events
     this.done = this._destructible.done
 
+    var middleware = new Middleware(Date.now(), island, this._kibitzer, this)
+    this._envoy = new Envoy(middleware.reactor.middleware)
+
     this.ready = new Signal
 }
+
+Colleague.prototype._startEnvoy = cadence(function (async, ready, host, port) {
+    var id = this.kibitzer.paxos.id
+    async(function () {
+        var request = http.request({
+            host: host,
+            port: port,
+            headers: Envoy.headers('/' + id, { host: host + ':' + port })
+        })
+        delta(async()).ee(request).on('upgrade')
+        request.end()
+    }, function (request, socket, head) {
+        this._destructible.addDestructor('envoy', this._envoy, 'close')
+        this._envoy.ready.wait(ready, 'unlatch')
+        this._envoy.connect(request, socket, head, async())
+    })
+})
 
 Colleague.prototype._read = cadence(function (async, envelope) {
     if (envelope == null) {
@@ -70,21 +104,21 @@ Colleague.prototype._read = cadence(function (async, envelope) {
         this.responses.push(response)
         break
     case 'naturalized':
-        this._kibitzer.naturalize()
+        this.kibitzer.naturalize()
         break
     case 'broadcast':
     case 'reduce':
-        this._kibitzer.publish(envelope)
+        this.kibitzer.publish(envelope)
         break
     }
 })
 
+// TODO Why isn't this simply a pipe?
 Colleague.prototype._log = cadence(function (async) {
-    var shifter = this._kibitzer.islander.log.shifter()
+    var shifter = this.kibitzer.islander.log.shifter()
     this._destructible.addDestructor('log', shifter, 'destroy')
     var loop = async(function () {
         shifter.dequeue(async())
-        this.ready.unlatch()
     }, function (entry) {
         async([function () {
             this._write.enqueue(entry && {
@@ -106,13 +140,29 @@ Colleague.prototype._log = cadence(function (async) {
     })()
 })
 
-Colleague.prototype.listen = cadence(function (async) {
-    this._log(this._destructible.monitor('log'))
+Colleague.prototype.listen = cadence(function (async, host, port) {
+    this._thereafter.run(this, function (ready) {
+        this._startEnvoy(ready, host, port, this._destructible.monitor('envoy'))
+    })
+    this._thereafter.run(this, function (ready) {
+        this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
+        this.kibitzer.ready.wait(ready, 'unlatch')
+        this.kibitzer.listen(this._destructible.monitor('kibitzer'))
+    })
+    this._thereafter.run(this, function (ready) {
+        this._log(this._destructible.monitor('log'))
+        ready.unlatch()
+    })
+    this._thereafter.run(this, function (ready) {
+        this.shifter = this.kibitzer.log.shifter()
+        ready.unlatch()
+    })
+    this._thereafter.ready.wait(this.ready, 'unlatch')
     this._destructible.completed(5000, async())
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {
-    var properties = this._kibitzer.paxos.government.properties[envelope.to]
+    var properties = this.kibitzer.paxos.government.properties[envelope.to]
     console.log('>', envelope)
     async(function () {
         this._ua.fetch({
@@ -149,7 +199,7 @@ Colleague.prototype.getProperties = cadence(function (async) {
             module: 'colleague',
             method: 'properties',
             body: {
-                id: this._kibitzer.paxos.id,
+                id: this.kibitzer.paxos.id,
                 replaying: false
             }
         }, async())
@@ -174,5 +224,14 @@ Colleague.prototype.outOfBand = cadence(function (async, request) {
 Colleague.prototype._connect = function (socket, header) {
     this._socket(socket, header, abend)
 }
+
+Colleague.prototype.bootstrap = cadence(function (async) {
+    async(function () {
+        this.getProperties(async())
+    }, function (properties) {
+        properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+        this.kibitzer.bootstrap(this._Date.now(), properties)
+    })
+})
 
 module.exports = Colleague
