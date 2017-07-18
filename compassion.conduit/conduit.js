@@ -23,6 +23,7 @@ function Conduit () {
 Conduit.prototype.listen = cadence(function (async, port, address) {
     var downgrader = new Downgrader
     var rendezvous = new Rendezvous
+    console.log('zzzzzz')
 
     downgrader.on('socket', Operation([ rendezvous, 'upgrade' ]))
 
@@ -41,6 +42,7 @@ Conduit.prototype.listen = cadence(function (async, port, address) {
     async(function () {
         server.listen(port, address, async())
     }, function () {
+        console.log('listening !!!', port, address)
         delta(async()).ee(server).on('close')
         this.ready.unlatch()
     })

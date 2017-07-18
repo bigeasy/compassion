@@ -1,28 +1,26 @@
-require('proof')(6, require('cadence')(prove))
+require('proof')(2, require('cadence')(prove))
 
 function prove (async, assert) {
     var abend = require('abend')
-    var Counterfeiter = require('..')
+    var Colleague = require('../../compassion.colleague/colleague')
+    var Conduit = require('../../compassion.conduit')
+    var Counterfeiter = require('../counterfeiter.generic')(Colleague, Conduit)
     var counterfeiter = new Counterfeiter
+    var Vizsla = require('vizsla')
 
     var reduced = null, logger = null
 
     var Procession = require('procession')
 
     var cadence = require('cadence')
+    var ua = new Vizsla
     var reactor = {
-        socket: cadence(function (async, conference, socket, header) {
-            var shifter = socket.read.shifter()
-            async(function () {
-                shifter.dequeue(async())
-            }, function (read) {
-                if (header.from == 'fourth') {
-                    assert(read, null, 'socket read')
-                }
-                socket.write.push(1)
-                socket.write.push(null)
-            })
-        }),
+        responder: function (conference, header, queue) {
+            console.log('here I am ----------------')
+            assert(header.test, 'responder')
+            queue.push(1)
+            queue.push(null)
+        },
         bootstrap: cadence(function (async) {
             return null
         }),
@@ -30,14 +28,11 @@ function prove (async, assert) {
             if (conference.id != 'fourth') {
                 return []
             }
-            var shifter = null
-            if (!conference.replaying) {
-                var socket = { read: new Procession, write: new Procession }
-                conference.socket('first', { from: conference.id }, socket)
-                socket = { read: socket.write, write: socket.read }
-                shifter = socket.read.shifter()
-                socket.write.push(null)
-            }
+            // TODO Ideally this is an async call that returns a Procession on
+            // replay that has the cached values.
+            var shifter = conference.replaying
+                        ? null
+                        : conference.request('first', { test: true }).shifter()
             async(function () {
                 conference.record(function (callback) { shifter.dequeue(callback) }, async())
             }, function (envelope) {
@@ -87,29 +82,15 @@ function prove (async, assert) {
             }
         })
     }
-    var Conference = require('conference')
+    var Conference = require('../../compassion.conference/conference')
     assert(Conference, 'require')
     function createConference () {
         return new Conference(reactor, function (constructor) {
+            constructor.responder()
             constructor.setProperties({ key: 'value' })
             constructor.bootstrap()
             constructor.join()
-            constructor.immigrate(cadence(function (async, id) {
-                return
-                if (conference.government.promise == '1/0') {
-                    async(function () {
-                        conference.outOfBand('1', 'request', 1, async())
-                    }, function (response) {
-                        assert(response, 2, 'out of band')
-                        conference.naturalized()
-                        var properties = conference.getProperties(id)
-                        assert(id, '1', 'immigrate id')
-                        assert(conference.getProperties(id), {}, 'immigrate properties')
-                        assert(conference.getProperties('1/0'), {}, 'immigrate promise properties')
-                        assert(conference.getProperties('2'), null, 'properites not found')
-                    })
-                }
-            }))
+            constructor.immigrate(cadence(function (async) {}))
             constructor.naturalized()
             constructor.exile()
             constructor.government()
@@ -122,8 +103,14 @@ function prove (async, assert) {
     var fourth
     var conference = createConference()
     async(function () {
+        counterfeiter.listen(8888, '127.0.0.1', async())
+    }, [function () {
+        counterfeiter.destroy()
+        counterfeiter.completed(async())
+    }], function () {
         counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
     }, function () {
+        return [ async.break ]
         counterfeiter.events['first'].dequeue(async())
     }, function () {
         counterfeiter.join({
@@ -144,6 +131,7 @@ function prove (async, assert) {
             return envelope.promise == '4/1'
         }, async())
     }, function () {
+        return [ async.break ]
         counterfeiter.join({
             conference: fourth = createConference(),
             id: 'fourth',
@@ -152,6 +140,7 @@ function prove (async, assert) {
         }, async())
     }, function () {
         counterfeiter.events['fourth'].join(function (envelope) {
+            console.log('FOURTH', envelope)
             return envelope.promise == '5/9'
         }, async())
         counterfeiter.events['third'].join(function (envelope) {
@@ -162,7 +151,7 @@ function prove (async, assert) {
     }, function () {
         reduced = async()
         conference.broadcast('message', 1)
-        counterfeiter.leave('fourth')
+//        counterfeiter.leave('fourth')
     }, function () {
         logger = counterfeiter.loggers['fourth']
         // counterfeiter.done.wait(async())

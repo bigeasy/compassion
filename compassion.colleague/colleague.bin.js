@@ -105,7 +105,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var envoy = new Envoy(middleware.reactor.middleware)
 
-
     var location = program.ultimate.conduit
     location = url.resolve(location + '/', program.ultimate.island)
     location = url.resolve(location + '/',  program.ultimate.id)

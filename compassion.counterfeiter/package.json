@@ -30,7 +30,8 @@
                             "compassion.colleague":         "0.10.x",
                             "procession":                   "0.9.x",
                             "signal":                       "3.0.x",
-                            "thereafter":                   "0.1.x"
+                            "thereafter":                   "0.1.x",
+                            "vizsla":                       "5.2.x"
     },
     "devDependencies":
     {
