@@ -171,56 +171,6 @@ Colleague.prototype.outOfBand = cadence(function (async, request) {
     })
 })
 
-Colleague.prototype._tunnel = function (tunnel, header) {
-    var socket = this._client.connect(header.body)
-    tunnel.read.pump(socket.write, 'enqueue')
-    socket.read.pump(tunnel.write, 'enqueue')
-}
-
-Colleague.prototype._socket = cadence(function (async, socket, header) {
-    var location = url.parse(url.resolve(header.to.url, 'socket'))
-    var through = new stream.PassThrough
-    var request = http.request({
-        host: location.hostname,
-        port: +coalesce(location.port, 80),
-        method: 'POST',
-        path: location.pathname,
-        timeout: 5000
-    })
-    async(function () {
-        delta(async()).ee(request).on('response')
-    }, function (response) {
-        response.pipe(through)
-    })
-    var conduit = new Conduit(through, request)
-    var client = new Client('tunnel', conduit.read, conduit.write)
-    var tunnel = client.connect({
-        module: 'compassion',
-        method: 'tunnel',
-        body: header.body
-    })
-    tunnel.read.pump(function (envelope) {
-        if (envelope == null) {
-            conduit.destroy()
-        }
-    })
-    socket.read.pump(tunnel.write, 'enqueue')
-    tunnel.wrote.pump(function (envelope) {
-        if (envelope == null) {
-            setImmediate(function () { request.end() })
-            return
-            conduit.write.push(null)
-        }
-    })
-    conduit.wrote.pump(function (envelope) {
-        if (envelope == null) {
-            request.end()
-        }
-    })
-    tunnel.read.pump(socket.write, 'enqueue')
-    conduit.listen(abend)
-})
-
 Colleague.prototype._connect = function (socket, header) {
     this._socket(socket, header, abend)
 }
