@@ -41,7 +41,7 @@
                             "prolific.shuttle":             "11.0.x",
                             "reactor":                      "5.0.x",
                             "rescue":                       "3.0.x",
-                            "signal":                       "1.10.x",
+                            "signal":                       "3.0.x",
                             "thereafter":                   "0.1.x",
                             "vizsla":                       "5.2.x"
     },
