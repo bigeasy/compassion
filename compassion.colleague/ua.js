@@ -10,13 +10,15 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
         logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
         this._ua.fetch({
-            url: url.resolve(envelope.to.url, './kibitz'),
+            url: envelope.to.url,
+        }, {
+            url: './kibitz',
             headers: {
                 'x-kibitz-method': envelope.method,
                 'x-kibitz-envelope': JSON.stringify(envelope)
             },
             post: envelope,
-            nullify: true
+            nullify: false
         }, async())
     }, function (body, response) {
         logger.info('recorded', { source: 'ua', method: envelope.method, $body: body })

@@ -45,7 +45,7 @@ function Colleague (ua, kibitzer, server) {
 
     this.responses.shifter().pump(this, '_response')
 
-    this._destructible = new Destructible
+    this._destructible = new Destructible('colleague')
     this._destructible.markDestroyed(this)
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
@@ -107,8 +107,8 @@ Colleague.prototype._log = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async) {
-        this._log(this._destructible.monitor('log'))
-        this._destructible.completed(1000, async())
+    this._log(this._destructible.monitor('log'))
+    this._destructible.completed(5000, async())
 })
 
 Colleague.prototype.request = cadence(function (async, envelope) {
@@ -130,6 +130,17 @@ Colleague.prototype.request = cadence(function (async, envelope) {
 Colleague.prototype.destroy = function () {
     this._destructible.destroy()
 }
+
+Colleague.prototype.backlog = cadence(function (async, body) {
+    this._requester.request({ module: 'colleague', method: 'backlog', body: body }, async())
+})
+
+Colleague.prototype.newOutOfBand = cadence(function (async, header) {
+    var socket = { read: new Procession, write: new Procession }
+    this._client.connect(header, socket)
+    socket.read.push(null)
+    return [ socket.write.shifter() ]
+})
 
 Colleague.prototype.getProperties = cadence(function (async) {
     console.log('GETTING PROPERTIES')

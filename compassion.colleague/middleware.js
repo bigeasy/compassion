@@ -27,6 +27,8 @@ function Middleware (startedAt, island, kibitzer, colleague) {
         dispatcher.dispatch('POST /oob', 'outOfBand')
         dispatcher.dispatch('POST /socket', 'socket')
         dispatcher.dispatch('POST /kibitz', 'kibitz')
+        dispatcher.dispatch('POST /backlog', 'backlog')
+        dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('GET /health', 'health')
     })
     this._startedAt = startedAt
@@ -40,6 +42,35 @@ function Middleware (startedAt, island, kibitzer, colleague) {
 //
 Middleware.prototype.index = cadence(function (async) {
     return 'Compassion Colleague API\n'
+})
+
+Middleware.prototype.backlog = cadence(function (async, request) {
+    this._colleague.backlog(request.body, async())
+})
+
+Middleware.prototype._request = cadence(function (async, request, response) {
+    async(function () {
+        this._colleague.newOutOfBand(request.body, async())
+    }, function (queue) {
+        var loop = async(function () {
+            queue.dequeue(async())
+        }, function (entry) {
+            console.log('ARGLE BARGLE', entry)
+            if (entry == null) {
+                response.end()
+                return [ loop.break ]
+            }
+            response.write(JSON.stringify(entry) + '\n')
+        })()
+    })
+})
+
+var abend = require('abend')
+Middleware.prototype.request = cadence(function (async, request) {
+    return [ function (response) {
+        console.log('EXAMPLE')
+        this._request(request, response, abend)
+    }.bind(this), { 'content-type': 'application/json-stream' } ]
 })
 
 // Forward out of band requests to our Conduit `Requester`.

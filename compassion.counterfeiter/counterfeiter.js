@@ -4,13 +4,17 @@ var Destructor = require('destructible')
 var UserAgent = require('./ua')
 var Denizen = require('./denizen')
 var interrupt = require('interrupt').createInterrupter('compassion.counterfeiter')
+var Conduit = require('compassion.conduit/conduit')
+var Signal = require('signal')
 
-function Counterfeiter () {
+function Counterfeiter (address, port) {
     this._denizens = {}
     // TODO Getting silly, just expose Denizen.
     this.events = {}
     this.kibitzers = {}
     this.loggers = {}
+    this._port = port
+    this._address = address
     this._destructible = new Destructor('counterfeiter')
     this._destructible.markDestroyed(this, 'destroyed')
 }
@@ -22,7 +26,7 @@ Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
     this.events[options.id] = denizen.kibitzer.log.shifter()
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     this.loggers[options.id] = denizen.logger.shifter()
-    denizen.bootstrap(this._destructible.rescue([ 'denizen', options.id ]))
+    denizen.bootstrap(this._port, this._address, this._destructible.rescue([ 'denizen', options.id ]))
     async(function () {
         denizen.ready.wait(async())
     }, function () {
@@ -38,7 +42,8 @@ Counterfeiter.prototype.join = cadence(function (async, options) {
 
     this._destructible.addDestructor([ 'denizen', options.id ], denizen, 'destroy')
     this.loggers[options.id] = denizen.logger.shifter()
-    denizen.join(options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ], denizen.ready, 'unlatch'))
+    console.log('JOIN')
+    denizen.join(this._port, this._address, options.leader, options.republic, this._destructible.rescue([ 'denizen', options.id ], denizen.ready, 'unlatch'))
     async(function () {
         denizen.ready.wait(async())
     }, function () {
@@ -53,6 +58,21 @@ Counterfeiter.prototype.leave = function (id) {
 
 Counterfeiter.prototype.destroy = function () {
     this._destructible.destroy()
+}
+
+Counterfeiter.prototype.listen = cadence(function (async, port, address) {
+    this._address = address
+    this._port = port
+    var ready = new Signal
+    var conduit = new Conduit
+    this._destructible.addDestructor('conduit', conduit, 'destroy')
+    conduit.ready.wait(ready, 'unlatch')
+    conduit.listen(port, address, this._destructible.monitor('conduit', ready, 'unlatch'))
+    ready.wait(async())
+})
+
+Counterfeiter.prototype.completed = function (callback) {
+    this._destructible.completed(5000, callback)
 }
 
 module.exports = Counterfeiter
