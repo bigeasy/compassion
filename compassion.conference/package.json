@@ -1,0 +1,54 @@
+{
+    "name":                 "compassion.conference",
+    "version":              "0.10.0",
+    "description":
+
+      "Framework communicating using a Compassion atomic log.",
+
+    "keywords":
+    [
+                            "paxos", "database", "database", "network", "consensus",
+                            "atomic", "broadcast", "multi-paxos", "queue",
+                            "fifo"
+    ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/conference",
+    "bugs":                 "https://github.com/bigeasy/conference/issues",
+    "license":              "MIT",
+    "repository":
+    {
+                            "type": "git",
+                            "url": "http://github.com/bigeasy/conference.git"
+    },
+    "dependencies":
+    {
+                            "cadence":                      "1.0.x",
+                            "cliffhanger":                  "1.4.x",
+                            "conduit":                      "0.13.x",
+                            "cubbyhole":                    "0.0.x",
+                            "extant":                       "1.0.x",
+                            "monotonic":                    "3.0.x",
+                            "nop":                          "1.0.0",
+                            "keyify":                       "0.0.1",
+                            "operation":                    "1.6.x",
+                            "procession":                   "0.9.x",
+                            "prolific.logger":              "5.0.x",
+                            "rescue":                       "3.0.x",
+                            "signal":                       "3.0.x",
+                            "staccato":                     "3.8.x",
+                            "vizsla":                       "5.2.x"
+    },
+    "devDependencies":
+    {
+                            "abend":                        "1.0.x",
+                            "compassion.channel":           "0.6.x",
+                            "compassion.counterfeiter":     "0.0.x",
+                            "kibitz":                       "0.10.x",
+                            "proof":                        "3.0.x"
+    },
+    "main":                 "conference",
+    "scripts":
+    {
+                            "test": "proof platform win32 && proof test */*/*.t.js || t/test"
+    }
+}

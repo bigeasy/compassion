@@ -82,7 +82,7 @@ function prove (async, assert) {
             }
         })
     }
-    var Conference = require('conference')
+    var Conference = require('../../compassion.conference/conference')
     assert(Conference, 'require')
     function createConference () {
         return new Conference(reactor, function (constructor) {
