@@ -161,9 +161,9 @@ function prove (async, assert) {
             return envelope.promise == '5/5'
         }, async())
     }, function () {
-        return [ async.break ]
         fourth.invoke('catalog', 1, async())
     }, function () {
+        return [ async.break ]
         reduced = async()
         conference.broadcast('message', 1)
 //        counterfeiter.leave('fourth')
