@@ -41,7 +41,13 @@ function prove (async, assert) {
             }, function (envelope) {
                 conference.boundary()
                 if (conference.replaying) {
-                    assert(envelope, 1, 'socket')
+                    assert(envelope, 1, 'request envelope')
+                }
+            }, function () {
+                conference.record(function (callback) { shifter.dequeue(callback) }, async())
+            }, function () {
+                if (conference.replaying) {
+                    assert(envelope, null, 'request eos')
                 }
             })
         }),

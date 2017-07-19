@@ -315,7 +315,7 @@ Conference.prototype._fetch = cadence(function (async, to, header, queue) {
             if (json == null) {
                 return [ loop.break ]
             }
-        })
+        })()
     })
 })
 
