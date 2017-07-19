@@ -30,6 +30,12 @@ function Middleware (startedAt, island, kibitzer, colleague) {
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('GET /health', 'health')
+        dispatcher.logger = function (x, b, entry) {
+            if (entry.error) {
+                console.log(entry.error.stack)
+            }
+            console.log(entry)
+        }
     })
     this._startedAt = startedAt
     this._island = island
@@ -113,6 +119,7 @@ Middleware.prototype.socket = cadence(function (async, request) {
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
+    console.log('KIBITZ!', request.body)
     logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
     this._kibitzer.request(request.body, async())
 })

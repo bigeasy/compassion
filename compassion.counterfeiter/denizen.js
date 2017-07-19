@@ -22,9 +22,6 @@ function Denizen (counterfeiter, options, ua) {
 
     kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
     kibitzer.read.shifter().pump(responder.write, 'enqueue')
-    kibitzer.read.shifter().pump(function (envelope) {
-        console.log('sending', envelope)
-    })
     responder.read.shifter().pump(kibitzer.write, 'enqueue')
 
     this._ua = ua

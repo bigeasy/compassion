@@ -24,6 +24,11 @@ var Multiplexer = require('conduit/multiplexer')
 var Envoy = require('assignation/envoy')
 var Middleware = require('./middleware')
 
+var UserAgent = require('./ua')
+var Vizsla = require('vizsla')
+
+var Timer = require('happenstance').Timer
+
 var http = require('http')
 
 function Colleague (ua, kibitzer, server, island) {
@@ -32,6 +37,12 @@ function Colleague (ua, kibitzer, server, island) {
     this._Date = Date
 
     this.kibitzer = kibitzer
+
+    var responder = new Responder(new UserAgent(new Vizsla))
+
+    kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
+    kibitzer.read.shifter().pump(responder.write, 'enqueue')
+    responder.read.shifter().pump(kibitzer.write, 'enqueue')
 
     this._multiplexer = new Multiplexer
 
@@ -66,7 +77,7 @@ function Colleague (ua, kibitzer, server, island) {
     this.demolition = this._destructible.events
     this.done = this._destructible.done
 
-    var middleware = new Middleware(Date.now(), island, this._kibitzer, this)
+    var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
     this._envoy = new Envoy(middleware.reactor.middleware)
 
     this.ready = new Signal

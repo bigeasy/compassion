@@ -110,9 +110,14 @@ function prove (async, assert) {
     }], function () {
         counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
     }, function () {
+       // counterfeiter.events['first'].dequeue(async())
+        counterfeiter.events['first'].join(function (envelope) {
+            console.log('--->', envelope)
+            return envelope.promise == '1/2'
+        }, async())
+    }, function (entry) {
+        console.log('---> here -->', entry)
         return [ async.break ]
-        counterfeiter.events['first'].dequeue(async())
-    }, function () {
         counterfeiter.join({
             conference: createConference(),
             id: 'second',

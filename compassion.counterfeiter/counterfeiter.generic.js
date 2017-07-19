@@ -5,7 +5,6 @@ module.exports = function (Colleague, Conduit) {
     var UserAgent = require('./ua')
     var Colleague = require('../compassion.colleague/colleague')
     var Kibitzer = require('kibitz')
-    var Timer = require('happenstance').Timer
     var Conduit = require('../compassion.conduit/conduit')
     var Vizsla = require('vizsla')
     var Signal = require('signal')
@@ -30,13 +29,13 @@ module.exports = function (Colleague, Conduit) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
         var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 250, timeout: 1000 })
 
-        kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
         var colleague = new Colleague(new Vizsla, kibitzer, null, 'island')
         this._colleagues[options.id] = colleague
         this.kibitzers[options.id] = colleague.kibitzer
         this.events[options.id] = colleague.kibitzer.log.shifter()
         this._destructible.addDestructor([ 'colleague', options.id ], colleague, 'destroy')
 
+        // Create loggers suitable for replaying.
         var logger = new Procession
 
         kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
@@ -45,9 +44,11 @@ module.exports = function (Colleague, Conduit) {
 
         this.loggers[options.id] = logger.shifter()
 
+        // Connect colleague directly to conference.
         colleague.read.shifter().pump(options.conference.write, 'enqueue')
         options.conference.read.shifter().pump(colleague.write, 'enqueue')
 
+        // Start colleague.
         var ready = new Signal
 
         ready.wait(function () {
@@ -60,17 +61,13 @@ module.exports = function (Colleague, Conduit) {
     })
 
     Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
-        async([function () {
-            async(function () {
-                this._run(options, async())
-            }, function (colleague) {
-                this._colleagues[options.id].bootstrap(async())
-            }, function () {
-                console.log('done')
-            })
-        }, function (error) {
-            console.log(error.stack)
-        }])
+        async(function () {
+            this._run(options, async())
+        }, function (colleague) {
+            this._colleagues[options.id].bootstrap(async())
+        }, function () {
+            console.log('done')
+        })
     })
 
     Counterfeiter.prototype.join = cadence(function (async, options) {
