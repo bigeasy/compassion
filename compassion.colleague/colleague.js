@@ -174,7 +174,6 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
 
 Colleague.prototype.request = cadence(function (async, envelope) {
     var properties = this.kibitzer.paxos.government.properties[envelope.to]
-    console.log('>', envelope)
     async(function () {
         this._ua.fetch({
             url: properties.url
@@ -242,6 +241,20 @@ Colleague.prototype.bootstrap = cadence(function (async) {
     }, function (properties) {
         properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
         this.kibitzer.bootstrap(this._Date.now(), properties)
+    })
+})
+
+Colleague.prototype.join = cadence(function (async, republic, leader) {
+    async(function () {
+        this.getProperties(async())
+    }, function (properties) {
+        properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+        this.kibitzer.join({
+            url: 'http://127.0.0.1:8888/' + leader + '/',
+            republic: republic
+        }, properties, require('abend'))
+    }, function () {
+        console.log('done')
     })
 })
 

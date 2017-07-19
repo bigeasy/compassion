@@ -16,7 +16,6 @@ function prove (async, assert) {
     var ua = new Vizsla
     var reactor = {
         responder: function (conference, header, queue) {
-            console.log('here I am ----------------')
             assert(header.test, 'responder')
             queue.push(1)
             queue.push(null)
@@ -112,18 +111,20 @@ function prove (async, assert) {
     }, function () {
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
-            console.log('--->', envelope)
             return envelope.promise == '1/2'
         }, async())
     }, function (entry) {
-        console.log('---> here -->', entry)
-        return [ async.break ]
         counterfeiter.join({
             conference: createConference(),
             id: 'second',
             leader: 'first',
             republic: counterfeiter.kibitzers['first'].paxos.republic
         }, async())
+    }, function () {
+        counterfeiter.events['first'].join(function (envelope) {
+            return envelope.promise == '2/1'
+        }, async())
+    }, function () {
         counterfeiter.join({
             conference: createConference(),
             id: 'third',
@@ -132,8 +133,7 @@ function prove (async, assert) {
         }, async())
     }, function () {
         counterfeiter.events['first'].join(function (envelope) {
-            console.log('--->', envelope)
-            return envelope.promise == '4/1'
+            return envelope.promise == '4/4'
         }, async())
     }, function () {
         return [ async.break ]

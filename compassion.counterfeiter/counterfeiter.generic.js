@@ -71,6 +71,16 @@ module.exports = function (Colleague, Conduit) {
     })
 
     Counterfeiter.prototype.join = cadence(function (async, options) {
+        async(function () {
+            this._run(options, async())
+        }, function (colleague) {
+            this._colleagues[options.id].join(options.republic, options.leader, async())
+        }, function () {
+            console.log('done')
+        })
+    })
+
+    Counterfeiter.prototype._join = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', this._destructible.errors[0])
         // TODO Fold UserAgent into Counterfeiter.
         var denizen = this._denizens[options.id] = new Denizen(this, options, new UserAgent(this))

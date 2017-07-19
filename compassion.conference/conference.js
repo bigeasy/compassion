@@ -454,12 +454,13 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 }, function () {
                     this._operate([ 'immigrate' ], [ this, immigrant.id ], async())
                 }, function () {
-                    console.log( "IMMIGRATE", this.id, immigrant)
+                    console.log("IMMIGRATE", this.id, immigrant)
                     if (immigrant.id != this.id) {
                         var broadcasts = []
                         for (var key in this._broadcasts) {
                             broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                         }
+                        console.log('SAVING', this.government.promise, broadcasts)
                         this._backlogs.set(this.government.promise, null, broadcasts)
                     } else if (this.government.promise != '1/0') {
                         this._getBacklog(async())
@@ -467,6 +468,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 }, function () {
                     console.log('BACKLOGGED')
                     if (this.government.promise == '1/0' || immigrant.id == this.id) {
+                        console.log('>> broadcast natutralized <<', this.id)
                         this._broadcast(true, 'naturalized', this.government.promise)
                     }
                 })
@@ -507,6 +509,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 request: envelope.body.body,
                 responses: {}
             }
+            console.log('got broadcast', envelope.body)
             async(function () {
                 this._operate([
                     envelope.internal, 'receive', envelope.body.method

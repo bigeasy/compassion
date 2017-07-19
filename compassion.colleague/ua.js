@@ -8,7 +8,6 @@ function UserAgent (ua) {
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
-        console.log('!!!!! sending !!!!!', envelope)
         logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
         this._ua.fetch({
             url: envelope.to.url,
@@ -22,8 +21,6 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
             nullify: true
         }, async())
     }, function (body, response) {
-        console.log('sent', envelope)
-        console.log('got', body)
         logger.info('recorded', { source: 'ua', method: envelope.method, $body: body })
         return [ body ]
     })
