@@ -79,9 +79,19 @@ function prove (async, assert) {
             republic: 1
          }, 1, async())
     }, function () {
+        var actions = [{
+            statusCode: 500,
+            headers: {},
+            body: new Buffer('')
+        }, {
+            statusCode: 200,
+            headers: { 'content-type': 'application/json' },
+            body: new Buffer(JSON.stringify({ name: 'unrecoverable' }))
+        }]
         var ua = new UserAgent(function (request, response) {
-            response.writeHead(200, { 'content-type': 'application/json' })
-            response.end(new Buffer(JSON.stringify({ name: 'unrecoverable' })))
+            var action = actions.shift()
+            response.writeHead(action.statusCode, action.headers)
+            response.end(action.body)
         })
         chaperon = new Chaperon({
             chaperon: 'http://127.0.0.1:8080',
@@ -91,5 +101,16 @@ function prove (async, assert) {
         chaperon.listen(async())
     }, function () {
         assert(chaperon.destroyed, 'polled unrecoverable')
+        var ua = new UserAgent(function (request, response) {
+            response.writeHead(200)
+            response.end(new Buffer(''))
+        })
+        chaperon = new Chaperon({
+            chaperon: 'http://127.0.0.1:8080',
+            ua: ua,
+            kibitzer: { paxos: {}, destroy: function () {} }
+        })
+        chaperon.listen(async())
+        chaperon.destroy()
     })
 }
