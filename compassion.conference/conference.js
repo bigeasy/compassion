@@ -355,7 +355,6 @@ Conference.prototype._getBacklog = cadence(function (async) {
     async(function () {
         console.log('_getBacklog', this.id, this.government.promise)
         this.record(async)(function () {
-            async([function () {
             this._ua.fetch({
                 url: this.government.properties[this.government.majority[0]].url
             }, {
@@ -363,10 +362,6 @@ Conference.prototype._getBacklog = cadence(function (async) {
                 post: { promise: this.government.promise },
                 raise: true
             }, async())
-            }, function (error) {
-                console.log(error.stack)
-                throw error
-            }])
         })
     }, function (body, response) {
         async.forEach(function (broadcast) {
