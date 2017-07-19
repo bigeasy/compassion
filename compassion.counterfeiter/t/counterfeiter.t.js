@@ -1,4 +1,4 @@
-require('proof')(2, require('cadence')(prove))
+require('proof')(3, require('cadence')(prove))
 
 function prove (async, assert) {
     var abend = require('abend')
@@ -136,7 +136,6 @@ function prove (async, assert) {
             return envelope.promise == '4/4'
         }, async())
     }, function () {
-        return [ async.break ]
         counterfeiter.join({
             conference: fourth = createConference(),
             id: 'fourth',
@@ -146,12 +145,13 @@ function prove (async, assert) {
     }, function () {
         counterfeiter.events['fourth'].join(function (envelope) {
             console.log('FOURTH', envelope)
-            return envelope.promise == '5/9'
+            return envelope.promise == '5/5'
         }, async())
         counterfeiter.events['third'].join(function (envelope) {
-            return envelope.promise == '5/9'
+            return envelope.promise == '5/5'
         }, async())
     }, function () {
+        return [ async.break ]
         fourth.invoke('catalog', 1, async())
     }, function () {
         reduced = async()
