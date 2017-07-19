@@ -1,4 +1,4 @@
-require('proof')(3, require('cadence')(prove))
+require('proof')(4, require('cadence')(prove))
 
 function prove (async, assert) {
     var abend = require('abend')
@@ -27,6 +27,10 @@ function prove (async, assert) {
             if (conference.id != 'fourth') {
                 return []
             }
+            assert(conference.getProperties('fourth'), {
+                key: 'value',
+                url: 'http://127.0.0.1:8888/fourth/'
+            }, 'get properties')
             // TODO Ideally this is an async call that returns a Procession on
             // replay that has the cached values.
             var shifter = conference.replaying
