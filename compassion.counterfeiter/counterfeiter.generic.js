@@ -2,7 +2,6 @@ module.exports = function (Colleague, Conduit) {
     var cadence = require('cadence')
     var abend = require('abend')
     var Destructor = require('destructible')
-    var UserAgent = require('./ua')
     var Colleague = require('../compassion.colleague/colleague')
     var Kibitzer = require('kibitz')
     var Conduit = require('../compassion.conduit/conduit')
