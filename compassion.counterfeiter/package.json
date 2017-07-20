@@ -36,6 +36,7 @@
     "devDependencies":
     {
                             "conference":                   "0.10.x",
+                            "monotonic":                    "3.0.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "counterfeiter",
