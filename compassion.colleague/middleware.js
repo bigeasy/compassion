@@ -72,43 +72,6 @@ Middleware.prototype.request = cadence(function (async, request) {
     }.bind(this), { 'content-type': 'application/json-stream' } ]
 })
 
-// Forward out of band requests to our Conduit `Requester`.
-
-//
-Middleware.prototype.outOfBand = cadence(function (async, request) {
-    console.log('MIDDLEWARE OOB', request.body)
-    this._colleague.outOfBand(request.body, async())
-})
-
-// TODO Some thoughts on back pressure here. I was going to make it so that
-// the server connect required because of back-pressure, but back-pressure is
-// not as simple as all that. How would you convey the back-pressure back to the
-// caller? A good answer; enqueue work in a turnstile that has a maximum size
-// and 503 requests if the header can't get into the queue. Back-pressure is
-// going to be case by case for some time to come.
-Middleware.prototype.socket = cadence(function (async, request) {
-    return function (response) {
-        response.writeHead(200, 'OK', {
-            'content-type': 'application/octet-stream',
-            'transfer-encoding': 'chunked'
-        })
-        var conduit = new Conduit(request, response)
-        conduit.wrote.pump(function (envelope) {
-            if (envelope == null) {
-                response.end()
-            } else if (envelope.body == null) {
-                conduit.write.push(null)
-            }
-        })
-        require('assert')(this._colleague)
-        var server = new Server({
-            object: this._colleague,
-            method: '_tunnel'
-        }, 'tunnel', conduit.read, conduit.write)
-        conduit.listen(abend)
-    }.bind(this)
-})
-
 // Pass Kibitz envelopes to our `Kibitzer`.
 
 //
