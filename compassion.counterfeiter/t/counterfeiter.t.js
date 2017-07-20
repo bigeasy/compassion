@@ -1,4 +1,4 @@
-require('proof')(4, require('cadence')(prove))
+require('proof')(7, require('cadence')(prove))
 
 function prove (async, assert) {
     var abend = require('abend')
@@ -7,6 +7,7 @@ function prove (async, assert) {
     var Counterfeiter = require('../counterfeiter.generic')(Colleague, Conduit)
     var counterfeiter = new Counterfeiter
     var Vizsla = require('vizsla')
+    var Monotonic = require('monotonic').asString
 
     var reduced = null, logger = null
 
@@ -71,12 +72,12 @@ function prove (async, assert) {
         messages: cadence(function (async, conference, reduction) {
             if (conference.id == 'third') {
                 assert(reduction.request, 1, 'reduced request')
-                assert(reduction.arrayed, [{
-                    id: 'second', value: 0
+                assert(reduction.arrayed.sort(function (a, b) { return Monotonic.compare(a.promise, b.promise) }), [{
+                    promise: '1/0', id: 'first', value: 0
                 }, {
-                    id: 'first', value: 0
+                    promise: '2/0', id: 'second', value: 0
                 }, {
-                    id: 'third', value: 0
+                    promise: '3/0', id: 'third', value: 0
                 }], 'reduced responses')
                 reduced()
             }
@@ -86,7 +87,7 @@ function prove (async, assert) {
                 assert(conference.government.exile, {
                     id: 'fourth',
                     promise: '5/0',
-                    properties: { key: 'value', url: 'fourth' }
+                    properties: { key: 'value', url: 'http://127.0.0.1:8888/fourth/' }
                 }, 'exile')
             }
         })
@@ -163,14 +164,15 @@ function prove (async, assert) {
     }, function () {
         fourth.invoke('catalog', 1, async())
     }, function () {
-        return [ async.break ]
+        setTimeout(async(), 3000)
+    }, function () {
         reduced = async()
         conference.broadcast('message', 1)
-//        counterfeiter.leave('fourth')
+        counterfeiter.leave('fourth')
     }, function () {
+        return [ async.break ]
         logger = counterfeiter.loggers['fourth']
         // counterfeiter.done.wait(async())
-        counterfeiter.destroy()
     }, function () {
         return
         var conference = createConference()

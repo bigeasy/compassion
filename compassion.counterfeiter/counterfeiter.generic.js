@@ -27,7 +27,7 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype._run = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 250, timeout: 1000 })
+        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
 
         var colleague = new Colleague(new Vizsla, kibitzer, null, 'island')
         this._colleagues[options.id] = colleague
@@ -56,7 +56,7 @@ module.exports = function (Colleague, Conduit) {
         })
 
         colleague.ready.wait(ready, 'unlatch')
-        colleague.listen(this._address, this._port, this._destructible.monitor([ 'colleague', options.id ], ready, 'unlatch'))
+        colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ], ready, 'unlatch'))
         ready.wait(async())
     })
 
@@ -99,7 +99,7 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype.leave = function (id) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        this._destructible.invokeDestructor([ 'denizen', id ])
+        this._destructible.invokeDestructor([ 'colleague', id ])
     }
 
     Counterfeiter.prototype.destroy = function () {

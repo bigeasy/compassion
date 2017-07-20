@@ -546,6 +546,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
         var reduced = []
         for (var promise in broadcast.responses) {
             reduced.push({
+                promise: promise,
                 id: this.government.immigrated.id[promise],
                 value: broadcast.responses[promise]
             })
