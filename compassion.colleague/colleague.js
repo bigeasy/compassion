@@ -99,10 +99,7 @@ Colleague.prototype._startEnvoy = cadence(function (async, ready, host, port) {
 })
 
 Colleague.prototype._read = cadence(function (async, envelope) {
-    if (envelope == null) {
-        return
-    }
-    if (envelope.module == 'conduit/multiplexer') {
+    if (envelope == null || envelope.module == 'conduit/multiplexer') {
         return
     }
     this.chatter.push(envelope)
