@@ -76,9 +76,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var merger = new Merger(kibitzer, channel)
 
-    kibitzer.played.pump(new Recorder('kibitz', logger, merger.play), 'enqueue')
-    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger, merger.play), 'enqueue')
-    kibitzer.islander.outbox.pump(new Recorder('islander', logger, merger.play), 'enqueue')
+    kibitzer.played.shifter().pump(new Recorder('kibitz', logger, merger.play), 'enqueue')
+    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger, merger.play), 'enqueue')
+    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger, merger.play), 'enqueue')
 
     var destructible = new Destructor('channel.bin')
 
@@ -113,11 +113,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     thereafter.run(function (ready) {
-        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3])
-        channel.pump(conduit.write, conduit.read)
+        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], channel)
         destructible.addDestructor('conduit', conduit, 'destroy')
+        destructible.addDestructor('write', channel.write, 'push')
         conduit.ready.wait(ready, 'unlatch')
-        conduit.listen(destructible.monitor('conduit'))
+        conduit.listen(null, destructible.monitor('conduit'))
     })
 
     thereafter.run(function (ready) {
@@ -135,5 +135,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         merger.merge(destructible.monitor('merger'))
     })
 
-    destructible.completed(1000, async())
+    thereafter.ready.wait(program.ready, 'unlatch')
+
+    destructible.completed(5000, async())
 }))

@@ -197,6 +197,7 @@ Conference.prototype._play = cadence(function (async, envelope) {
     }
     switch (envelope.method) {
     case 'record':
+        console.log('RECORD', envelope)
         this._records.enqueue(envelope, async())
         break
     case 'invoke':
@@ -215,8 +216,9 @@ function record (conference, async) {
                 async(function () {
                     conference._replays.dequeue(async())
                 }, function (envelope) {
-                    assert(envelope.id == envelope.id)
-                    return envelope.body
+                    console.log(envelope, id)
+                    assert(envelope.id == id)
+                    return [ envelope.body ]
                 })
             } else {
                 console.log(this.id, 'recording')
@@ -364,6 +366,7 @@ Conference.prototype._getBacklog = cadence(function (async) {
             }, async())
         })
     }, function (body, response) {
+        console.log('--------------------------------------------------------------------------------', body)
         async.forEach(function (broadcast) {
             async(function () {
                 this._entry({

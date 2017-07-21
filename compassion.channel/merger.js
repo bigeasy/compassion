@@ -107,7 +107,7 @@ Merger.prototype.merge = cadence(function (async) {
                         if (envelope.entry != null) {
                             var entry = log.shift()
                             departure.raise(entry.promise, envelope.entry)
-                            this._channel.write.enqueue({
+                            this._channel.read.enqueue({
                                 module: 'colleague',
                                 method: 'entry',
                                 body: entry
@@ -122,16 +122,18 @@ Merger.prototype.merge = cadence(function (async) {
                     })
                     break
                 case 'invoke':
-                    this._channel.write.enqueue({
+                    this._channel.read.enqueue({
                         module: 'colleague',
                         method: 'invoke',
+                        id: envelope.id,
                         body: envelope.body
                     }, async())
                     break
                 case 'record':
-                    this._channel.write.enqueue({
+                    this._channel.read.enqueue({
                         module: 'colleague',
                         method: 'record',
+                        id: envelope.id,
                         body: envelope.body
                     }, async())
                     break

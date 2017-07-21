@@ -4,17 +4,39 @@ var Conduit = require('conduit')
 var Signal = require('signal')
 var Requester = require('conduit/requester')
 var Procession = require('procession')
-var assert = require('assert')
+var Multiplexer = require('conduit/multiplexer')
 
-function Conduit (colleague) {
-    this._colleague = colleague
-}
+function Channel (kibitzer) {
+    this.read = new Procession
+    this.write = new Procession
 
-function Conference (channel) {
-    this._channel = channel
+    this._channel = null
+    this._kibitzer = kibitzer
+    this._destructor = new Destructor('channel')
+    this._destructor.markDestroyed(this, 'destroyed')
+
+    var multiplexer = new Multiplexer
+
+    this.read = multiplexer.read
+    this.write = multiplexer.write
+
+    multiplexer.route('conference', this._requester = new Requester)
+
+    this.write.shifter().pump(this, '_enqueue')
+
+    this._write = this.read
+
+    // TODO What is this for?
+    this.requests = new Procession
+    this.chatter = new Procession
+    this.responses = new Procession
+
+    this.ready = new Signal
+    this._destructor.addDestructor('ready', this.ready, 'unlatch')
 }
 
 Channel.prototype._enqueue = cadence(function (async, envelope) {
+    console.log('envelope', envelope)
     if (envelope == null) {
         return
     }
@@ -40,30 +62,9 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     }
 })
 
-function Channel (kibitzer) {
-    this.read = new Procession
-    this.write = new Procession
-
-    this._channel = null
-    this._kibitzer = kibitzer
-    this._destructor = new Destructor('channel')
-    this._destructor.markDestroyed(this, 'destroyed')
-
-    this._requester = new Requester('colleague', this.read, this.write)
-
-    this._requester.read.pump(this, '_enqueue')
-
-    this.requests = new Procession
-    this.chatter = new Procession
-    this.responses = new Procession
-
-    this.ready = new Signal
-    this._destructor.addDestructor('ready', this.ready, 'unlatch')
-}
-
-Channel.prototype.pump = function (read, write) {
-    this.write.pump(read, 'enqueue')
-    write.pump(this.read, 'enqueue')
+Channel.prototype.pump = function (conference) {
+    this.read.shifter().pump(conference.write, 'enqueue')
+    conference.read.shifter().pump(this.write, 'enqueue')
 }
 
 Channel.prototype.listen = cadence(function (async, input, output) {
@@ -87,7 +88,7 @@ Channel.prototype._connect = cadence(function (async, socket) {
 
 Channel.prototype.getProperties = cadence(function (async, id) {
     async(function () {
-        this._requester.request('colleague', {
+        this._requester.request({
             module: 'colleague',
             method: 'properties',
             body: { id: id, replaying: true }

@@ -49,6 +49,7 @@ function Colleague (ua, kibitzer, server, island) {
     this.read = this._multiplexer.read
     this.write = this._multiplexer.write
 
+    // TODO Not `this._`.
     this._multiplexer.route('conference', this._requester = new Requester)
     this._multiplexer.route('colleague', new Responder(this))
 
@@ -104,7 +105,11 @@ Colleague.prototype._read = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
+    if (envelope.module == 'conduit/multiplexer') {
+        return
+    }
     this.chatter.push(envelope)
+    // TODO Create a Conduit for simply streaming.
     switch (envelope.method) {
     case 'boundary':
     case 'record':

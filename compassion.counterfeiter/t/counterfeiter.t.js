@@ -1,115 +1,20 @@
-require('proof')(7, require('cadence')(prove))
+require('proof')(6, require('cadence')(prove))
 
 function prove (async, assert) {
+    var fs = require('fs')
+    var path = require('path')
     var abend = require('abend')
     var Colleague = require('../../compassion.colleague/colleague')
     var Conduit = require('../../compassion.conduit')
     var Counterfeiter = require('../counterfeiter.generic')(Colleague, Conduit)
     var counterfeiter = new Counterfeiter
-    var Vizsla = require('vizsla')
-    var Monotonic = require('monotonic').asString
+    var Signal = require('signal')
 
-    var reduced = null, logger = null
+    var reduced = new Signal, logger = null
 
     var Procession = require('procession')
 
-    var cadence = require('cadence')
-    var ua = new Vizsla
-    var reactor = {
-        responder: function (conference, header, queue) {
-            assert(header.test, 'responder')
-            queue.push(1)
-            queue.push(null)
-        },
-        bootstrap: cadence(function (async) {
-            return null
-        }),
-        join: cadence(function (async, conference) {
-            if (conference.id != 'fourth') {
-                return []
-            }
-            assert(conference.getProperties('fourth'), {
-                key: 'value',
-                url: 'http://127.0.0.1:8888/fourth/'
-            }, 'get properties')
-            // TODO Ideally this is an async call that returns a Procession on
-            // replay that has the cached values.
-            var shifter = conference.replaying
-                        ? null
-                        : conference.request('first', { test: true }).shifter()
-            async(function () {
-                conference.record(function (callback) { shifter.dequeue(callback) }, async())
-            }, function (envelope) {
-                conference.boundary()
-                if (conference.replaying) {
-                    assert(envelope, 1, 'request envelope')
-                }
-            }, function () {
-                conference.record(function (callback) { shifter.dequeue(callback) }, async())
-            }, function () {
-                if (conference.replaying) {
-                    assert(envelope, null, 'request eos')
-                }
-            })
-        }),
-        naturalized: cadence(function (async) {
-            return null
-        }),
-        catalog: cadence(function (async, conference, value) {
-            if (conference.replaying) {
-                assert(value, 1, 'cataloged')
-            }
-            return []
-        }),
-        message: cadence(function (async, conference, value) {
-            return value - 1
-        }),
-        government: cadence(function (async, conference) {
-            if (conference.government.promise == '1/0') {
-                assert(true, 'got a government')
-            }
-        }),
-        messages: cadence(function (async, conference, reduction) {
-            if (conference.id == 'third') {
-                assert(reduction.request, 1, 'reduced request')
-                assert(reduction.arrayed.sort(function (a, b) { return Monotonic.compare(a.promise, b.promise) }), [{
-                    promise: '1/0', id: 'first', value: 0
-                }, {
-                    promise: '2/0', id: 'second', value: 0
-                }, {
-                    promise: '3/0', id: 'third', value: 0
-                }], 'reduced responses')
-                reduced()
-            }
-        }),
-        exile: cadence(function (async, conference) {
-            if (conference.id == 'third') {
-                assert(conference.government.exile, {
-                    id: 'fourth',
-                    promise: '5/0',
-                    properties: { key: 'value', url: 'http://127.0.0.1:8888/fourth/' }
-                }, 'exile')
-            }
-        })
-    }
-    var Conference = require('../../compassion.conference/conference')
-    assert(Conference, 'require')
-    function createConference () {
-        return new Conference(reactor, function (constructor) {
-            constructor.responder()
-            constructor.setProperties({ key: 'value' })
-            constructor.bootstrap()
-            constructor.join()
-            constructor.immigrate(cadence(function (async) {}))
-            constructor.naturalized()
-            constructor.exile()
-            constructor.government()
-            constructor.socket()
-            constructor.receive('message')
-            constructor.reduced('message', 'messages')
-            constructor.method('catalog')
-        })
-    }
+    var createConference = require('./create')(assert, reduced)
     var fourth
     var conference = createConference()
     async(function () {
@@ -164,39 +69,36 @@ function prove (async, assert) {
     }, function () {
         fourth.invoke('catalog', 1, async())
     }, function () {
-        setTimeout(async(), 3000)
+        setTimeout(async(), 1000)
     }, function () {
-        reduced = async()
+        console.log("REDUCED WAIT")
+        reduced.wait(async())
         conference.broadcast('message', 1)
         counterfeiter.leave('fourth')
     }, function () {
-        return [ async.break ]
-        logger = counterfeiter.loggers['fourth']
-        // counterfeiter.done.wait(async())
+        console.log("DONE")
+        counterfeiter.destroy()
+        counterfeiter.completed(async())
     }, function () {
-        return
-        var conference = createConference()
-        var Channel = require('compassion.channel/channel')
-        var Merger = require('compassion.channel/merger')
-        var Kibitzer = require('kibitz')
-        var kibitzer = new Kibitzer({ id: 'fourth', ping: 250, timeout: 1000 })
-        var channel = new Channel(kibitzer)
-        var merger = new Merger(kibitzer, channel)
-        var Recorder = require('compassion.channel/recorder')
-        var l = require('prolific.logger').createLogger('x')
-        kibitzer.played.pump(new Recorder('kibitz', l, merger.play), 'push')
-        kibitzer.paxos.outbox.pump(new Recorder('paxos', l, merger.play), 'push')
-        kibitzer.islander.outbox.pump(new Recorder('islander', l, merger.play), 'push')
-        channel.pump(conference.write, conference.read)
-        var copy = logger.shifter()
-        copy.pump(function (envelope) {
-            console.log('>>>>', envelope)
-        })
-        async(function () {
-            merger.ready.wait(async())
-        }, function () {
-            logger.pump(merger.replay, 'enqueue')
-        })
-        merger.merge(async())
+        setTimeout(async(), 1000)
+    }, function () {
+        console.log('here')
+        var writable = fs.createWriteStream(path.resolve(__dirname, 'fixtures/counterfeiter.jsons'))
+        var shifter = counterfeiter.loggers['fourth'].shifter()
+        var loop = async(function () {
+            async(function () {
+                shifter.dequeue(async())
+            }, function (envelope) {
+                console.log(envelope)
+                if (envelope == null) {
+                    writable.end()
+                    return [ loop.break ]
+                } else {
+                    writable.write(JSON.stringify(envelope) + '\n', async())
+                }
+            })
+        })()
+    }, function () {
+        console.log('done')
     })
 }

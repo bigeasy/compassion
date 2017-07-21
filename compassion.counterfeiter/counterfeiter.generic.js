@@ -40,6 +40,9 @@ module.exports = function (Colleague, Conduit) {
         kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
         kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
         kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
+        colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
+
+        this._destructible.addDestructor([ 'logger', options.id ], logger, 'push')
 
         this.loggers[options.id] = logger.shifter()
 
