@@ -28,7 +28,7 @@ module.exports = function (Colleague, Conduit) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
         var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
 
-        var colleague = new Colleague(new Vizsla, kibitzer, null, 'island')
+        var colleague = new Colleague(new Vizsla, kibitzer, 'island')
         this._colleagues[options.id] = colleague
         this.kibitzers[options.id] = colleague.kibitzer
         this.events[options.id] = colleague.kibitzer.log.shifter()

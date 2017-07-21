@@ -163,11 +163,9 @@ function Conference (object, constructor) {
     this.read = this._multiplexer.read
     this.write = this._multiplexer.write
 
-    this._multiplexer.route('outgoing', this._client = new Client)
     this._multiplexer.route('incoming', new Server(this, '_connect'))
 
     this._multiplexer.route('conference', new Responder(this._dispatcher))
-    this._multiplexer.route('colleague', this._requester = new Requester)
 
     // TODO Producer and consumer or similar?
     this.write.shifter().pump(this, '_entry')

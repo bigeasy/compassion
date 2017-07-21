@@ -31,7 +31,7 @@ var Timer = require('happenstance').Timer
 
 var http = require('http')
 
-function Colleague (ua, kibitzer, server, island) {
+function Colleague (ua, kibitzer, island) {
     this._ua = ua
 
     this._Date = Date
@@ -51,9 +51,7 @@ function Colleague (ua, kibitzer, server, island) {
 
     // TODO Not `this._`.
     this._multiplexer.route('conference', this._requester = new Requester)
-    this._multiplexer.route('colleague', new Responder(this))
 
-    this._multiplexer.route('outgoing', server ? new Server(server) : new Server(this, '_connect'))
     this._multiplexer.route('incoming', this._client = new Client)
 
     this._write = this.read
