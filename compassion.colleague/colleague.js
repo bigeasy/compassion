@@ -61,9 +61,6 @@ function Colleague (ua, kibitzer, server, island) {
     this.write.shifter().pump(this, '_read')
 
     this.chatter = new Procession
-    this.responses = new Procession
-
-    this.responses.shifter().pump(this, '_response')
 
     this._destructible = new Destructible('colleague')
     this._destructible.markDestroyed(this)
@@ -116,9 +113,6 @@ Colleague.prototype._read = cadence(function (async, envelope) {
     case 'replay':
         // For these cases, it was enough to record them.
         break
-    case 'response':
-        this.responses.push(response)
-        break
     case 'naturalized':
         this.kibitzer.naturalize()
         break
@@ -136,19 +130,13 @@ Colleague.prototype._log = cadence(function (async) {
     var loop = async(function () {
         shifter.dequeue(async())
     }, function (entry) {
-        async([function () {
+        async(function () {
             this._write.enqueue(entry && {
                 module: 'colleague',
                 method: 'entry',
                 body: entry
             }, async())
-        }, function (error) {
-            console.log(error.cause.code)
-            rescue(/^code:EPIPE$/, function (error) {
-                console.log('hello')
-            })(coalesce(error.cause, error))
-            console.log('passed')
-        }], function () {
+        }, function () {
             if (entry == null) {
                 return [ loop.break ]
             }
@@ -175,21 +163,6 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
     })
     this._thereafter.ready.wait(this.ready, 'unlatch')
     this._destructible.completed(5000, async())
-})
-
-Colleague.prototype.request = cadence(function (async, envelope) {
-    var properties = this.kibitzer.paxos.government.properties[envelope.to]
-    async(function () {
-        this._ua.fetch({
-            url: properties.url
-        }, {
-            url: './oob',
-            post: envelope,
-            raise: true
-        }, async())
-    }, function (body) {
-        return [ body ]
-    })
 })
 
 Colleague.prototype.destroy = function () {
@@ -222,23 +195,6 @@ Colleague.prototype.getProperties = cadence(function (async) {
         return [ properties ]
     })
 })
-
-Colleague.prototype.outOfBand = cadence(function (async, request) {
-    async(function () {
-        this._requester.request('colleague', {
-            module: 'colleague',
-            method: request.method,
-            from: coalesce(request.from),
-            body: request.body
-        }, async())
-    }, function (response) {
-        return [ response ]
-    })
-})
-
-Colleague.prototype._connect = function (socket, header) {
-    this._socket(socket, header, abend)
-}
 
 Colleague.prototype.bootstrap = cadence(function (async) {
     async(function () {
