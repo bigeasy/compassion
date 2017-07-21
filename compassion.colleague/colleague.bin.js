@@ -83,11 +83,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var cadence = require('cadence')
 
-    kibitzer.paxos.scheduler.events.pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
-
-    kibitzer.played.pump(new Recorder('kibitz', logger), 'push')
-    kibitzer.paxos.outbox.pump(new Recorder('paxos', logger), 'push')
-    kibitzer.islander.outbox.pump(new Recorder('islander', logger), 'push')
+    kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
+    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
+    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
     var destructible = new Destructor('colleague')
@@ -109,7 +107,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     location = url.resolve(location + '/', program.ultimate.island)
     location = url.resolve(location + '/',  program.ultimate.id)
 
-    colleague.chatter.pump(new Recorder('colleague', logger), 'push')
+    colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
     var monitor = new Monitor
 
     var chaperon = new Chaperon({
@@ -129,25 +127,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         kibitzer.ready.wait(ready, 'unlatch')
     })
 
-    thereafter.run(function (ready) {
-        cadence(function () {
-            var parsed = url.parse(program.ultimate.conduit)
-            // TODO Assert port.
-            var request = http.request({
-                host: parsed.hostname,
-                port: parsed.port,
-                headers: Envoy.headers('/identifier', {
-                    host: parsed.hostname + ':' + parsed.port
-                })
-            })
-            delta(async()).ee(request).on('upgrade')
-            request.end()
-        }, function (request, socket, head) {
-            destructible.addDestructor('envoy', envoy, 'close')
-            envoy.ready.wait(ready, 'unlatch')
-            envoy.connect(request, socket, head, async())
-        })(destructible.monitor('envoy'))
-    })
 
     thereafter.run(this, function (ready) {
         destructible.addDestructor('monitor', monitor, 'destroy')
@@ -169,13 +148,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     thereafter.run(this, function (ready) {
+        var parsed = url.parse(program.ultimate.conduit)
         destructible.addDestructor('colleague', colleague, 'destroy')
-        colleague.listen(destructible.monitor('colleague'))
+        colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
         colleague.ready.wait(ready, 'unlatch')
     })
 
     thereafter.run(this, function (ready) {
-        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3])
+        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
 
         destructible.addDestructor('conduit', conduit, 'destroy')
 
@@ -183,10 +163,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
             console.log('done did error', arguments)
         })
 
-        colleague.write.pump(conduit.write, 'enqueue')
-        conduit.read.pump(colleague.read, 'enqueue')
-
-        conduit.listen(destructible.monitor('conduit'))
+        conduit.listen(null, destructible.monitor('conduit'))
 
         conduit.ready.wait(ready, 'unlatch')
     })

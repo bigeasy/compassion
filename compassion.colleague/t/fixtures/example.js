@@ -1,5 +1,5 @@
 require('arguable')(module, require('cadence')(function (async, program) {
-    var Conference = require('conference')
+    var Conference = require('../../../compassion.conference/conference')
     var conference = new Conference({}, function (constructor) {})
     var Colleague = require('colleague')
     var colleague = new Colleague(conference)
