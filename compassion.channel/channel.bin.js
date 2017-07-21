@@ -36,7 +36,6 @@
  */
 require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
-    var started = require('./started.js')
     var fs = require('fs')
     var Channel = require('./channel')
     var Merger = require('./merger')
