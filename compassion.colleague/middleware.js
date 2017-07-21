@@ -89,7 +89,6 @@ Middleware.prototype.health = cadence(function (async) {
         startedAt: this._startedAt,
         island: this._island,
         id: this._kibitzer.paxos.id,
-        promise: this._kibitzer.paxos.government.promise,
         republic: coalesce(this._kibitzer.paxos.republic),
         government: this._kibitzer.paxos.government
     }
