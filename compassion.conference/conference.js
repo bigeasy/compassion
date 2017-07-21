@@ -567,25 +567,6 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
     }
 })
 
-Conference.prototype._socket = function (to, body, receiver) {
-    assert(receiver, receiver.read)
-    console.log(receiver)
-    return this._client.connect({
-        module: 'conference',
-        method: 'socket',
-        to: this.getProperties(to),
-        body: body
-    }, receiver)
-}
-
-Conference.prototype.socket = function (to, header, receiver) {
-    this._socket(to, {
-        module: 'conference',
-        method: 'user',
-        body: header
-    }, receiver)
-}
-
 // Honoring back pressure here, but I've not considered if back pressure is
 // going to cause deadlock. I'm sure it can. What happens when the queues
 // between the parcipants fill?
