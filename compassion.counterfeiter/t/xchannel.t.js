@@ -27,7 +27,7 @@ function prove (async, assert) {
         async(function () {
             merger.ready.wait(async())
         }, function () {
-            var readable = new Staccato.Readable(byline(fs.createReadStream(path.resolve(__dirname, 'fixtures/counterfeiter.jsons'))))
+            var readable = new Staccato.Readable(byline(fs.createReadStream(path.resolve(__dirname, 'counterfeiter.jsons'))))
             var loop = async(function () {
                 async(function () {
                     readable.read(async())

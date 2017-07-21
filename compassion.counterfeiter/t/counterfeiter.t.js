@@ -83,7 +83,7 @@ function prove (async, assert) {
         setTimeout(async(), 1000)
     }, function () {
         console.log('here')
-        var writable = fs.createWriteStream(path.resolve(__dirname, 'fixtures/counterfeiter.jsons'))
+        var writable = fs.createWriteStream(path.resolve(__dirname, 'counterfeiter.jsons'))
         var shifter = counterfeiter.loggers['fourth'].shifter()
         var loop = async(function () {
             async(function () {
