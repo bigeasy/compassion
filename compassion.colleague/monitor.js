@@ -7,6 +7,8 @@ var coalesce = require('extant')
 var Signal = require('signal')
 var Destructible = require('destructible')
 
+var noop = require('nop')
+
 function Monitor () {
     this.ready = new Signal
     this.child = null
@@ -32,6 +34,11 @@ Monitor.prototype._run = cadence(function (async, program) {
         stdio: [ 0, 1, 2, 'pipe' ],
         env: env
     })
+    // At shutdown, there may be no one listening to the pipe. The Conduit might
+    // get shut down so that it does not have an error handler registered. If
+    // there is an error on the pipe and no one is listening it means we're
+    // shutting down, so we don't really care about this error.
+    this.child.stdio[3].once('error', noop)
     async(function () {
         delta(async()).ee(this.child).on('exit')
         this.ready.unlatch()

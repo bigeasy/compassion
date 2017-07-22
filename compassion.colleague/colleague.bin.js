@@ -159,10 +159,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
         destructible.addDestructor('conduit', conduit, 'destroy')
 
-        monitor.child.stdio[3].on('error', function () {
-            console.log('done did error', arguments)
-        })
-
         conduit.listen(null, destructible.monitor('conduit'))
 
         conduit.ready.wait(ready, 'unlatch')
