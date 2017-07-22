@@ -27,7 +27,7 @@ function prove (async, assert) {
     }, function () {
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
-            conosle.log('envelope', envelope)
+            console.log('envelope', envelope)
             return envelope.promise == '1/2'
         }, async())
     }, function (entry) {
