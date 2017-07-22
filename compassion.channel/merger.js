@@ -86,9 +86,6 @@ Merger.prototype.merge = cadence(function (async) {
                 departure.raise(properties, envelope.body.properties)
                 this._kibitzer.replay(envelope)
                 break
-            default:
-                throw new Error
-                break
             }
         })
     }, function () {
