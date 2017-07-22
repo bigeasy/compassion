@@ -36,12 +36,10 @@ function Channel (kibitzer) {
 }
 
 Channel.prototype._enqueue = cadence(function (async, envelope) {
-    console.log('envelope', envelope)
     if (envelope == null) {
         return
     }
     this.chatter.push(envelope)
-    console.log('envelopeay', envelope)
     switch (envelope.method) {
     case 'pipe':
     case 'boundary':
@@ -67,24 +65,9 @@ Channel.prototype.pump = function (conference) {
     conference.read.shifter().pump(this.write, 'enqueue')
 }
 
-Channel.prototype.listen = cadence(function (async, input, output) {
-    this._conduit = new Conduit(input, output)
-    this._conduit.ready.wait(this.ready, 'unlatch')
-    this.pump(this._conduit.write, this._conduit.read)
-    this._destructor.addDestructor('conduit', this._conduit.destroy.bind(this._conduit))
-    this._conduit.listen(this._destructor.monitor('conduit'))
-    this._destructor.completed(async())
-})
-
 Channel.prototype.destroy = function () {
     this._destructor.destroy()
 }
-
-Channel.prototype._connect = cadence(function (async, socket) {
-    this._requester.spigot.emptyInto(socket.basin)
-    socket.spigot.emptyInto(this.basin)
-    this.connected.notify()
-})
 
 Channel.prototype.getProperties = cadence(function (async, id) {
     async(function () {
