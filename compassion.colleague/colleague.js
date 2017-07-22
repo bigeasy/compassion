@@ -97,6 +97,7 @@ Colleague.prototype._startEnvoy = cadence(function (async, ready, host, port) {
 })
 
 Colleague.prototype._read = cadence(function (async, envelope) {
+    console.log('_READ', envelope)
     if (envelope == null || envelope.module == 'conduit/multiplexer') {
         return
     }
@@ -125,6 +126,7 @@ Colleague.prototype._log = cadence(function (async) {
     var loop = async(function () {
         shifter.dequeue(async())
     }, function (entry) {
+        console.log('ENTRY', entry)
         async(function () {
             this._write.enqueue(entry && {
                 module: 'colleague',
