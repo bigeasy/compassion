@@ -25,6 +25,9 @@ function prove (async, assert) {
     }], function () {
         counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
     }, function () {
+        counterfeiter.loggers['first'].shifter().pump(function (logging) {
+            console.log('logging', logging)
+        })
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
             console.log('envelope', envelope)
