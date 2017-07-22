@@ -126,7 +126,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         reader.read(stream, merger, destructible.monitor('readable'))
     })
 //    stream.once('error', function () { console.log(error.stack) })
-//    monitor.child.stdio[3].once('error', function (error) { console.log(error.stack) })
+    monitor.child.stdio[3].once('error', function (error) { console.log(error.stack) })
 
     thereafter.run(function (ready) {
         destructible.addDestructor('merger', merger, 'destroy')
