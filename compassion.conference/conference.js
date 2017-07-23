@@ -224,6 +224,12 @@ function record (conference, async) {
             }
         }, function (result) {
             result = coalesce(result)
+            console.log({
+                module: 'conference',
+                method: 'record',
+                id: id,
+                body: result
+            })
             conference.read.push({
                 module: 'conference',
                 method: 'record',
@@ -299,17 +305,22 @@ Conference.prototype._request = cadence(function (async, envelope) {
 
 Conference.prototype._fetch = cadence(function (async, to, header, queue) {
     async(function () {
-        this._ua.fetch({
-            url: this.government.properties[to].url
-        }, {
-            url: './request',
-            post: header,
-            raise: true
-        }, async())
-    }, function (stream) {
-        var readable = new Staccato.Readable(stream)
+        if (!this.replaying) {
+            async(function () {
+                this._ua.fetch({
+                    url: this.government.properties[to].url
+                }, {
+                    url: './request',
+                    post: header,
+                    raise: true
+                }, async())
+            }, function (stream) {
+                return new Staccato.Readable(stream)
+            })
+        }
+    }, function (readable) {
         var loop = async(function () {
-            readable.read(async())
+            this.record(async)(function () { readable.read(async()) })
         }, function (json) {
             queue.push(json)
             if (json == null) {
@@ -363,7 +374,7 @@ Conference.prototype._getBacklog = cadence(function (async) {
                 raise: true
             }, async())
         })
-    }, function (body, response) {
+    }, function (body) {
         console.log('--------------------------------------------------------------------------------', body)
         async.forEach(function (broadcast) {
             async(function () {

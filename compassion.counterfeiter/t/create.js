@@ -21,18 +21,16 @@ module.exports = function (assert, reduced) {
             }, 'get properties')
             // TODO Ideally this is an async call that returns a Procession on
             // replay that has the cached values.
-            var shifter = conference.replaying
-                        ? null
-                        : conference.request('first', { test: true }).shifter()
+            var shifter = conference.request('first', { test: true }).shifter()
             async(function () {
-                conference.record(function (callback) { shifter.dequeue(callback) }, async())
+                shifter.dequeue(async())
             }, function (envelope) {
                 conference.boundary()
                 if (conference.replaying) {
                     assert(envelope, 1, 'request envelope')
                 }
             }, function () {
-                conference.record(function (callback) { shifter.dequeue(callback) }, async())
+                shifter.dequeue(async())
             }, function (envelope) {
                 if (conference.replaying) {
                     assert(envelope, null, 'request eos')
