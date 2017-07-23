@@ -25,12 +25,8 @@ function prove (async, assert) {
     }], function () {
         counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
     }, function () {
-        counterfeiter.loggers['first'].shifter().pump(function (logging) {
-            console.log('logging', logging)
-        })
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
-            console.log('envelope', envelope)
             return envelope.promise == '1/2'
         }, async())
     }, function (entry) {
@@ -64,7 +60,6 @@ function prove (async, assert) {
         }, async())
     }, function () {
         counterfeiter.events['fourth'].join(function (envelope) {
-            console.log('FOURTH', envelope)
             return envelope.promise == '5/5'
         }, async())
         counterfeiter.events['third'].join(function (envelope) {
