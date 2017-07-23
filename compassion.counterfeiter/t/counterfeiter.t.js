@@ -82,7 +82,24 @@ function prove (async, assert) {
         setTimeout(async(), 1000)
     }, function () {
         console.log('here')
-        var writable = fs.createWriteStream(path.resolve(__dirname, 'counterfeiter.jsons'))
+        var writable = fs.createWriteStream(path.resolve(__dirname, 'counterfeiter.first.jsons'))
+        var shifter = counterfeiter.loggers['first'].shifter()
+        var loop = async(function () {
+            async(function () {
+                shifter.dequeue(async())
+            }, function (envelope) {
+                console.log(envelope)
+                if (envelope == null) {
+                    writable.end()
+                    return [ loop.break ]
+                } else {
+                    writable.write(JSON.stringify(envelope) + '\n', async())
+                }
+            })
+        })()
+    }, function () {
+        console.log('here')
+        var writable = fs.createWriteStream(path.resolve(__dirname, 'counterfeiter.fourth.jsons'))
         var shifter = counterfeiter.loggers['fourth'].shifter()
         var loop = async(function () {
             async(function () {
