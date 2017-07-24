@@ -123,7 +123,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         var reader = new Reader
         destructible.addDestructor('reader', reader, 'destroy')
         reader.ready.wait(ready, 'unlatch')
-        reader.read(stream, merger, destructible.monitor('readable'))
+        reader.read(stream, merger.replay, destructible.monitor('readable'))
     })
 //    stream.once('error', function () { console.log(error.stack) })
     monitor.child.stdio[3].once('error', function (error) { console.log(error.stack) })
