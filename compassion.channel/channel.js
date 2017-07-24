@@ -27,9 +27,7 @@ function Channel (kibitzer) {
     this._write = this.read
 
     // TODO What is this for?
-    this.requests = new Procession
     this.chatter = new Procession
-    this.responses = new Procession
 
     this.ready = new Signal
     this._destructor.addDestructor('ready', this.ready, 'unlatch')
@@ -41,9 +39,6 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     }
     this.chatter.push(envelope)
     switch (envelope.method) {
-    case 'response':
-        this.responses.push(response)
-        break
     case 'naturalized':
         // this._kibitzer.naturalize()
         break

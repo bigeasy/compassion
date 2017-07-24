@@ -51,7 +51,6 @@ Merger.prototype.destroy = function () {
 
 //
 Merger.prototype.merge = cadence(function (async) {
-    var responses = this._channel.responses.shifter()
     var chatter = this._chatter = this._channel.chatter.shifter()
     var replay = this.replay.shifter()
     this.ready.unlatch()
