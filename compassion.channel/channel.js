@@ -41,12 +41,6 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     }
     this.chatter.push(envelope)
     switch (envelope.method) {
-    case 'pipe':
-    case 'boundary':
-    case 'record':
-    case 'retry':
-        // For these cases, it was enough to record them.
-        break
     case 'response':
         this.responses.push(response)
         break
@@ -56,6 +50,9 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     case 'broadcast':
     case 'reduce':
         // this._channel._kibitzer.publish(envelope)
+        break
+    default: // (pipe, boundary, record, retry)
+        // For these cases, it was enough to record them.
         break
     }
 })
