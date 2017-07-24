@@ -4,12 +4,12 @@ var Signal = require('signal')
 var byline = require('byline')
 var Staccato = require('staccato')
 
-function Reader (merger) {
+function Reader () {
     this._destructible = new Destructible('reader')
     this.ready = new Signal
 }
 
-Reader.prototype.read = cadence(function (async, stream, merger) {
+Reader.prototype.read = cadence(function (async, stream, queue) {
     var readable = new Staccato.Readable(byline(stream))
     this._destructible.addDestructor('readable', readable, 'destroy')
     var loop = async(function () {
@@ -17,7 +17,7 @@ Reader.prototype.read = cadence(function (async, stream, merger) {
         this.ready.unlatch()
     }, function (line) {
         async(function () {
-            merger.replay.enqueue(line && JSON.parse(line.toString()), async())
+            queue.enqueue(line && JSON.parse(line.toString()), async())
         }, function () {
             if (line == null) {
                 return [ loop.break ]
