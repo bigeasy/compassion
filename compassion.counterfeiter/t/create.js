@@ -35,6 +35,10 @@ module.exports = function (assert, reduced) {
                 if (conference.replaying) {
                     assert(envelope, null, 'request eos')
                 }
+            }, function () {
+                conference.record(function (callback) { callback(null, 'x') }, async())
+            }, function (result) {
+                assert(result, 'x', 'record error-first callback')
             })
         }),
         naturalized: cadence(function (async) {

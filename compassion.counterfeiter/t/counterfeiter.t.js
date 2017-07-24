@@ -1,4 +1,4 @@
-require('proof')(6, require('cadence')(prove))
+require('proof')(7, require('cadence')(prove))
 
 function prove (async, assert) {
     var fs = require('fs')

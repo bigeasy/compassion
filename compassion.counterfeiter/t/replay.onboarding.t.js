@@ -1,4 +1,4 @@
-require('proof')(4, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, assert) {
     var replay = require('./replay')
