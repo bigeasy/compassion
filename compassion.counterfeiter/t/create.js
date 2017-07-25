@@ -1,13 +1,17 @@
 module.exports = function (assert, reduced) {
     var Monotonic = require('monotonic').asString
+    try {
     var Conference = require('../../compassion.conference/conference')
+    } catch (e) {
+    var Conference = require('../conference')
+    }
     var cadence = require('cadence')
     var reactor = {
-        responder: cadence(function (async, conference, header, queue) {
+        responder: function (conference, header, queue) {
             assert(header.test, 'responder')
             queue.push(1)
             queue.push(null)
-        }),
+        },
         bootstrap: cadence(function (async) {
             return null
         }),

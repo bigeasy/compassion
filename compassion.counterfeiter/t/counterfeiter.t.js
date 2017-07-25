@@ -4,9 +4,15 @@ function prove (async, assert) {
     var fs = require('fs')
     var path = require('path')
     var abend = require('abend')
+    try {
     var Colleague = require('../../compassion.colleague/colleague')
     var Conduit = require('../../compassion.conduit')
     var Counterfeiter = require('../counterfeiter.generic')(Colleague, Conduit)
+    } catch (e) {
+    var Colleague = require('compassion.colleague/colleague')
+    var Conduit = require('compassion.conduit')
+    var Counterfeiter = require('compassion.counterfeiter/counterfeiter.generic')(Colleague, Conduit)
+    }
     var counterfeiter = new Counterfeiter
     var Signal = require('signal')
 

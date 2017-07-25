@@ -3,11 +3,17 @@ var path = require('path')
 var Signal = require('signal')
 var Staccato = require('staccato')
 var reduced = new Signal
+try {
 var Channel = require('../../compassion.channel/channel')
 var Merger = require('../../compassion.channel/merger')
+var Recorder = require('../../compassion.channel/recorder')
+} catch (e) {
+var Channel = require('compassion.channel/channel')
+var Merger = require('compassion.channel/merger')
+var Recorder = require('compassion.channel/recorder')
+}
 var Kibitzer = require('kibitz')
 var byline = require('byline')
-var Recorder = require('../../compassion.channel/recorder')
 var cadence = require('cadence')
 
 module.exports = cadence(function (async, assert, id) {
