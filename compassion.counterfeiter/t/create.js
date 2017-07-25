@@ -3,11 +3,11 @@ module.exports = function (assert, reduced) {
     var Conference = require('../../compassion.conference/conference')
     var cadence = require('cadence')
     var reactor = {
-        responder: function (conference, header, queue) {
+        responder: cadence(function (async, conference, header, queue) {
             assert(header.test, 'responder')
             queue.push(1)
             queue.push(null)
-        },
+        }),
         bootstrap: cadence(function (async) {
             return null
         }),

@@ -342,7 +342,9 @@ Conference.prototype._sendResponse = cadence(function (async, header, queue) {
     async(function () {
         setImmediate(async())
     }, function () {
-        operation(this, header, queue)
+        operation(this, header, queue, async())
+    }, function () {
+        return []
     })
 })
 
