@@ -50,10 +50,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Shuttle = require('prolific.shuttle')
 
-    var Envoy = require('assignation/envoy')
-
-    var Middleware = require('./middleware')
-
     var Colleague = require('./colleague')
     var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
@@ -96,16 +92,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('shutdown', shuttle, 'close')
 
-    var colleague = new Colleague(new Vizsla, kibitzer)
+    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, startedAt)
 
     var startedAt = Date.now()
-    var middleware = new Middleware(startedAt, program.ultimate.island, kibitzer, colleague)
-
-    var envoy = new Envoy(middleware.reactor.middleware)
-
-    var location = program.ultimate.conduit
-    location = url.resolve(location + '/', program.ultimate.island)
-    location = url.resolve(location + '/',  program.ultimate.id)
 
     colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
     var monitor = new Monitor
@@ -126,7 +115,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         kibitzer.listen(destructible.monitor('kibitzer'))
         kibitzer.ready.wait(ready, 'unlatch')
     })
-
 
     thereafter.run(this, function (ready) {
         destructible.addDestructor('monitor', monitor, 'destroy')
