@@ -17,7 +17,7 @@ echo ""
   || (proof errors < .proof.out) \
   || exit 1
 
-if [ "$CI" = "true" ]; then
+if [[ "$CI" = "true" ]]; then
   echo ""
   echo "running with coverage"
   t/cover
