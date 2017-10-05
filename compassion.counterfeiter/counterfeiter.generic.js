@@ -20,7 +20,7 @@ module.exports = function (Colleague, Conduit) {
         this.loggers = {}
         this._port = port
         this._address = address
-        this._destructible = new Destructor('counterfeiter')
+        this._destructible = new Destructor(1000, 'counterfeiter')
         this._destructible.markDestroyed(this, 'destroyed')
     }
 
@@ -51,15 +51,8 @@ module.exports = function (Colleague, Conduit) {
         options.conference.read.shifter().pump(colleague.write, 'enqueue')
 
         // Start colleague.
-        var ready = new Signal
-
-        ready.wait(function () {
-            console.log('wait wait', arguments)
-        })
-
-        colleague.ready.wait(ready, 'unlatch')
-        colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ], ready, 'unlatch'))
-        ready.wait(async())
+        colleague.ready.wait(async())
+        colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ]))
     })
 
     Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
@@ -91,19 +84,19 @@ module.exports = function (Colleague, Conduit) {
         this._destructible.destroy()
     }
 
+    // TODO You should just listen here.
     Counterfeiter.prototype.listen = cadence(function (async, port, address) {
         this._address = address
         this._port = port
         var ready = new Signal
         var conduit = new Conduit
         this._destructible.addDestructor('conduit', conduit, 'destroy')
-        conduit.ready.wait(ready, 'unlatch')
-        conduit.listen(port, address, this._destructible.monitor('conduit', ready, 'unlatch'))
-        ready.wait(async())
+        conduit.ready.wait(async())
+        conduit.listen(port, address, this._destructible.monitor('conduit'))
     })
 
     Counterfeiter.prototype.completed = function (callback) {
-        this._destructible.completed(5000, callback)
+        this._destructible.completed.wait(callback)
     }
 
     return Counterfeiter
