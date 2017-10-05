@@ -36,14 +36,20 @@ function prove (async, assert) {
     }, [function () {
         chaperon.emit('SIGTERM')
     }], function () {
-        console.log('here')
-        var io = bin({
-            conduit: 'http://127.0.0.1:8808',
-            chaperon: 'http://127.0.0.1:8088',
-            island: 'island',
-            id: '1',
-            argv: [ 'node', example ]
-        }, { env: process.env }, async())
+        var io
+        async([function () {
+            console.log('here')
+            io = bin({
+                conduit: 'http://127.0.0.1:8808',
+                chaperon: 'http://127.0.0.1:8088',
+                island: 'island',
+                id: '1',
+                argv: [ 'node', example ]
+            }, { env: process.env }, async())
+        }, function (error) {
+            console.log(error.stack)
+            throw error
+        }])
         async(function () {
             io.ready.wait(async())
         }, function () {

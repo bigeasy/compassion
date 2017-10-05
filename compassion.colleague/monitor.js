@@ -13,7 +13,7 @@ function Monitor () {
     this.ready = new Signal
     this.child = null
     this.destroyed = false
-    this._destructible = new Destructible('monitor')
+    this._destructible = new Destructible(1000, 'monitor')
     this._destructible.markDestroyed(this)
     this._destructible.addDestructor('started', this.ready, 'unlatch')
     this._destructible.addDestructor('kill', this, '_kill')
@@ -52,7 +52,7 @@ Monitor.prototype._run = cadence(function (async, program) {
 
 Monitor.prototype.run = cadence(function (async, program) {
     this._run(program, this._destructible.monitor('run'))
-    this._destructible.completed(1000, async())
+    this._destructible.completed.wait(async())
 })
 
 Monitor.prototype.destroy = function () {

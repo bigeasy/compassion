@@ -3,7 +3,6 @@ var rescue = require('rescue')
 var cadence = require('cadence')
 var delta = require('delta')
 
-var Thereafter = require('thereafter')
 var Destructible = require('destructible')
 
 var coalesce = require('extant')
@@ -30,6 +29,8 @@ var Vizsla = require('vizsla')
 var Timer = require('happenstance').Timer
 
 var http = require('http')
+
+var finalist = require('finalist')
 
 function Colleague (ua, kibitzer, island) {
     this._ua = ua
@@ -60,18 +61,12 @@ function Colleague (ua, kibitzer, island) {
 
     this.chatter = new Procession
 
-    this._destructible = new Destructible('colleague')
+    this._destructible = new Destructible(1000, 'colleague')
     this._destructible.markDestroyed(this)
-
-    this._thereafter = new Thereafter
-    this._destructible.addDestructor('thereafter', this._thereafter, 'cancel')
 
     this.connected = new Signal
 
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
-
-    this.demolition = this._destructible.events
-    this.done = this._destructible.done
 
     var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
     this._envoy = new Envoy(middleware.reactor.middleware)
@@ -140,24 +135,34 @@ Colleague.prototype._log = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async, host, port) {
-    this._thereafter.run(this, function (ready) {
+    this._destructible.completed.wait(async())
+    async([function () {
+        this._destructible.destroy()
+    }], function () {
+        var ready = new Signal
+        console.log('-')
         this._startEnvoy(ready, host, port, this._destructible.monitor('envoy'))
-    })
-    this._thereafter.run(this, function (ready) {
+        // Remove the import of finalist, or otherwise add an exception here,
+        // and then we hang the Destructible. We hang because we are waiting on
+        // an HTTP get. We should add a destructor somewhere.
+        finalist(this, function (callback) {
+            this._destructible.completed.wait(callback)
+            ready.wait(callback)
+        }, async())
+    }, function () {
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
-        this.kibitzer.ready.wait(ready, 'unlatch')
         this.kibitzer.listen(this._destructible.monitor('kibitzer'))
-    })
-    this._thereafter.run(this, function (ready) {
+        finalist(this, function (callback) {
+            this._destructible.completed.wait(callback)
+            this.kibitzer.ready.wait(callback)
+        }, async())
+    }, function () {
         this._log(this._destructible.monitor('log'))
-        ready.unlatch()
-    })
-    this._thereafter.run(this, function (ready) {
         this.shifter = this.kibitzer.log.shifter()
-        ready.unlatch()
+        this.ready.unlatch()
+    }, function () {
+        this._destructible.completed.wait(async())
     })
-    this._thereafter.ready.wait(this.ready, 'unlatch')
-    this._destructible.completed(5000, async())
 })
 
 Colleague.prototype.destroy = function () {

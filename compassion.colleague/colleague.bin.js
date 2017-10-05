@@ -54,7 +54,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
     var Destructor = require('destructible')
-    var Thereafter = require('thereafter')
     var Vizsla = require('vizsla')
     var UserAgent = require('./ua')
     var Conduit = require('conduit')
@@ -84,9 +83,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
-    var destructible = new Destructor('colleague')
-    var thereafter = new Thereafter
-    destructible.addDestructor('thereafter', thereafter, 'cancel')
+    var destructible = new Destructor(1000, 'colleague')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
@@ -108,62 +105,58 @@ require('arguable')(module, require('cadence')(function (async, program) {
         startedAt: startedAt
     })
 
-    destructible.addDestructor('thereafter', thereafter, 'cancel')
+    destructible.completed.wait(async())
 
-    thereafter.run(function (ready) {
+    var finalist = require('finalist')
+
+    async([function () {
+        destructible.destroy()
+    }], function  () {
         destructible.addDestructor('kibitzer', kibitzer, 'destroy')
         kibitzer.listen(destructible.monitor('kibitzer'))
-        kibitzer.ready.wait(ready, 'unlatch')
-    })
-
-    thereafter.run(this, function (ready) {
+        finalist(function (callback) {
+            kibitzer.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
         destructible.addDestructor('monitor', monitor, 'destroy')
         async(function () {
             monitor.run(program, destructible.monitor('monitor'))
         }, function (exitCode, signal) {
             logger.info('exited', { exitCode: exitCode, signal: signal })
         })
-        monitor.ready.wait(ready, 'unlatch')
-    })
-
-    // Gives an `ENOENT` time to report and cancel the series.
-    thereafter.run(function (ready) {
-        cadence(function () {
-            setImmediate(async())
-        }, function () {
-            ready.unlatch()
-        })(destructible.rescue('startup'))
-    })
-
-    thereafter.run(this, function (ready) {
+        finalist(function (callback) {
+            monitor.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
+        // Gives an `ENOENT` time to report and cancel the series. Still
+        // necessary?
+        setImmediate(async())
+    }, function () {
         var parsed = url.parse(program.ultimate.conduit)
         destructible.addDestructor('colleague', colleague, 'destroy')
         colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
-        colleague.ready.wait(ready, 'unlatch')
-    })
-
-    thereafter.run(this, function (ready) {
-        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
-
-        destructible.addDestructor('conduit', conduit, 'destroy')
-
-        conduit.listen(null, destructible.monitor('conduit'))
-
-        conduit.ready.wait(ready, 'unlatch')
-    })
-
-    // TODO WHy won't Chaperon die correctly?
-    thereafter.run(this, function (ready) {
-        destructible.addDestructor('chaperon', chaperon, 'destroy')
-        chaperon.listen(destructible.monitor('chaperon'))
-        ready.unlatch()
-    })
-
-    async(function () {
-        thereafter.ready.wait(async())
+        finalist(function (callback) {
+            colleague.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
     }, function () {
+        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
+        destructible.addDestructor('conduit', conduit, 'destroy')
+        conduit.listen(null, destructible.monitor('conduit'))
+        finalist(function (callback) {
+            conduit.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
+        destructible.addDestructor('chaperon', chaperon, 'destroy')
+        // TODO WHy won't Chaperon die correctly?
+        chaperon.listen(destructible.monitor('chaperon'))
+    }, function () {
+        console.log('started')
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()
-        destructible.completed(3000, async())
+        destructible.completed.wait(async())
     })
 }))
