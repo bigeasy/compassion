@@ -31,7 +31,7 @@
                             "happenstance":                 "5.0.x",
                             "operation":                    "1.6.x",
                             "prolific.logger":              "5.0.x",
-                            "prolific.shuttle":             "11.0.x",
+                            "prolific.shuttle":             "13.0.x",
                             "signal":                       "3.0.x",
                             "server-destroy":               "1.0.1",
                             "reactor":                      "5.0.x"
