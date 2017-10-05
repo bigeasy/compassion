@@ -26,7 +26,7 @@
                             "cadence":                      "1.0.x",
                             "connect":                      "3.6.2",
                             "delta":                        "1.2.x",
-                            "destructible":                 "0.14.x",
+                            "destructible":                 "0.17.x",
                             "downgrader":                   "0.1.x",
                             "happenstance":                 "5.0.x",
                             "operation":                    "1.6.x",

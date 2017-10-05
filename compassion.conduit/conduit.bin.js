@@ -38,7 +38,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Destructible = require('destructible')
 
-    var destructible = new Destructible('compassion.conduit')
+    var destructible = new Destructible(3000, 'compassion.conduit')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
@@ -52,12 +52,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
     destructible.addDestructor('shuttle', shuttle, 'close')
     destructible.addDestructor('conduit', conduit, 'destroy')
 
-    conduit.ready.wait(function () {
-        logger.info('started', { bind: bind })
-        program.ready.unlatch()
-    })
-
     var bind = program.ultimate.bind
-
     conduit.listen(bind.port, bind.address, async())
+    conduit.ready.wait(program.ready, 'unlatch')
+    logger.info('started', { paraemters: program.ultimate })
+    destructible.completed.wait(async())
 }))
