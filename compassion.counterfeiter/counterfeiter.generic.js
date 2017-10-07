@@ -10,6 +10,8 @@ module.exports = function (Colleague, Conduit) {
     var Procession = require('procession')
     var Recorder = require('./recorder')
 
+    var assert = require('assert')
+
     var interrupt = require('interrupt').createInterrupter('compassion.counterfeiter')
 
     function Counterfeiter (address, port) {
@@ -26,12 +28,11 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype._run = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
+        var kibitzer = this.kibitzer = new Kibitzer({ republic: options.republic, id: options.id, ping: 1000, timeout: 3000 })
 
         var colleague = new Colleague(new Vizsla, kibitzer, 'island')
         this._colleagues[options.id] = colleague
         this.kibitzers[options.id] = colleague.kibitzer
-        this.events[options.id] = colleague.kibitzer.log.shifter()
         this._destructible.addDestructor([ 'colleague', options.id ], colleague, 'destroy')
 
         // Create loggers suitable for replaying.
@@ -46,13 +47,30 @@ module.exports = function (Colleague, Conduit) {
 
         this.loggers[options.id] = logger.shifter()
 
+        var consumed = new Procession()
+
+        this.events[options.id] = consumed.shifter()
+
+        var events = colleague.kibitzer.log.shifter()
+
         // Connect colleague directly to conference.
         colleague.read.shifter().pump(options.conference.write, 'enqueue')
         options.conference.read.shifter().pump(colleague.write, 'enqueue')
+        options.conference.read.shifter().pump(function (comeback) {
+            if (comeback.method == 'consumed') {
+                consumed.push(events.shift())
+            }
+        })
 
         // Start colleague.
-        colleague.ready.wait(async())
-        colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ]))
+        async(function () {
+            colleague.ready.wait(async())
+            colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ]))
+        }, function () {
+            setImmediate(async())
+        }, function () {
+    //        this.events[options.id] = colleague.kibitzer.log.shifter()
+        })
     })
 
     Counterfeiter.prototype.bootstrap = cadence(function (async, options) {

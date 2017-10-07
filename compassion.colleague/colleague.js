@@ -140,7 +140,6 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
         this._destructible.destroy()
     }], function () {
         var ready = new Signal
-        console.log('-')
         this._startEnvoy(ready, host, port, this._destructible.monitor('envoy'))
         // Remove the import of finalist, or otherwise add an exception here,
         // and then we hang the Destructible. We hang because we are waiting on
@@ -200,8 +199,9 @@ Colleague.prototype.bootstrap = cadence(function (async) {
     async(function () {
         this.getProperties(async())
     }, function (properties) {
+        console.log('!!!', properties)
         properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
-        this.kibitzer.bootstrap(this._Date.now(), properties)
+        this.kibitzer.bootstrap(properties)
     })
 })
 
@@ -214,8 +214,6 @@ Colleague.prototype.join = cadence(function (async, republic, leader) {
             url: 'http://127.0.0.1:8888/' + leader + '/',
             republic: republic
         }, properties, require('abend'))
-    }, function () {
-        console.log('done')
     })
 })
 

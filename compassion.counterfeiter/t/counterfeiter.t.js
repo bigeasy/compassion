@@ -29,8 +29,9 @@ function prove (async, assert) {
         counterfeiter.destroy()
         counterfeiter.completed(async())
     }], function () {
-        counterfeiter.bootstrap({ conference: conference, id: 'first' }, async())
+        counterfeiter.bootstrap({ republic: 0, conference: conference, id: 'first' }, async())
     }, function () {
+        return [ async ]
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
             return envelope.promise == '1/2'
