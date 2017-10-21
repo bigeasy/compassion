@@ -45,15 +45,14 @@ function Colleague (ua, kibitzer, island) {
     kibitzer.read.shifter().pump(responder.write, 'enqueue')
     responder.read.shifter().pump(kibitzer.write, 'enqueue')
 
-    this._multiplexer = new Multiplexer
+    // TODO Not `this._`.
+    this._multiplexer = new Multiplexer({
+        conference: this._requester = new Requester,
+        incoming: this._client = new Client
+    })
 
     this.read = this._multiplexer.read
     this.write = this._multiplexer.write
-
-    // TODO Not `this._`.
-    this._multiplexer.route('conference', this._requester = new Requester)
-
-    this._multiplexer.route('incoming', this._client = new Client)
 
     this._write = this.read
 
@@ -149,6 +148,7 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
             ready.wait(callback)
         }, async())
     }, function () {
+        return
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
         this.kibitzer.listen(this._destructible.monitor('kibitzer'))
         finalist(this, function (callback) {

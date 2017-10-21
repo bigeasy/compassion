@@ -9,7 +9,7 @@ function prove (async, assert) {
     assert(Chaperon, 'require')
 
     var chaperon = new Chaperon({
-        kibitzer: new Kibitzer({ id: 'x' }),
+        kibitzer: new Kibitzer({ id: 'x', republic: 1 }),
         colleague: {
             getProperties: function (callback) { callback(null, {}) }
         }

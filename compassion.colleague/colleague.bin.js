@@ -1,4 +1,4 @@
-
+/*
 
     ___ usage ___ en_US ___
     compassion colleague child <child options>
@@ -154,7 +154,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         // TODO WHy won't Chaperon die correctly?
         chaperon.listen(destructible.monitor('chaperon'))
     }, function () {
-        console.log('started')
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()
         destructible.completed.wait(async())

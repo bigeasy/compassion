@@ -29,7 +29,7 @@ function prove (async, assert) {
         var Chaperon = require('chaperon/chaperon.bin')
         chaperon = Chaperon({
             bind: '127.0.0.1:8088',
-            mingle: 'http://127.0.0.1:8888',
+            mingle: 'http://127.0.0.1:8888/discover',
             conduit: 'http://127.0.0.1:8808'
         }, abend)
         chaperon.ready.wait(async())
@@ -38,7 +38,6 @@ function prove (async, assert) {
     }], function () {
         var io
         async([function () {
-            console.log('here')
             io = bin({
                 conduit: 'http://127.0.0.1:8808',
                 chaperon: 'http://127.0.0.1:8088',
@@ -52,6 +51,8 @@ function prove (async, assert) {
         }])
         async(function () {
             io.ready.wait(async())
+        }, function () {
+            setTimeout(async(), 1000)
         }, function () {
             io.emit('SIGTERM')
         })
