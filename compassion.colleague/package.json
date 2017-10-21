@@ -41,7 +41,7 @@
                             "procession":                   "0.9.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "13.0.x",
-                            "reactor":                      "5.0.x",
+                            "reactor":                      "9.0.x",
                             "rescue":                       "3.2.x",
                             "signal":                       "3.0.x",
                             "thereafter":                   "0.1.x",
