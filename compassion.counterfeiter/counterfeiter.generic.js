@@ -28,7 +28,7 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype._run = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = this.kibitzer = new Kibitzer({ republic: options.republic, id: options.id, ping: 1000, timeout: 3000 })
+        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
 
         var colleague = new Colleague(new Vizsla, kibitzer, 'island')
         this._colleagues[options.id] = colleague
@@ -73,11 +73,13 @@ module.exports = function (Colleague, Conduit) {
         })
     })
 
+    // TODO This is half-baked. Chaperon has same logic in different package.
     Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
         async(function () {
             this._run(options, async())
         }, function (colleague) {
-            this._colleagues[options.id].bootstrap(async())
+            var url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+            this._colleagues[options.id].bootstrap(options.republic, url, async())
         }, function () {
             console.log('done')
         })
@@ -87,9 +89,11 @@ module.exports = function (Colleague, Conduit) {
         async(function () {
             this._run(options, async())
         }, function (colleague) {
-            this._colleagues[options.id].join(options.republic, options.leader, async())
+            var leader = 'http://127.0.0.1:8888/' + options.leader + '/'
+            var url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+            this._colleagues[options.id].join(options.republic, leader, url, async())
         }, function () {
-            console.log('done')
+            console.log('joined')
         })
     })
 
