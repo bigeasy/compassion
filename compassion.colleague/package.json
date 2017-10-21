@@ -45,7 +45,7 @@
                             "rescue":                       "3.0.x",
                             "signal":                       "3.0.x",
                             "thereafter":                   "0.1.x",
-                            "vizsla":                       "7.0.x"
+                            "vizsla":                       "9.0.x"
     },
     "devDependencies":
     {
