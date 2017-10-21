@@ -22,7 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
-                            "conduit":                      "0.14.x",
+                            "conduit":                      "0.15.x",
                             "destructible":                 "0.17.x",
                             "happenstance":                 "5.0.x",
                             "interrupt":                    "5.0.x",
