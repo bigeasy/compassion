@@ -49,7 +49,7 @@
     },
     "devDependencies":
     {
-                            "chaperon":                     "0.6.x",
+                            "chaperon":                     "0.7.x",
                             "mingle.static":                "0.3.x",
                             "compassion.conduit":           "0.10.x",
                             "proof":                        "3.0.x"
