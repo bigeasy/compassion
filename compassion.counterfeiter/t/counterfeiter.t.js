@@ -36,6 +36,7 @@ function prove (async, assert) {
             return envelope.promise == '1/0'
         }, async())
     }, function (entry) {
+            console.log('! >', counterfeiter.kibitzers['first'].paxos)
         counterfeiter.join({
             conference: createConference(),
             id: 'second',

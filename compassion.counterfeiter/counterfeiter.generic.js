@@ -28,7 +28,7 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype._run = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = this.kibitzer = new Kibitzer({ republic: options.republic, id: options.id, ping: 1000, timeout: 3000 })
+        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
 
         var colleague = new Colleague(new Vizsla, kibitzer, 'island')
         this._colleagues[options.id] = colleague
