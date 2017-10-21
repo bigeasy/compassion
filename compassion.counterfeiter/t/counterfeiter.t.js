@@ -31,10 +31,9 @@ function prove (async, assert) {
     }], function () {
         counterfeiter.bootstrap({ republic: 0, conference: conference, id: 'first' }, async())
     }, function () {
-        return [ async ]
        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
-            return envelope.promise == '1/2'
+            return envelope.promise == '1/0'
         }, async())
     }, function (entry) {
         counterfeiter.join({
@@ -44,8 +43,8 @@ function prove (async, assert) {
             republic: counterfeiter.kibitzers['first'].paxos.republic
         }, async())
     }, function () {
-        counterfeiter.events['first'].join(function (envelope) {
-            return envelope.promise == '2/1'
+        counterfeiter.events['second'].join(function (envelope) {
+            return envelope.promise == '3/0'
         }, async())
     }, function () {
         counterfeiter.join({
@@ -56,7 +55,7 @@ function prove (async, assert) {
         }, async())
     }, function () {
         counterfeiter.events['first'].join(function (envelope) {
-            return envelope.promise == '4/4'
+            return envelope.promise == '6/0'
         }, async())
     }, function () {
         counterfeiter.join({
@@ -67,10 +66,10 @@ function prove (async, assert) {
         }, async())
     }, function () {
         counterfeiter.events['fourth'].join(function (envelope) {
-            return envelope.promise == '5/5'
+            return envelope.promise == '8/0'
         }, async())
         counterfeiter.events['third'].join(function (envelope) {
-            return envelope.promise == '5/5'
+            return envelope.promise == '8/0'
         }, async())
     }, function () {
         fourth.invoke('catalog', 1, async())
@@ -95,7 +94,6 @@ function prove (async, assert) {
             async(function () {
                 shifter.dequeue(async())
             }, function (envelope) {
-                console.log(envelope)
                 if (envelope == null) {
                     writable.end()
                     return [ loop.break ]
@@ -112,7 +110,6 @@ function prove (async, assert) {
             async(function () {
                 shifter.dequeue(async())
             }, function (envelope) {
-                console.log(envelope)
                 if (envelope == null) {
                     writable.end()
                     return [ loop.break ]

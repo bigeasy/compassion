@@ -56,7 +56,6 @@ function Constructor (conference, properties, object, operations) {
     this._object = object
     this._operations = operations
     this._properties = properties
-    this._setOperation([ true, 'reduced', 'naturalized' ], [ conference, '_naturalized' ])
     this._setOperation([ true, 'request', 'backlog' ], [ conference, '_backlog' ])
 }
 
@@ -380,41 +379,33 @@ Conference.prototype._getBacklog = cadence(function (async) {
         console.log('--------------------------------------------------------------------------------', body)
         async.forEach(function (broadcast) {
             async(function () {
-                this._entry({
-                    module: 'colleague',
-                    method: 'entry',
+                this._consume({
+                    // paxos
                     body: {
-                        // paxos
+                        // islander
                         body: {
-                            // islander
+                            method: 'broadcast',
+                            module: 'conference',
+                            key: broadcast.key,
                             body: {
-                                method: 'broadcast',
-                                module: 'conference',
-                                key: broadcast.key,
-                                body: {
-                                    method: broadcast.method,
-                                    body: broadcast.request
-                                }
+                                method: broadcast.method,
+                                body: broadcast.request
                             }
                         }
                     }
                 }, async())
             }, function () {
                 async.forEach(function (promise) {
-                    this._entry({
-                        module: 'colleague',
-                        method: 'entry',
+                    this._consume({
+                        // paxos
                         body: {
-                            // paxos
+                            // islander
                             body: {
-                                // islander
-                                body: {
-                                    module: 'conference',
-                                    method: 'reduce',
-                                    from: promise,
-                                    key: broadcast.key,
-                                    body: broadcast.responses[promise]
-                                }
+                                module: 'conference',
+                                method: 'reduce',
+                                from: promise,
+                                key: broadcast.key,
+                                body: broadcast.responses[promise]
                             }
                         }
                     }, async())
@@ -423,11 +414,6 @@ Conference.prototype._getBacklog = cadence(function (async) {
         })(body)
     }, function () {
         // TODO Probably not a bad idea, but what was I thinking?
-        this.read.push({
-            module: 'conference',
-            method: 'naturalized',
-            body: null
-        })
     })
 })
 
@@ -447,15 +433,29 @@ Conference.prototype._entry = cadence(function (async, envelope) {
         id: this._nextBoundary(),
         entry: entry.promise
     })
+    async(function () {
+        this._consume(entry, async())
+    }, function () {
+        this.read.push({
+            module: 'conference',
+            method: 'consumed',
+            id: this._nextBoundary(),
+            entry: entry.promise
+        })
+    })
+})
+
+Conference.prototype._consume = cadence(function (async, entry) {
     if (entry.method == 'government') {
-        this.government = entry.body
+        this.government = entry.government
         this.isLeader = this.government.majority[0] == this.id
         var properties = entry.properties
         async(function () {
-            if (this.government.immigrate) {
-                var immigrant = this.government.immigrate
+            if (entry.body.immigrate) {
+                var immigrant = entry.body.immigrate
+                console.log(immigrant)
                 async(function () {
-                    if (this.government.promise == '1/0') {
+                    if (entry.body.promise == '1/0') {
                         this._operate([ 'bootstrap' ], [ this ], async())
                     } else if (immigrant.id == this.id) {
                         this._operate([ 'join' ], [ this ], async())
@@ -475,18 +475,18 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         this._getBacklog(async())
                     }
                 }, function () {
-                    console.log('BACKLOGGED')
-                    if (this.government.promise == '1/0' || immigrant.id == this.id) {
-                        console.log('>> broadcast natutralized <<', this.id)
-                        this._broadcast(true, 'naturalized', this.government.promise)
-                    }
+                    this.read.push({
+                        module: 'conference',
+                        method: 'naturalized',
+                        body: null
+                    })
                 })
-            } else if (this.government.exile) {
-                var exile = this.government.exile
+            } else if (entry.body.exile) {
+                var exile = entry.body.exile
                 async(function () {
-                    this._operate([ 'exile' ], [ this ], async())
+                    this._operate([ 'exile' ], [ this, exile.id, exile.promise, exile.properties ], async())
                 }, function () {
-                    var promise = this.government.exile.promise
+                    var promise = exile.promise
                     var broadcasts = []
                     for (var key in this._broadcasts) {
                         delete this._broadcasts[key].responses[promise]
@@ -497,6 +497,10 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         this._checkReduced(broadcast, async())
                     })(broadcasts)
                 })
+            }
+        }, function () {
+            if (entry.body.naturalize != null) {
+                this._operate([ 'naturalized' ], [ this, entry.body.naturalize ], async())
             }
         }, function () {
             this._operate([ 'government' ], [ this ], async())

@@ -70,17 +70,21 @@ module.exports = function (assert, reduced) {
                 }, {
                     promise: '2/0', id: 'second', value: 0
                 }, {
-                    promise: '3/0', id: 'third', value: 0
+                    promise: '4/0', id: 'third', value: 0
                 }], 'reduced responses')
         console.log("REDUCED UNLATCH")
                 reduced.unlatch()
             }
         }),
-        exile: cadence(function (async, conference) {
+        exile: cadence(function (async, conference, id, promise, properties) {
             if (conference.id == 'third') {
-                assert(conference.government.exile, {
+                assert({
+                    id: id,
+                    promise: promise,
+                    properties: properties
+                }, {
                     id: 'fourth',
-                    promise: '5/0',
+                    promise: '7/0',
                     properties: { key: 'value', url: 'http://127.0.0.1:8888/fourth/' }
                 }, 'exile')
             }
