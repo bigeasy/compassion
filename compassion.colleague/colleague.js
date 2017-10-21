@@ -148,7 +148,6 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
             ready.wait(callback)
         }, async())
     }, function () {
-        return
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
         this.kibitzer.listen(this._destructible.monitor('kibitzer'))
         finalist(this, function (callback) {
@@ -195,25 +194,24 @@ Colleague.prototype.getProperties = cadence(function (async) {
     })
 })
 
-Colleague.prototype.bootstrap = cadence(function (async) {
+Colleague.prototype.bootstrap = cadence(function (async, republic, url) {
+    require('assert')(republic != null)
     async(function () {
         this.getProperties(async())
     }, function (properties) {
         console.log('!!!', properties)
-        properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
-        this.kibitzer.bootstrap(properties)
+        properties.url = url
+        this.kibitzer.bootstrap(republic, properties)
     })
 })
 
-Colleague.prototype.join = cadence(function (async, republic, leader) {
+// TODO Using Abend! instead of Destructible.
+Colleague.prototype.join = cadence(function (async, republic, leader, url) {
     async(function () {
         this.getProperties(async())
     }, function (properties) {
-        properties.url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
-        this.kibitzer.join({
-            url: 'http://127.0.0.1:8888/' + leader + '/',
-            republic: republic
-        }, properties, require('abend'))
+        properties.url = url
+        this.kibitzer.join(republic, leader, properties, require('abend'))
     })
 })
 

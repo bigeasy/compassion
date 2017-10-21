@@ -112,6 +112,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async([function () {
         destructible.destroy()
     }], function  () {
+        return
         destructible.addDestructor('kibitzer', kibitzer, 'destroy')
         kibitzer.listen(destructible.monitor('kibitzer'))
         finalist(function (callback) {
