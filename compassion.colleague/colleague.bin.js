@@ -1,4 +1,4 @@
-/*
+
 
     ___ usage ___ en_US ___
     compassion colleague child <child options>
@@ -53,7 +53,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Colleague = require('./colleague')
     var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
-    var Destructor = require('destructible')
+    var Destructible = require('destructible')
     var Vizsla = require('vizsla')
     var UserAgent = require('./ua')
     var Conduit = require('conduit')
@@ -83,7 +83,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
-    var destructible = new Destructor(1000, 'colleague')
+    var destructible = new Destructible(1000, 'colleague')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
