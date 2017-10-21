@@ -7,6 +7,8 @@ var cadence = require('cadence')
 // An evented sempahore.
 var Signal = require('signal')
 
+var Kibitzer = require('kibitz')
+
 // Create a client that will poll a particular Chaperon URL and apply the
 // actions proscribed by the Chaperon to the given Kibitzer.
 
@@ -15,8 +17,8 @@ function Chaperon (options) {
     this._ua = options.ua
     this._session = { url: options.chaperon }
     this._island = options.island
-    this._kibitzer = options.kibitzer
-    this._kibitzer = options.kibitzer
+    this._createKibitzer = options.createKibitzer
+    this._republic = null
     this._colleague = options.colleague
     this._startedAt = options.startedAt
     this._signal = new Signal
@@ -40,8 +42,8 @@ Chaperon.prototype.listen = cadence(function (async) {
             url: '/action',
             post: {
                 island: this._island,
-                republic: coalesce(this._kibitzer.paxos.republic),
-                id: this._kibitzer.paxos.id,
+                republic: this._republic,
+                id: this._id,
                 startedAt: this._startedAt
             },
             nullify: true
@@ -67,8 +69,6 @@ Chaperon.prototype._action = cadence(function (async, action, second) {
         this._signal.wait(60 * second, async())
         break
     case 'bootstrap':
-        // TODO Am I really supposed to do this?
-        this._kibitzer.paxos.naturalized = true
         // TODO What to do about errors? If we're not able to successfully
         // `getProperties` what do we do then? Is it an error that is not
         // going to happen or not manifest itself here? There might be an
@@ -79,8 +79,9 @@ Chaperon.prototype._action = cadence(function (async, action, second) {
             this._colleague.getProperties(async())
         }, function (properties) {
             console.log('GOT PROPERTIES', properties)
+            this._kibitzer = this._createKibitzer.call(null, this._startedAt)
             properties.url = action.url.self
-            this._kibitzer.bootstrap(this._startedAt, properties)
+            this._kibitzer.bootstrap(properties)
             this._signal.wait(second, async())
         })
         break
@@ -88,18 +89,18 @@ Chaperon.prototype._action = cadence(function (async, action, second) {
         async(function () {
             this._colleague.getProperties(async())
         }, function (properties) {
+            this._kibitzer = this._createKibitzer.call(null, action.republic)
             properties.url = action.url.self
-            this._kibitzer.join({
-                url: action.url.leader,
-                republic: action.republic
-            }, properties, async())
+            this._kibitzer.join(action.url.leader, properties, async())
         }, function (enqueued) {
             this._signal.wait((enqueued ? 5 : 60) * second, async())
         })
         break
     case 'splitBrain':
     case 'unrecoverable':
-        this._kibitzer.destroy()
+        if (this._kibitzer != null) {
+            this._kibitzer.destroy()
+        }
         this.destroyed = true
         break
     }
