@@ -1,4 +1,4 @@
-/*
+
 
     ___ usage ___ en_US ___
     compassion colleague child <child options>

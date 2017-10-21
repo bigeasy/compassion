@@ -9,11 +9,7 @@ function prove (async, assert) {
     assert(Chaperon, 'require')
 
     var chaperon = new Chaperon({
-        startedAt: 0,
-        createKibitzer: function (republic) {
-            console.log(arguments)
-            return new Kibitzer({ id: 'x', republic: republic })
-        },
+        kibitzer: new Kibitzer({ id: 'x' }),
         colleague: {
             getProperties: function (callback) { callback(null, {}) }
         }
@@ -31,18 +27,16 @@ function prove (async, assert) {
         assert(chaperon.destroyed, 'self-destruct')
         chaperon.destroy()
         chaperon = new Chaperon({
-            createKibitzer: function () {
-                return {
-                    join: function (leader, properties, callback) {
-                        assert({
-                            leader: leader,
-                            properties: properties
-                        }, {
-                            leader: 'y',
-                            properties: { url: 'x' }
-                        }, 'joining')
-                        callback(null, true)
-                    }
+            kibitzer: {
+                join: function (leader, properties, callback) {
+                    assert({
+                        leader: leader,
+                        properties: properties
+                    }, {
+                        leader: { url: 'y', republic: 1 },
+                        properties: { url: 'x' }
+                    }, 'joining')
+                    callback(null, true)
                 }
             },
             colleague: {
@@ -60,18 +54,16 @@ function prove (async, assert) {
     }, function () {
         chaperon.destroy()
         chaperon = new Chaperon({
-            createKibitzer: function () {
-                return {
-                    join: function (leader, properties, callback) {
-                        assert({
-                            leader: leader,
-                            properties: properties
-                        }, {
-                            leader: 'y',
-                            properties: { url: 'x' }
-                        }, 'joining')
-                        callback(null, false)
-                    }
+            kibitzer: {
+                join: function (leader, properties, callback) {
+                    assert({
+                        leader: leader,
+                        properties: properties
+                    }, {
+                        leader: { url: 'y', republic: 1 },
+                        properties: { url: 'x' }
+                    }, 'joining')
+                    callback(null, false)
                 }
             },
             colleague: {
