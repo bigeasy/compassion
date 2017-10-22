@@ -16,9 +16,6 @@ var assert = require('assert')
 
 var Signal = require('signal')
 
-// Cancelable series of function invocations.
-var Therefore = require('thereafter')
-
 function Merger (kibitzer, channel) {
     this.replay = new Procession
     this.play = new Procession
@@ -76,13 +73,15 @@ Merger.prototype.merge = cadence(function (async) {
             var envelope = entry.$envelope
             switch (envelope.method) {
             case 'bootstrap':
+                console.log(envelope)
                 properties.url = envelope.body.properties.url
                 departure.raise(properties, envelope.body.properties)
                 this._kibitzer.replay(envelope)
                 break
             case 'join':
-                properties.url = envelope.body.properties.url
-                departure.raise(properties, envelope.body.properties)
+                console.log(envelope)
+                // properties.url = envelope.body.properties.url
+                // departure.raise(properties, envelope.body.properties)
                 this._kibitzer.replay(envelope)
                 break
             }
@@ -91,6 +90,7 @@ Merger.prototype.merge = cadence(function (async) {
         var loop = async(function () {
             replay.dequeue(async())
         }, function (entry) {
+            console.log(entry)
             if (entry == null) {
                 return [ loop.break ]
             }

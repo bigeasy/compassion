@@ -51,7 +51,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Monitor = require('compassion.colleague/monitor')
     var Kibitzer = require('kibitz')
     var coalesce = require('extant')
-    var Destructor = require('destructible')
+    var Destructible = require('destructible')
     var cadence = require('cadence')
 
     var Thereafter = require('thereafter')
@@ -79,7 +79,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger, merger.play), 'enqueue')
     kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger, merger.play), 'enqueue')
 
-    var destructible = new Destructor('channel.bin')
+    var destructible = new Destructible('channel.bin')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 

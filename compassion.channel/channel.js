@@ -15,12 +15,12 @@ function Channel (kibitzer) {
     this._destructor = new Destructor('channel')
     this._destructor.markDestroyed(this, 'destroyed')
 
-    var multiplexer = new Multiplexer
+    var multiplexer = new Multiplexer({
+        conference: this._requester = new Requester
+    })
 
     this.read = multiplexer.read
     this.write = multiplexer.write
-
-    multiplexer.route('conference', this._requester = new Requester)
 
     this.write.shifter().pump(this, '_enqueue')
 
