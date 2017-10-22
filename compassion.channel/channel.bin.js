@@ -85,56 +85,53 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('shuttle', shuttle, 'close')
 
-    var thereafter = new Thereafter
-    destructible.addDestructor('thereafter', thereafter, 'cancel')
+    var finalist = require('finalist')
 
-    thereafter.run(function (ready) {
+    async([function () {
+        destructible.destroy()
+    }], function  () {
+        destructible.addDestructor('monitor', monitor, 'destroy')
         cadence(function (async) {
-            destructible.addDestructor('monitor', monitor, 'destroy')
-            monitor.ready.wait(ready, 'unlatch')
             async(function () {
                 monitor.run(program, async())
             }, function (exitCode, signal) {
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
         })(destructible.monitor('monitor'))
-    })
-
-    destructible.addDestructor('channel', channel, 'destroy')
-
-    // Gives an `ENOENT` time to report and cancel the series.
-    thereafter.run(function (ready) {
-        cadence(function () {
-            setImmediate(async())
-        }, function () {
-            ready.unlatch()
-        })(destructible.rescue('startup'))
-    })
-
-    thereafter.run(function (ready) {
+        finalist(function (callback) {
+            monitor.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
+        destructible.addDestructor('channel', channel, 'destroy')
+        setImmediate(async())
+    }, function () {
         var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], channel)
         destructible.addDestructor('conduit', conduit, 'destroy')
         destructible.addDestructor('write', channel.write, 'push')
-        conduit.ready.wait(ready, 'unlatch')
         conduit.listen(null, destructible.monitor('conduit'))
-    })
-
-    thereafter.run(function (ready) {
+        finalist(function (callback) {
+            conduit.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
         var reader = new Reader
         destructible.addDestructor('reader', reader, 'destroy')
-        reader.ready.wait(ready, 'unlatch')
         reader.read(stream, merger.replay, destructible.monitor('readable'))
-    })
-//    stream.once('error', function () { console.log(error.stack) })
-//    monitor.child.stdio[3].once('error', function (error) { console.log(error.stack) })
-
-    thereafter.run(function (ready) {
+        finalist(function (callback) {
+            reader.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
         destructible.addDestructor('merger', merger, 'destroy')
-        merger.ready.wait(ready, 'unlatch')
         merger.merge(destructible.monitor('merger'))
+        finalist(function (callback) {
+            merger.ready.wait(callback)
+            destructible.completed.wait(callback)
+        }, async())
+    }, function () {
+        logger.info('started', { parameters: program.utlimate, argv: program.argv })
+        program.ready.unlatch()
+        destructible.completed.wait(async())
     })
-
-    thereafter.ready.wait(program.ready, 'unlatch')
-
-    destructible.completed(5000, async())
 }))
