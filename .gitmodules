@@ -1,0 +1,3 @@
+[submodule "compassion.conference"]
+	path = compassion.conference
+	url = https://github.com/bigeasy/conference.git
