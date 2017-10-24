@@ -2,6 +2,8 @@ require('proof')(2, require('cadence')(prove))
 
 function prove (async, assert) {
     var Monitor = require('../monitor')
+    var Descendent = require('descendent')
+    var descendent = new Descendent(process)
     async(function () {
         var monitor = new Monitor
         async(function () {
@@ -17,7 +19,7 @@ function prove (async, assert) {
             monitor.run({
                 argv: [ 'node', path.join(__dirname, 'child.js') ],
                 env: JSON.parse(JSON.stringify(process.env))
-            }, async())
+            }, descendent, async())
         }, function () {
             assert(monitor.destroyed, 'ran')
         })

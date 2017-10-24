@@ -26,7 +26,7 @@ Monitor.prototype._kill = function () {
     }
 }
 
-Monitor.prototype._run = cadence(function (async, program) {
+Monitor.prototype._run = cadence(function (async, program, descendent) {
     var argv = program.argv.slice()
     var env = JSON.parse(JSON.stringify(program.env))
     env.COMPASSION_COLLEAGUE_FD = 3
@@ -39,7 +39,11 @@ Monitor.prototype._run = cadence(function (async, program) {
     // there is an error on the pipe and no one is listening it means we're
     // shutting down, so we don't really care about this error.
     this.child.stdio[3].once('error', noop)
-    async(function () {
+    async([function () {
+        descendent.decrement()
+    }], function () {
+        descendent.increment()
+        descendent.addChild(this.child, null)
         delta(async()).ee(this.child).on('exit')
         this.ready.unlatch()
     }, function (exitCode, signal) {
@@ -50,8 +54,9 @@ Monitor.prototype._run = cadence(function (async, program) {
     })
 })
 
-Monitor.prototype.run = cadence(function (async, program) {
-    this._run(program, this._destructible.monitor('run'))
+Monitor.prototype.run = cadence(function (async, program, descendent) {
+    require('assert')(descendent)
+    this._run(program, descendent, this._destructible.monitor('run'))
     this._destructible.completed.wait(async())
 })
 

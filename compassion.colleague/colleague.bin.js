@@ -90,6 +90,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
+    var Descendent = require('descendent')
+    var descendent = new Descendent(program)
+    destructible.addDestructor('descendent', descendent, 'decrement')
+
     destructible.addDestructor('shutdown', shuttle, 'close')
 
     var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, startedAt)
@@ -140,11 +144,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         }, async())
     }, function () {
         destructible.addDestructor('monitor', monitor, 'destroy')
-        async(function () {
-            monitor.run(program, destructible.monitor('monitor'))
-        }, function (exitCode, signal) {
-            logger.info('exited', { exitCode: exitCode, signal: signal })
-        })
+        monitor.run(program, descendent, destructible.monitor('monitor'))
         finalist(function (callback) {
             monitor.ready.wait(callback)
             destructible.completed.wait(callback)
