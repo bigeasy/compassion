@@ -26,6 +26,7 @@
                             "bintrees":                     "1.0.2",
                             "byline":                       "5.0.0",
                             "cadence":                      "1.0.x",
+                            "chaperon":                     "0.7.x",
                             "cliffhanger":                  "1.4.x",
                             "colleague":                    "0.9.x",
                             "conduit":                      "0.15.x",
@@ -50,9 +51,8 @@
     },
     "devDependencies":
     {
-                            "chaperon":                     "0.7.x",
                             "compassion.conduit":           "0.11.x",
-                            "mingle.static":                "0.3.x",
+                            "mingle.static":                "0.4.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",
