@@ -111,7 +111,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var colleagues = new Chaperon.Colleagues({
         ua: new Vizsla,
-        mingle: program.ultimate.mingle
+        mingle: coalesce(program.ultimate.mingle, [ program.ultimate.conduit ])
     })
 
     var middleware = new Chaperon.Middleware({

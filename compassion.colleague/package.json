@@ -53,7 +53,6 @@
     "devDependencies":
     {
                             "compassion.conduit":           "0.11.x",
-                            "mingle.static":                "0.4.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",

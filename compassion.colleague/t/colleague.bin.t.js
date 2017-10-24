@@ -18,20 +18,10 @@ function prove (async, assert) {
     }, [function () {
         conduit.emit('SIGTERM')
     }], function () {
-        var Mingle = require('mingle.static/static.bin')
-        mingle = Mingle([
-            '--format=http://%s:%d/',
-            '--bind=127.0.0.1:8888', '127.0.0.1:8808'
-        ], abend)
-        mingle.ready.wait(async())
-    }, [function () {
-        mingle.emit('SIGTERM')
-    }], function () {
         var io
         async([function () {
             io = bin({
-                conduit: 'http://127.0.0.1:8808',
-                mingle: 'http://127.0.0.1:8888/discover',
+                conduit: 'http://127.0.0.1:8808/',
                 island: 'island',
                 id: '1',
                 argv: [ 'node', example ]
