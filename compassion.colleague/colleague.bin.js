@@ -5,8 +5,11 @@
 
     options:
 
-        -C, --chaperon <address:port>
-            address of the chaperon that has bootstrap status
+        -m, --mingle <url>
+            discovery url
+
+        -s, --stable <milliseconds>
+            seconds to wait for stability to determine bootstrapping TODO fix desc
 
         -c, --conduit <address:port>
             address of the conduit to use for network communication
@@ -96,8 +99,24 @@ require('arguable')(module, require('cadence')(function (async, program) {
     colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
     var monitor = new Monitor
 
-    var chaperon = new Chaperon({
-        ua: new Vizsla(),
+    var Chaperon = {
+        Middleware: require('chaperon/chaperon'),
+        Client: require('./chaperon'),
+        Colleagues: require('chaperon/colleagues')
+    }
+
+    var colleagues = new Chaperon.Colleagues({
+        ua: new Vizsla,
+        mingle: program.ultimate.mingle
+    })
+
+    var middleware = new Chaperon.Middleware({
+        colleagues: colleagues,
+        stableAfter: +(coalesce(program.ultimate.stable, 30) * 1000)
+    })
+
+    var chaperon = new Chaperon.Client({
+        ua: new Vizsla(middleware.reactor.middleware),
         chaperon: program.ultimate.chaperon,
         kibitzer: kibitzer,
         colleague: colleague,

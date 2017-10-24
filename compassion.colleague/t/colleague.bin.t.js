@@ -26,21 +26,11 @@ function prove (async, assert) {
     }, [function () {
         mingle.emit('SIGTERM')
     }], function () {
-        var Chaperon = require('chaperon/chaperon.bin')
-        chaperon = Chaperon({
-            bind: '127.0.0.1:8088',
-            mingle: 'http://127.0.0.1:8888/discover',
-            conduit: 'http://127.0.0.1:8808'
-        }, abend)
-        chaperon.ready.wait(async())
-    }, [function () {
-        chaperon.emit('SIGTERM')
-    }], function () {
         var io
         async([function () {
             io = bin({
                 conduit: 'http://127.0.0.1:8808',
-                chaperon: 'http://127.0.0.1:8088',
+                mingle: 'http://127.0.0.1:8888',
                 island: 'island',
                 id: '1',
                 argv: [ 'node', example ]
