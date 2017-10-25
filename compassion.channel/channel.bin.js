@@ -75,9 +75,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var merger = new Merger(kibitzer, channel)
 
-    kibitzer.played.shifter().pump(new Recorder('kibitz', logger, merger.play), 'enqueue')
-    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger, merger.play), 'enqueue')
-    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger, merger.play), 'enqueue')
+    kibitzer.played.shifter().pump(new Recorder('kibitz', logger, merger.play), 'push')
+    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger, merger.play), 'push')
+    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger, merger.play), 'push')
 
     var destructible = new Destructible('channel.bin')
 
@@ -87,13 +87,20 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var finalist = require('finalist')
 
+    destructible.completed.wait(async())
+
+    var Descendent = require('descendent')
+    var descendent = new Descendent(program)
+
+    destructible.addDestructor('descendent', descendent, 'decrement')
+
     async([function () {
         destructible.destroy()
     }], function  () {
         destructible.addDestructor('monitor', monitor, 'destroy')
         cadence(function (async) {
             async(function () {
-                monitor.run(program, async())
+                monitor.run(program, descendent, async())
             }, function (exitCode, signal) {
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
@@ -117,7 +124,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     }, function () {
         var reader = new Reader
         destructible.addDestructor('reader', reader, 'destroy')
-        reader.read(stream, merger.replay, destructible.monitor('readable'))
+        reader.read(stream, merger.replay, destructible.rescue('readable'))
         finalist(function (callback) {
             reader.ready.wait(callback)
             destructible.completed.wait(callback)
