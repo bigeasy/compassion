@@ -76,6 +76,7 @@ Middleware.prototype.request = cadence(function (async, request) {
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
+    console.log('VERY MUCH KIBITZ', request.body)
     logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
     this._kibitzer.request(request.body, async())
 })

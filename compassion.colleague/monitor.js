@@ -27,9 +27,9 @@ Monitor.prototype._kill = function () {
     }
 }
 
-Monitor.prototype._run = cadence(function (async, program, descendent) {
-    var argv = program.argv.slice()
-    var env = JSON.parse(JSON.stringify(program.env))
+Monitor.prototype._run = cadence(function (async, env, argv, descendent) {
+    argv = argv.slice()
+    env = JSON.parse(JSON.stringify(env))
     env.COMPASSION_COLLEAGUE_FD = 3
     this.child = children.spawn(argv.shift(), argv, {
         stdio: [ 0, 1, 2, 'pipe', 'ipc' ],
@@ -55,9 +55,9 @@ Monitor.prototype._run = cadence(function (async, program, descendent) {
     })
 })
 
-Monitor.prototype.run = cadence(function (async, program, descendent) {
+Monitor.prototype.run = cadence(function (async, env, argv, descendent) {
     require('assert')(descendent)
-    this._run(program, descendent, this._destructible.monitor('run'))
+    this._run(env, argv, descendent, this._destructible.monitor('run'))
     this._destructible.completed.wait(async())
 })
 

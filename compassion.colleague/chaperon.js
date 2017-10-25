@@ -89,7 +89,7 @@ Chaperon.prototype._action = cadence(function (async, action, properties, second
     case 'join':
         async(function () {
             properties.url = action.url.self
-            this._kibitzer.join(action.republic, {  url: action.url.leader }, properties, async())
+            this._kibitzer.join(action.republic, { url: action.url.leader }, properties, async())
         }, function (enqueued) {
             this._signal.wait((enqueued ? 5 : 60) * second, async())
         })

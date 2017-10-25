@@ -81,6 +81,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var cadence = require('cadence')
 
+    new Recorder('colleague', logger).push({ parameters: program.ultimate, argv: program.argv, env: program.env })
+
     kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
     kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
     kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
@@ -144,7 +146,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
         }, async())
     }, function () {
         destructible.addDestructor('monitor', monitor, 'destroy')
-        monitor.run(program, descendent, destructible.monitor('monitor'))
+        monitor.run(program.env, program.argv, descendent, destructible.monitor('monitor'))
         finalist(function (callback) {
             monitor.ready.wait(callback)
             destructible.completed.wait(callback)
