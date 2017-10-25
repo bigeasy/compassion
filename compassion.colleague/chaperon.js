@@ -74,14 +74,13 @@ Chaperon.prototype._action = cadence(function (async, action, properties, second
     case 'bootstrap':
         if (!this.bootstrapped) {
             this.bootstrapped = true
-            // TODO Am I really supposed to do this?
-            this._kibitzer.paxos.naturalized = true
             // TODO What to do about errors? If we're not able to successfully
             // `getProperties` what do we do then? Is it an error that is not
             // going to happen or not manifest itself here? There might be an
             // end of stream error that would raise an exception ending the loop
             // that way.
             properties.url = action.url.self
+            console.log(this._startedAt)
             this._kibitzer.bootstrap(this._startedAt, properties)
         }
         this._signal.wait(second, async())

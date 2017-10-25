@@ -10,37 +10,34 @@ function prove (async, assert) {
 
     var chaperon = new Chaperon({
         kibitzer: new Kibitzer({ id: 'x', republic: 1 }),
-        colleague: {
-            getProperties: function (callback) { callback(null, {}) }
-        }
+        startedAt: 0
     })
 
     async(function () {
-        chaperon._action({ name: 'unstable' }, 1, async())
+        chaperon._action({ name: 'unstable' }, {}, 1, async())
     }, function () {
-        chaperon._action({ name: 'recoverable' }, 1, async())
+        chaperon._action({ name: 'recoverable' }, {}, 1, async())
     }, function () {
-        chaperon._action({ name: 'bootstrap', url: { self: 'x' } }, 1, async())
+        chaperon._action({ name: 'bootstrap', url: { self: 'x' } }, {}, 1, async())
     }, function () {
-        chaperon._action({ name: 'splitBrain' }, null, async())
+        chaperon._action({ name: 'splitBrain' }, {}, null, async())
     }, function () {
         assert(chaperon.destroyed, 'self-destruct')
         chaperon.destroy()
         chaperon = new Chaperon({
             kibitzer: {
-                join: function (leader, properties, callback) {
+                join: function (republic, leader, properties, callback) {
                     assert({
+                        republic: republic,
                         leader: leader,
                         properties: properties
                     }, {
-                        leader: { url: 'y', republic: 1 },
+                        republic: 1,
+                        leader: { url: 'y' },
                         properties: { url: 'x' }
                     }, 'joining')
                     callback(null, true)
                 }
-            },
-            colleague: {
-                getProperties: function (callback) { callback(null, {}) }
             }
         })
         chaperon._action({
@@ -50,24 +47,23 @@ function prove (async, assert) {
                 leader: 'y'
             },
             republic: 1
-        }, 1, async())
+        }, {}, 1, async())
     }, function () {
         chaperon.destroy()
         chaperon = new Chaperon({
             kibitzer: {
-                join: function (leader, properties, callback) {
+                join: function (republic, leader, properties, callback) {
                     assert({
+                        republic: republic,
                         leader: leader,
                         properties: properties
                     }, {
-                        leader: { url: 'y', republic: 1 },
+                        republic: 1,
+                        leader: { url: 'y' },
                         properties: { url: 'x' }
-                    }, 'joining')
+                    }, 'joining again')
                     callback(null, false)
                 }
-            },
-            colleague: {
-                getProperties: function (callback) { callback(null, {}) }
             }
         })
         chaperon._action({
@@ -77,7 +73,7 @@ function prove (async, assert) {
                 leader: 'y'
             },
             republic: 1
-         }, 1, async())
+         }, {}, 1, async())
     }, function () {
         var actions = [{
             statusCode: 500,
@@ -96,7 +92,12 @@ function prove (async, assert) {
         chaperon = new Chaperon({
             chaperon: 'http://127.0.0.1:8080',
             ua: ua,
-            kibitzer: { paxos: {}, destroy: function () {} }
+            kibitzer: { paxos: {}, destroy: function () {} },
+            colleague: {
+                getProperties: function (callback) {
+                    callback(null, {})
+                }
+            }
         })
         chaperon.listen(async())
     }, function () {
@@ -108,7 +109,12 @@ function prove (async, assert) {
         chaperon = new Chaperon({
             chaperon: 'http://127.0.0.1:8080',
             ua: ua,
-            kibitzer: { paxos: {}, destroy: function () {} }
+            kibitzer: { paxos: {}, destroy: function () {} },
+            colleague: {
+                getProperties: function (callback) {
+                    callback(null, {})
+                }
+            }
         })
         chaperon.listen(async())
         chaperon.destroy()
