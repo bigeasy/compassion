@@ -31,7 +31,7 @@
                             "extant":                       "1.0.x",
                             "finalist":                     "0.0.x",
                             "interrupt":                    "5.0.x",
-                            "kibitz":                       "0.12.x",
+                            "kibitz":                       "0.13.x",
                             "procession":                   "0.9.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "15.0.x",
