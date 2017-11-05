@@ -35,7 +35,7 @@
                             "kibitz":                       "0.13.x",
                             "procession":                   "0.9.x",
                             "prolific.logger":              "5.0.x",
-                            "prolific.shuttle":             "15.0.x",
+                            "prolific.shuttle":             "17.0.x",
                             "rescue":                       "3.2.x",
                             "signal":                       "3.0.x",
                             "staccato":                     "5.0.x",
