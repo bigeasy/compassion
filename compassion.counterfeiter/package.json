@@ -23,7 +23,7 @@
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.16.x",
-                            "compassion.conduit":           "0.11.x",
+                            "compassion.conduit":           "0.14.x",
                             "conduit":                      "0.15.x",
                             "destructible":                 "0.17.x",
                             "happenstance":                 "5.0.x",
