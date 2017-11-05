@@ -52,7 +52,7 @@
     },
     "devDependencies":
     {
-                            "compassion.conduit":           "0.11.x",
+                            "compassion.conduit":           "0.14.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",
