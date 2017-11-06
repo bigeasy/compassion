@@ -28,7 +28,7 @@ module.exports = function (Colleague, Conduit) {
 
     Counterfeiter.prototype._run = cadence(function (async, options) {
         interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = this.kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
+        var kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
 
         var colleague = new Colleague(new Vizsla, kibitzer, 'island')
         this._colleagues[options.id] = colleague
@@ -78,7 +78,7 @@ module.exports = function (Colleague, Conduit) {
         async(function () {
             this._run(options, async())
         }, function (colleague) {
-            var url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+            var url = 'http://127.0.0.1:8888/' + options.id + '/'
             this._colleagues[options.id].bootstrap(options.republic, url, async())
         }, function () {
             console.log('done')
@@ -90,7 +90,7 @@ module.exports = function (Colleague, Conduit) {
             this._run(options, async())
         }, function (colleague) {
             var leader = 'http://127.0.0.1:8888/' + options.leader + '/'
-            var url = 'http://127.0.0.1:8888/' + this.kibitzer.paxos.id + '/'
+            var url = 'http://127.0.0.1:8888/' + options.id + '/'
             this._colleagues[options.id].join(options.republic, leader, url, async())
         }, function () {
             console.log('joined')
