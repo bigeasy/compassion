@@ -2,7 +2,7 @@ var cadence = require('cadence')
 var Destructor = require('destructible')
 var Conduit = require('conduit')
 var Signal = require('signal')
-var Requester = require('conduit/requester')
+var Caller = require('conduit/caller')
 var Procession = require('procession')
 var Multiplexer = require('conduit/multiplexer')
 
@@ -16,7 +16,7 @@ function Channel (kibitzer) {
     this._destructor.markDestroyed(this, 'destroyed')
 
     var multiplexer = new Multiplexer({
-        conference: this._requester = new Requester
+        conference: this._caller = new Caller
     })
 
     this.read = multiplexer.read
@@ -63,7 +63,7 @@ Channel.prototype.destroy = function () {
 
 Channel.prototype.getProperties = cadence(function (async, id) {
     async(function () {
-        this._requester.request({
+        this._caller.invoke({
             module: 'colleague',
             method: 'properties',
             body: { id: id, replaying: true }
