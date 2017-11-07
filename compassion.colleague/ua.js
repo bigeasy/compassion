@@ -18,6 +18,7 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
                 'x-kibitz-envelope': JSON.stringify(envelope)
             },
             post: envelope,
+            timeout: 3000,
             nullify: true
         }, async())
     }, function (body, response) {
