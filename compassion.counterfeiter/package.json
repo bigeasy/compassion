@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.counterfeiter",
-    "version":              "0.5.2",
+    "version":              "0.6.0",
     "description":
 
       "Simulate Compassion network messages for debugging.",
