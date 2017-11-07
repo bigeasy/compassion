@@ -47,7 +47,6 @@
                             "reactor":                      "9.0.x",
                             "rescue":                       "3.2.x",
                             "signal":                       "3.0.x",
-                            "thereafter":                   "0.1.x",
                             "vizsla":                       "9.0.x"
     },
     "devDependencies":
