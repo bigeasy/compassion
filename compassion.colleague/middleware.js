@@ -18,7 +18,7 @@ var Server = require('conduit/server')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 // Construct an http responder for the given `Kibitzer` that forwards out of
-// band messages to the given Conduit `Requester`.
+// band messages to the given Conduit `Caller`.
 
 //
 function Middleware (startedAt, island, kibitzer, colleague) {

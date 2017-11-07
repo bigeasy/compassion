@@ -63,7 +63,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Kibitzer = require('kibitz')
     var Recorder = require('./recorder')
-    var Responder = require('conduit/responder')
 
     var shuttle = Shuttle.shuttle(program, logger)
 
@@ -74,8 +73,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         ping: coalesce(program.ultimate.ping, 1000),
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
-
-    var responder = new Responder(new UserAgent(new Vizsla), 'kibitz', kibitzer.write, kibitzer.read)
 
     var Timer = require('happenstance').Timer
 

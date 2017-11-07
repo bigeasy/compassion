@@ -12,8 +12,8 @@ var Signal = require('signal')
 var Conduit = require('conduit')
 var Procession = require('procession')
 
-var Requester = require('conduit/requester')
-var Responder = require('conduit/responder')
+var Caller = require('conduit/caller')
+var Procedure = require('conduit/procedure')
 
 var Server = require('conduit/server')
 var Client = require('conduit/client')
@@ -39,15 +39,15 @@ function Colleague (ua, kibitzer, island) {
 
     this.kibitzer = kibitzer
 
-    var responder = new Responder(new UserAgent(new Vizsla))
+    var procedure = new Procedure(new UserAgent(new Vizsla), 'request')
 
     kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
-    kibitzer.read.shifter().pump(responder.write, 'enqueue')
-    responder.read.shifter().pump(kibitzer.write, 'enqueue')
+    kibitzer.read.shifter().pump(procedure.write, 'enqueue')
+    procedure.read.shifter().pump(kibitzer.write, 'enqueue')
 
     // TODO Not `this._`.
     this._multiplexer = new Multiplexer({
-        conference: this._requester = new Requester,
+        conference: this._caller = new Caller,
         incoming: this._client = new Client
     })
 
@@ -168,7 +168,7 @@ Colleague.prototype.destroy = function () {
 }
 
 Colleague.prototype.backlog = cadence(function (async, body) {
-    this._requester.request({ module: 'colleague', method: 'backlog', body: body }, async())
+    this._caller.invoke({ module: 'colleague', method: 'backlog', body: body }, async())
 })
 
 Colleague.prototype.newOutOfBand = cadence(function (async, header) {
@@ -181,7 +181,7 @@ Colleague.prototype.newOutOfBand = cadence(function (async, header) {
 Colleague.prototype.getProperties = cadence(function (async) {
     console.log('GETTING PROPERTIES')
     async(function () {
-        this._requester.request({
+        this._caller.invoke({
             module: 'colleague',
             method: 'properties',
             body: {
