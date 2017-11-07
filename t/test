@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 node_modules=$(cd $(dirname $0) && echo $PWD)/../node_modules
 
