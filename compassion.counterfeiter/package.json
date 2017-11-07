@@ -31,7 +31,6 @@
                             "kibitz":                       "0.13.x",
                             "procession":                   "0.9.x",
                             "signal":                       "3.0.x",
-                            "thereafter":                   "0.1.x",
                             "vizsla":                       "9.0.x"
     },
     "devDependencies":
