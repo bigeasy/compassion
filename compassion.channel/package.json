@@ -38,8 +38,7 @@
                             "prolific.shuttle":             "17.0.x",
                             "rescue":                       "3.2.x",
                             "signal":                       "3.0.x",
-                            "staccato":                     "5.0.x",
-                            "thereafter":                   "0.1.x"
+                            "staccato":                     "5.0.x"
     },
     "devDependencies":
     {

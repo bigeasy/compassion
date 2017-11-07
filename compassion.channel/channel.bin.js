@@ -54,8 +54,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Destructible = require('destructible')
     var cadence = require('cadence')
 
-    var Thereafter = require('thereafter')
-
     var Reader = require('./reader')
 
     program.helpIf(program.ultimate.help)
