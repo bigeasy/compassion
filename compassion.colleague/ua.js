@@ -2,8 +2,9 @@ var url = require('url')
 var cadence = require('cadence')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
-function UserAgent (ua) {
+function UserAgent (ua, timeout) {
     this._ua = ua
+    this._timeout = timeout
 }
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
@@ -18,7 +19,7 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
                 'x-kibitz-envelope': JSON.stringify(envelope)
             },
             post: envelope,
-            timeout: 3000,
+            timeout: this._timeout,
             nullify: true
         }, async())
     }, function (body, response) {

@@ -32,14 +32,16 @@ var http = require('http')
 
 var finalist = require('finalist')
 
-function Colleague (ua, kibitzer, island) {
+var coalesce = require('extant')
+
+function Colleague (ua, kibitzer, island, timeout) {
     this._ua = ua
 
     this._Date = Date
 
     this.kibitzer = kibitzer
 
-    var procedure = new Procedure(new UserAgent(new Vizsla), 'request')
+    var procedure = new Procedure(new UserAgent(new Vizsla, +coalesce(timeout, 1000)), 'request')
 
     kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
     kibitzer.read.shifter().pump(procedure.write, 'enqueue')

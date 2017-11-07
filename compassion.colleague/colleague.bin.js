@@ -20,11 +20,14 @@
         -i, --id <string>
             colleague id
 
+        -T, --http-timeout <integer>
+            milliseconds to wait on an HTTP network request (default 1000)
+
         -p, --ping <integer>
-            milliseconds between keep alive pings (defualt 250)
+            milliseconds between keep alive pings (defualt 1000)
 
         -t, --timeout <integer>
-            milliseconds before a participant is considered unreachable (defualt 1000)
+            milliseconds before a participant is considered unreachable (defualt 5000)
 
         --help
             display help message
@@ -93,7 +96,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('shutdown', shuttle, 'close')
 
-    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, startedAt)
+    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
 
     var startedAt = Date.now()
 
