@@ -22,7 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
-                            "compassion.colleague":         "0.17.x",
+                            "compassion.colleague":         "0.19.x",
                             "compassion.conduit":           "0.14.x",
                             "conduit":                      "0.16.x",
                             "destructible":                 "0.17.x",
