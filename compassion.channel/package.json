@@ -43,7 +43,7 @@
     "devDependencies":
     {
                             "abend":                        "1.0.x",
-                            "colleague":                    "0.9.x",
+                            "colleague":                    "0.10.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "channel.bin",
