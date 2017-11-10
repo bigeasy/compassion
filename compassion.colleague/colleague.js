@@ -26,8 +26,6 @@ var Middleware = require('./middleware')
 var UserAgent = require('./ua')
 var Vizsla = require('vizsla')
 
-var Timer = require('happenstance').Timer
-
 var http = require('http')
 
 var finalist = require('finalist')
@@ -43,7 +41,6 @@ function Colleague (ua, kibitzer, island, timeout) {
 
     var procedure = new Procedure(new UserAgent(new Vizsla, +coalesce(timeout, 1000)), 'request')
 
-    kibitzer.paxos.scheduler.events.shifter().pump(new Timer(kibitzer.paxos.scheduler), 'enqueue')
     kibitzer.read.shifter().pump(procedure.write, 'enqueue')
     procedure.read.shifter().pump(kibitzer.write, 'enqueue')
 

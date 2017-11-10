@@ -77,8 +77,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         timeout: coalesce(program.ultimate.timeout, 5000)
     })
 
-    var Timer = require('happenstance').Timer
-
     var cadence = require('cadence')
 
     kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
