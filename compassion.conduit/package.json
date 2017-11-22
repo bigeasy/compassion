@@ -34,7 +34,7 @@
                             "prolific.shuttle":             "17.0.x",
                             "reactor":                      "9.0.x",
                             "server-destroy":               "1.0.1",
-                            "signal":                       "3.0.x"
+                            "signal":                       "3.2.x"
     },
     "devDependencies":
     {
