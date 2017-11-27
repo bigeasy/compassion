@@ -66,10 +66,10 @@ Middleware.prototype._request = cadence(function (async, request, response) {
 
 var abend = require('abend')
 Middleware.prototype.request = cadence(function (async, request) {
-    return [ function (response) {
+    return [ 200, { 'content-type': 'application/json-stream' }, function (response) {
         console.log('EXAMPLE')
         this._request(request, response, abend)
-    }.bind(this), { 'content-type': 'application/json-stream' } ]
+    }.bind(this) ]
 })
 
 // Pass Kibitz envelopes to our `Kibitzer`.
