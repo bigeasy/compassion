@@ -4,6 +4,7 @@ function prove (async, assert) {
     var Kibitzer = require('kibitz')
 
     var UserAgent = require('vizsla')
+    var Interlocutor = require('interlocutor')
 
     var Chaperon = require('../chaperon')
     assert(Chaperon, 'require')
@@ -84,10 +85,12 @@ function prove (async, assert) {
             headers: { 'content-type': 'application/json' },
             body: new Buffer(JSON.stringify({ name: 'unrecoverable' }))
         }]
-        var ua = new UserAgent(function (request, response) {
-            var action = actions.shift()
-            response.writeHead(action.statusCode, action.headers)
-            response.end(action.body)
+        var ua = new UserAgent().bind({
+            http: new Interlocutor(function (request, response) {
+                var action = actions.shift()
+                response.writeHead(action.statusCode, action.headers)
+                response.end(action.body)
+            })
         })
         chaperon = new Chaperon({
             chaperon: 'http://127.0.0.1:8080',
@@ -102,9 +105,11 @@ function prove (async, assert) {
         chaperon.listen(async())
     }, function () {
         assert(chaperon.destroyed, 'polled unrecoverable')
-        var ua = new UserAgent(function (request, response) {
-            response.writeHead(200)
-            response.end(new Buffer(''))
+        var ua = new UserAgent().bind({
+            http: new Interlocutor(function (request, response) {
+                response.writeHead(200)
+                response.end(new Buffer(''))
+            })
         })
         chaperon = new Chaperon({
             chaperon: 'http://127.0.0.1:8080',
