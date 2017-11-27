@@ -1,6 +1,6 @@
 {
     "name":                 "compassion",
-    "version":              "1.0.2",
+    "version":              "1.1.0",
     "description":
 
       "Root executable for standard Compassion processes.",
