@@ -2,6 +2,9 @@ var url = require('url')
 var cadence = require('cadence')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
+var nullify = require('vizsla/nullify')
+var jsonify = require('vizsla/jsonify')
+
 function UserAgent (ua, timeout) {
     this._ua = ua
     this._timeout = timeout
@@ -20,7 +23,7 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
             },
             post: envelope,
             timeout: this._timeout,
-            nullify: true
+            gateways: [ nullify(), jsonify({}) ]
         }, async())
     }, function (body, response) {
         logger.info('recorded', { source: 'ua', method: envelope.method, $body: body })
