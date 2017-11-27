@@ -32,7 +32,7 @@
                             "operation":                    "1.6.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "17.0.x",
-                            "reactor":                      "9.0.x",
+                            "reactor":                      "10.1.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "3.2.x"
     },

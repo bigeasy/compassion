@@ -6,8 +6,8 @@ function prove (async, assert) {
 
     async(function () {
         conduit.index(async())
-    }, function (index) {
-        assert(index, 'Compassion Conduit API\n', 'index')
+    }, function (statusCode, headers, body) {
+        assert(body, 'Compassion Conduit API\n', 'index')
         conduit.health(async())
     }, function (health) {
         assert(health, {

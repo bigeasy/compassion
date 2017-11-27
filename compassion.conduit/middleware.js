@@ -10,7 +10,7 @@ function Conduit (rendezvous) {
 }
 
 Conduit.prototype.index = cadence(function (async) {
-    return 'Compassion Conduit API\n'
+    return [ 200, { 'content-type': 'text/plain' }, 'Compassion Conduit API\n' ]
 })
 
 Conduit.prototype.health = cadence(function (async) {
