@@ -41,7 +41,7 @@ function Middleware (startedAt, island, kibitzer, colleague) {
 
 //
 Middleware.prototype.index = cadence(function (async) {
-    return 'Compassion Colleague API\n'
+    return [ 200, { 'content-type': 'text/plain' }, 'Compassion Colleague API\n' ]
 })
 
 Middleware.prototype.backlog = cadence(function (async, request) {

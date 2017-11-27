@@ -7,8 +7,8 @@ function prove (async, assert) {
     }, {})
     async(function () {
         middleware.index(async())
-    }, function (response) {
-        assert(response, 'Compassion Colleague API\n', 'index')
+    }, function (statusCode, headers, body) {
+        assert(body, 'Compassion Colleague API\n', 'index')
         middleware.health(async())
     }, function (response) {
         assert(response, {
