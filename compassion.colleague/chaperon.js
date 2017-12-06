@@ -56,7 +56,6 @@ Chaperon.prototype.listen = cadence(function (async) {
                 this._signal.wait(1000, async())
                 return
             }
-            console.log(action)
             this._action(action, properties, 1000, async())
         })()
     })
@@ -80,7 +79,6 @@ Chaperon.prototype._action = cadence(function (async, action, properties, second
             // end of stream error that would raise an exception ending the loop
             // that way.
             properties.url = action.url.self
-            console.log(this._startedAt)
             this._kibitzer.bootstrap(this._startedAt, properties)
         }
         this._signal.wait(second, async())

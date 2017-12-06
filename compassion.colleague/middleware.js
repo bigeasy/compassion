@@ -67,7 +67,6 @@ Middleware.prototype._request = cadence(function (async, request, response) {
 var abend = require('abend')
 Middleware.prototype.request = cadence(function (async, request) {
     return [ 200, { 'content-type': 'application/json-stream' }, function (response) {
-        console.log('EXAMPLE')
         this._request(request, response, abend)
     }.bind(this) ]
 })
@@ -76,7 +75,6 @@ Middleware.prototype.request = cadence(function (async, request) {
 
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
-    console.log('VERY MUCH KIBITZ', request.body)
     logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
     this._kibitzer.request(request.body, async())
 })

@@ -170,7 +170,6 @@ Colleague.prototype.newOutOfBand = cadence(function (async, header) {
 })
 
 Colleague.prototype.getProperties = cadence(function (async) {
-    console.log('GETTING PROPERTIES')
     async(function () {
         this._caller.invoke({
             module: 'colleague',
@@ -190,7 +189,6 @@ Colleague.prototype.bootstrap = cadence(function (async, republic, url) {
     async(function () {
         this.getProperties(async())
     }, function (properties) {
-        console.log('!!!', properties)
         properties.url = url
         this.kibitzer.bootstrap(republic, properties)
     })
