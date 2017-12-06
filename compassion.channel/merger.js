@@ -60,7 +60,7 @@ Merger.prototype.merge = cadence(function (async) {
         paxos: this._kibitzer.paxos.outbox.shifter(),
         islander: this._kibitzer.islander.outbox.shifter()
     }
-    var log = this._kibitzer.islander.log.shifter()
+    var log = this._kibitzer.paxos.log.shifter()
     async([function () {
         this._channel.getProperties(this._kibitzer.paxos.id, async())
     }, rescue(/^conduit#endOfStream/m, function (error) {
