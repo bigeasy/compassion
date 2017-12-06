@@ -48,7 +48,7 @@
                             "reactor":                      "10.1.x",
                             "rescue":                       "3.2.x",
                             "signal":                       "3.2.x",
-                            "vizsla":                       "10.6.x"
+                            "vizsla":                       "10.7.x"
     },
     "devDependencies":
     {
