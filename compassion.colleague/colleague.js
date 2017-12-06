@@ -28,8 +28,6 @@ var Vizsla = require('vizsla')
 
 var http = require('http')
 
-var finalist = require('finalist')
-
 var coalesce = require('extant')
 
 function Colleague (ua, kibitzer, island, timeout) {
@@ -142,17 +140,11 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
         // Remove the import of finalist, or otherwise add an exception here,
         // and then we hang the Destructible. We hang because we are waiting on
         // an HTTP get. We should add a destructor somewhere.
-        finalist(this, function (callback) {
-            this._destructible.completed.wait(callback)
-            ready.wait(callback)
-        }, async())
+        Signal.first(ready, this._destructible.completed, async())
     }, function () {
         this._destructible.addDestructor('kibitzer', this.kibitzer, 'destroy')
         this.kibitzer.listen(this._destructible.monitor('kibitzer'))
-        finalist(this, function (callback) {
-            this._destructible.completed.wait(callback)
-            this.kibitzer.ready.wait(callback)
-        }, async())
+        Signal.first(this.kibitzer.ready, this._destructible.completed, async())
     }, function () {
         this._log(this._destructible.monitor('log'))
         this.shifter = this.kibitzer.log.shifter()

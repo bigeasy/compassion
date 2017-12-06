@@ -63,6 +63,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Vizsla = require('vizsla')
     var UserAgent = require('./ua')
     var Conduit = require('conduit')
+    var Signal = require('signal')
 
     var Kibitzer = require('kibitz')
     var Recorder = require('./recorder')
@@ -128,25 +129,12 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.completed.wait(async())
 
-    var finalist = require('finalist')
-
     async([function () {
         destructible.destroy()
     }], function  () {
-        return
-        destructible.addDestructor('kibitzer', kibitzer, 'destroy')
-        kibitzer.listen(destructible.monitor('kibitzer'))
-        finalist(function (callback) {
-            kibitzer.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
-    }, function () {
         destructible.addDestructor('monitor', monitor, 'destroy')
         monitor.run(program, descendent, destructible.monitor('monitor'))
-        finalist(function (callback) {
-            monitor.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(monitor.ready, destructible.completed, async())
     }, function () {
         // Gives an `ENOENT` time to report and cancel the series. Still
         // necessary?
@@ -155,18 +143,12 @@ require('arguable')(module, require('cadence')(function (async, program) {
         var parsed = url.parse(program.ultimate.conduit)
         destructible.addDestructor('colleague', colleague, 'destroy')
         colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
-        finalist(function (callback) {
-            colleague.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(colleague.ready, destructible.completed, async())
     }, function () {
         var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
         destructible.addDestructor('conduit', conduit, 'destroy')
         conduit.listen(null, destructible.monitor('conduit'))
-        finalist(function (callback) {
-            conduit.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(conduit.ready, destructible.completed, async())
     }, function () {
         destructible.addDestructor('chaperon', chaperon, 'destroy')
         // TODO WHy won't Chaperon die correctly?
