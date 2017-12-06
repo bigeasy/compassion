@@ -111,7 +111,7 @@ Colleague.prototype._read = cadence(function (async, envelope) {
 
 // TODO Why isn't this simply a pipe?
 Colleague.prototype._log = cadence(function (async) {
-    var shifter = this.kibitzer.islander.log.shifter()
+    var shifter = this.kibitzer.paxos.log.shifter()
     this._destructible.addDestructor('log', shifter, 'destroy')
     var loop = async(function () {
         shifter.dequeue(async())
