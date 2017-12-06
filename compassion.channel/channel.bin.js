@@ -83,7 +83,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('shuttle', shuttle, 'close')
 
-    var finalist = require('finalist')
+    var Signal = require('signal')
 
     destructible.completed.wait(async())
 
@@ -103,10 +103,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 logger.info('exited', { exitCode: exitCode, signal: signal })
             })
         })(destructible.monitor('monitor'))
-        finalist(function (callback) {
-            monitor.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(monitor.ready, destructible.completed, async())
     }, function () {
         destructible.addDestructor('channel', channel, 'destroy')
         setImmediate(async())
@@ -115,25 +112,16 @@ require('arguable')(module, require('cadence')(function (async, program) {
         destructible.addDestructor('conduit', conduit, 'destroy')
         destructible.addDestructor('write', channel.write, 'push')
         conduit.listen(null, destructible.monitor('conduit'))
-        finalist(function (callback) {
-            conduit.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(conduit.ready, destructible.completed, async())
     }, function () {
         var reader = new Reader
         destructible.addDestructor('reader', reader, 'destroy')
         reader.read(stream, merger.replay, destructible.rescue('readable'))
-        finalist(function (callback) {
-            reader.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(reader.ready, destructible.completed, async())
     }, function () {
         destructible.addDestructor('merger', merger, 'destroy')
         merger.merge(destructible.monitor('merger'))
-        finalist(function (callback) {
-            merger.ready.wait(callback)
-            destructible.completed.wait(callback)
-        }, async())
+        Signal.first(merger.ready, destructible.completed, async())
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()
