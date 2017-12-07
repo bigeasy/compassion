@@ -1,4 +1,4 @@
-require('proof')(7, require('cadence')(prove))
+require('proof')(8, require('cadence')(prove))
 
 function prove (async, assert) {
     var fs = require('fs')
@@ -31,7 +31,7 @@ function prove (async, assert) {
     }], function () {
         counterfeiter.bootstrap({ republic: 0, conference: conference, id: 'first' }, async())
     }, function () {
-       // counterfeiter.events['first'].dequeue(async())
+        // counterfeiter.events['first'].dequeue(async())
         counterfeiter.events['first'].join(function (envelope) {
             return envelope.promise == '1/0'
         }, async())
@@ -58,6 +58,10 @@ function prove (async, assert) {
             return envelope.promise == '6/0'
         }, async())
     }, function () {
+        conference.reactor.got.wait(async())
+        conference.broadcast('message', 2)
+    }, function () {
+        console.log('GOT')
         counterfeiter.join({
             conference: fourth = createConference(),
             id: 'fourth',
@@ -65,12 +69,21 @@ function prove (async, assert) {
             republic: counterfeiter.kibitzers['first'].paxos.republic
         }, async())
     }, function () {
-        counterfeiter.events['fourth'].join(function (envelope) {
+        counterfeiter.events['first'].join(function (envelope) {
             return envelope.promise == '8/0'
+        }, async())
+    }, function () {
+        conference.reactor.joined.notify()
+    }, function () {
+        counterfeiter.events['fourth'].join(function (envelope) {
+            return envelope.promise == '8/1'
         }, async())
         counterfeiter.events['third'].join(function (envelope) {
-            return envelope.promise == '8/0'
+            return envelope.promise == '8/1'
         }, async())
+    }, function () {
+        // This will test the missing operation branch.
+        fourth.invoke('missing', 1, async())
     }, function () {
         fourth.invoke('catalog', 1, async())
     }, function () {

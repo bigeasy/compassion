@@ -5,8 +5,11 @@ module.exports = function (assert, reduced) {
     } catch (e) {
     var Conference = require('../conference')
     }
+    var Signal = require('signal')
     var cadence = require('cadence')
     var reactor = {
+        got: new Signal,
+        joined: new Signal,
         responder: cadence(function (async, conference, header, queue) {
             assert(header.test, 'responder')
             queue.push(1)
@@ -55,7 +58,14 @@ module.exports = function (assert, reduced) {
             return []
         }),
         message: cadence(function (async, conference, value) {
-            return value - 1
+            async(function () {
+                if (value == 2 && conference.id == 'third') {
+                    this.got.unlatch()
+                    this.joined.wait(async())
+                }
+            }, function () {
+                return value - 1
+            })
         }),
         government: cadence(function (async, conference) {
             if (conference.government.promise == '1/0') {
@@ -63,7 +73,17 @@ module.exports = function (assert, reduced) {
             }
         }),
         messages: cadence(function (async, conference, reduction) {
-            if (conference.id == 'third') {
+            if (conference.id == 'third' && reduction.request == 2) {
+                assert(reduction.arrayed.sort(function (a, b) { return Monotonic.compare(a.promise, b.promise) }), [{
+                    promise: '1/0', id: 'first', value: 1
+                }, {
+                    promise: '2/0', id: 'second', value: 1
+                }, {
+                    promise: '4/0', id: 'third', value: 1
+                }, {
+                    promise: '7/0', id: 'fourth', value: 1
+                }], 'reduced responses 1')
+            } else if (conference.id == 'third' && reduction.request == 1) {
                 assert(reduction.request, 1, 'reduced request')
                 assert(reduction.arrayed.sort(function (a, b) { return Monotonic.compare(a.promise, b.promise) }), [{
                     promise: '1/0', id: 'first', value: 0
