@@ -61,6 +61,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Monitor = require('./monitor')
     var Destructible = require('destructible')
     var Vizsla = require('vizsla')
+    var Interlocutor = require('interlocutor')
     var UserAgent = require('./ua')
     var Conduit = require('conduit')
     var Signal = require('signal')
@@ -119,7 +120,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     var chaperon = new Chaperon.Client({
-        ua: new Vizsla(middleware.reactor.middleware),
+        ua: new Vizsla().bind({
+            http: new Interlocutor(middleware.reactor.middleware)
+        }),
         chaperon: program.ultimate.chaperon,
         kibitzer: kibitzer,
         colleague: colleague,
