@@ -21,7 +21,7 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 // band messages to the given Conduit `Caller`.
 
 //
-function Middleware (startedAt, island, kibitzer, colleague) {
+function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /oob', 'outOfBand')
@@ -30,11 +30,13 @@ function Middleware (startedAt, island, kibitzer, colleague) {
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('GET /health', 'health')
+        dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
     this._colleague = colleague
+    this._chaperon = chaperon
 }
 
 // Return an index message.
@@ -91,6 +93,10 @@ Middleware.prototype.health = cadence(function (async) {
         republic: coalesce(this._kibitzer.paxos.republic),
         government: this._kibitzer.paxos.government
     }
+})
+
+Middleware.prototype.recoverable = cadence(function (async) {
+    this._chaperon.action(async())
 })
 
 // Export as constructor.

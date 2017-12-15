@@ -30,7 +30,7 @@ var http = require('http')
 
 var coalesce = require('extant')
 
-function Colleague (ua, kibitzer, island, timeout) {
+function Colleague (ua, kibitzer, island, timeout, chaperon) {
     this._ua = ua
 
     this._Date = Date
@@ -64,7 +64,7 @@ function Colleague (ua, kibitzer, island, timeout) {
 
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
-    var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
+    var middleware = new Middleware(Date.now(), island, this.kibitzer, this, chaperon)
     this._envoy = new Envoy(middleware.reactor.middleware)
 
     this.ready = new Signal
