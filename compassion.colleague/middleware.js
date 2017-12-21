@@ -32,6 +32,7 @@ function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
         dispatcher.dispatch('GET /health', 'health')
         dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
+    this._action = {}
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
@@ -96,7 +97,33 @@ Middleware.prototype.health = cadence(function (async) {
 })
 
 Middleware.prototype.recoverable = cadence(function (async) {
-    this._chaperon.action(async())
+    async(function () {
+        this._recoverable(async())
+    }, function (recoverable) {
+        return [ 200, { 'content-type': 'text/plain' }, recoverable + '\n' ]
+    })
+})
+
+Middleware.prototype._recoverable = cadence(function (async) {
+    async(function () {
+        this._chaperon.action(async())
+    }, function (body) {
+        if (this._action.name == 'recoverable') {
+            return body.name == 'recoverable' ? 'Yes' : 'No'
+        }
+        if (body.name == 'recoverable') {
+            this._action = { name: body.name }
+            return 'Yes'
+        }
+        if (Date.now() - this._action.recordedAt > 60000 * 5) {
+            return 'No'
+        }
+        this._action = {
+            recordedAt: Date.now(),
+            action: body.name
+        }
+        return 'Yes'
+    })
 })
 
 // Export as constructor.

@@ -131,7 +131,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     // Ugly.
-    colleague._chaperon = chaperon
+    colleague._middleware._chaperon = chaperon
 
     destructible.completed.wait(async())
 
