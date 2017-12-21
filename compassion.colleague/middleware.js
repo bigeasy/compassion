@@ -108,7 +108,7 @@ Middleware.prototype._recoverable = cadence(function (async) {
     async(function () {
         this._chaperon.action(async())
     }, function (body) {
-        if (this._action.name == 'recoverable') {
+        if (body.name != 'unstable' && this._action.name == 'recoverable') {
             return body.name == 'recoverable' ? 'Yes' : 'No'
         }
         if (body.name == 'recoverable') {
