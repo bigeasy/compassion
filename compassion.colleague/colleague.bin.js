@@ -96,11 +96,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.addDestructor('shutdown', shuttle, 'close')
 
-    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
-
     var startedAt = Date.now()
 
-    colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
     var monitor = new Monitor
 
     var Chaperon = {
@@ -119,6 +116,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         stableAfter: +(coalesce(program.ultimate.stable, 30) * 1000)
     })
 
+    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
+    colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
+
     var chaperon = new Chaperon.Client({
         ua: new Vizsla().bind({
             http: new Interlocutor(middleware.reactor.middleware)
@@ -129,6 +129,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
         island: program.ultimate.island,
         startedAt: startedAt
     })
+
+    // Ugly.
+    colleague._middleware._chaperon = chaperon
 
     destructible.completed.wait(async())
 

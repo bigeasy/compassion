@@ -21,7 +21,7 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 // band messages to the given Conduit `Caller`.
 
 //
-function Middleware (startedAt, island, kibitzer, colleague) {
+function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /oob', 'outOfBand')
@@ -30,11 +30,14 @@ function Middleware (startedAt, island, kibitzer, colleague) {
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('GET /health', 'health')
+        dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
+    this._action = {}
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
     this._colleague = colleague
+    this._chaperon = chaperon
 }
 
 // Return an index message.
@@ -91,6 +94,36 @@ Middleware.prototype.health = cadence(function (async) {
         republic: coalesce(this._kibitzer.paxos.republic),
         government: this._kibitzer.paxos.government
     }
+})
+
+Middleware.prototype.recoverable = cadence(function (async) {
+    async(function () {
+        this._recoverable(async())
+    }, function (recoverable) {
+        return [ 200, { 'content-type': 'text/plain' }, recoverable + '\n' ]
+    })
+})
+
+Middleware.prototype._recoverable = cadence(function (async) {
+    async(function () {
+        this._chaperon.action(async())
+    }, function (body) {
+        if (body.name != 'unstable' && this._action.name == 'recoverable') {
+            return body.name == 'recoverable' ? 'Yes' : 'No'
+        }
+        if (body.name == 'recoverable') {
+            this._action = { name: body.name }
+            return 'Yes'
+        }
+        if (Date.now() - this._action.recordedAt > 60000 * 5) {
+            return 'No'
+        }
+        this._action = {
+            recordedAt: Date.now(),
+            action: body.name
+        }
+        return 'Yes'
+    })
 })
 
 // Export as constructor.

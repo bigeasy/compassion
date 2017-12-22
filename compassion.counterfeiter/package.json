@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.counterfeiter",
-    "version":              "0.9.2",
+    "version":              "0.10.0",
     "description":
 
       "Simulate Compassion network messages for debugging.",
@@ -22,7 +22,7 @@
     {
                             "abend":                        "1.0.x",
                             "cadence":                      "1.0.x",
-                            "compassion.colleague":         "0.22.x",
+                            "compassion.colleague":         "0.23.x",
                             "compassion.conduit":           "0.16.x",
                             "conduit":                      "0.16.x",
                             "destructible":                 "0.17.x",

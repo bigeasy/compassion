@@ -24,6 +24,19 @@ function Chaperon (options) {
     this.bootstrapped = false
 }
 
+Chaperon.prototype.action = cadence(function (async) {
+    this._fetch = this._ua.fetch(this._session, {
+        url: '/action',
+        post: {
+            island: this._island,
+            republic: coalesce(this._kibitzer.paxos.republic),
+            id: this._kibitzer.paxos.id,
+            startedAt: this._startedAt
+        },
+        nullify: true
+    }, async())
+})
+
 Chaperon.prototype.listen = cadence(function (async) {
     async(function () {
         this._colleague.getProperties(async())
@@ -40,16 +53,7 @@ Chaperon.prototype.listen = cadence(function (async) {
             if (this.destroyed) {
                 return [ loop.break ]
             }
-            this._fetch = this._ua.fetch(this._session, {
-                url: '/action',
-                post: {
-                    island: this._island,
-                    republic: coalesce(this._kibitzer.paxos.republic),
-                    id: this._kibitzer.paxos.id,
-                    startedAt: this._startedAt
-                },
-                nullify: true
-            }, async())
+            this.action(async())
         }, function (action) {
             this._fetch = null
             if (action == null) {
