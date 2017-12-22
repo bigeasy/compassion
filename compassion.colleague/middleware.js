@@ -32,7 +32,7 @@ function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
         dispatcher.dispatch('GET /health', 'health')
         dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
-    this._recoverable = false
+    this._joined = false
     this._startedAt = startedAt
     this._island = island
     this._kibitzer = kibitzer
@@ -111,11 +111,11 @@ Middleware.prototype._recoverable = cadence(function (async) {
         if (body.name == 'unstable') {
             return 'Yes'
         }
-        if (this._recoverable) {
+        if (this._joined) {
             return body.name == 'recoverable' ? 'Yes' : 'No'
         }
         if (body.name == 'recoverable') {
-            this._recoverable = true
+            this._joined = true
             return 'Yes'
         }
         if (Date.now() - this._startedAt > 60000 * 3) {
