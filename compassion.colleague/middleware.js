@@ -105,6 +105,9 @@ Middleware.prototype.recoverable = cadence(function (async) {
 })
 
 Middleware.prototype._recoverable = cadence(function (async) {
+    if (this._unrecoverable) {
+        return 'No'
+    }
     async(function () {
         this._chaperon.action(async())
     }, function (body) {
@@ -112,13 +115,15 @@ Middleware.prototype._recoverable = cadence(function (async) {
             return 'Yes'
         }
         if (this._joined) {
-            return body.name == 'recoverable' ? 'Yes' : 'No'
+            this._unrecoverable = body.name != 'recoverable'
+            return this._unrecoverable ? 'No' : 'Yes'
         }
         if (body.name == 'recoverable') {
             this._joined = true
             return 'Yes'
         }
-        if (Date.now() - this._startedAt > 60000 * 3) {
+        if (Date.now() - this._startedAt > 30000) {
+            this._unrecoverable = true
             return 'No'
         }
         return 'Yes'
