@@ -158,7 +158,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     }, function () {
         destructible.addDestructor('chaperon', chaperon, 'destroy')
         // TODO WHy won't Chaperon die correctly?
-        chaperon.listen(destructible.monitor('chaperon'))
+        chaperon.listen(destructible.rescue('chaperon'))
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()
