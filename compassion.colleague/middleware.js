@@ -24,8 +24,6 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('POST /oob', 'outOfBand')
-        dispatcher.dispatch('POST /socket', 'socket')
         dispatcher.dispatch('POST /kibitz', 'kibitz')
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
