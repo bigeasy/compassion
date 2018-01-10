@@ -7,8 +7,6 @@ if ! [ -e "$node_modules/proof" ]; then
     exit 1
 fi
 
-PATH="$PATH:$node_modules/.bin"
-
 set -e
 
 echo ""
@@ -21,7 +19,7 @@ if [[ "$CI" = "true" ]]; then
   echo ""
   echo "running with coverage"
   t/cover
-  node_modules/.bin/istanbul report --format text
+  istanbul report --format text
 fi
 
 echo ""
