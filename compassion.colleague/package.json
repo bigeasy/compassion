@@ -16,7 +16,7 @@
     "repository":
     {
                             "type": "git",
-                            "url": "http://github.com/bigeasy/compassion.git"
+                            "url": "bigeasy/compassion"
     },
     "dependencies":
     {
