@@ -10,7 +10,7 @@ function prove (async, assert) {
 
     var example = path.join(__dirname, 'fixtures/example.js')
 
-    var conduit, chaperon, mingle
+    var conduit, mingle
     async(function () {
         var Conduit = require('compassion.conduit/conduit.bin')
         conduit = Conduit({ bind: '127.0.0.1:8808' }, abend)

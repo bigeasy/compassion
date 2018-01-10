@@ -57,7 +57,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
 
     var Colleague = require('./colleague')
-    var Chaperon = require('./chaperon')
     var Monitor = require('./monitor')
     var Destructible = require('destructible')
     var Vizsla = require('vizsla')
@@ -100,38 +99,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var monitor = new Monitor
 
-    var Chaperon = {
-        Middleware: require('chaperon/chaperon'),
-        Client: require('./chaperon'),
-        Colleagues: require('chaperon/colleagues')
-    }
-
-    var colleagues = new Chaperon.Colleagues({
-        ua: new Vizsla,
-        mingle: coalesce(program.ultimate.mingle, [ program.ultimate.conduit ])
-    })
-
-    var middleware = new Chaperon.Middleware({
-        colleagues: colleagues,
-        stableAfter: +(coalesce(program.ultimate.stable, 30) * 1000)
-    })
-
     var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
     colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
-
-    var chaperon = new Chaperon.Client({
-        ua: new Vizsla().bind({
-            http: new Interlocutor(middleware.reactor.middleware)
-        }),
-        chaperon: program.ultimate.chaperon,
-        kibitzer: kibitzer,
-        colleague: colleague,
-        island: program.ultimate.island,
-        startedAt: startedAt
-    })
-
-    // Ugly.
-    colleague._middleware._chaperon = chaperon
 
     destructible.completed.wait(async())
 
@@ -155,10 +124,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         destructible.addDestructor('conduit', conduit, 'destroy')
         conduit.listen(null, destructible.monitor('conduit'))
         Signal.first(conduit.ready, destructible.completed, async())
-    }, function () {
-        destructible.addDestructor('chaperon', chaperon, 'destroy')
-        // TODO WHy won't Chaperon die correctly?
-        chaperon.listen(destructible.rescue('chaperon'))
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()
