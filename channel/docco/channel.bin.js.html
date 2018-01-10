@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>channel.bin.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="channel.bin.js.html">
+                  channel.bin.js
+                </a>
+
+
+                <a class="source" href="channel.js.html">
+                  channel.js
+                </a>
+
+
+                <a class="source" href="merger.js.html">
+                  merger.js
+                </a>
+
+
+                <a class="source" href="reader.js.html">
+                  reader.js
+                </a>
+
+
+                <a class="source" href="recorder.js.html">
+                  recorder.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>channel.bin.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-meta">#!/usr/bin/env node</span>
+
+<span class="hljs-comment">/*
+    ___ usage ___ en_US ___
+    compassion channel &lt;child options&gt;
+
+    options:
+
+        -l, --log &lt;filename|-&gt;
+            file to read
+
+        -I, --island &lt;string&gt;
+            name of the island
+
+        -i, --id &lt;string&gt;
+            colleague id
+
+        -p, --ping &lt;integer&gt;
+            milliseconds between keep alive pings (defualt 250)
+
+        -t, --timeout &lt;integer&gt;
+            milliseconds before a participant is considered unreachable (defualt 1000)
+
+        --help
+            display help message
+
+    ___ $ ___ en_US ___
+
+        bind is required:
+            the `--bind` argument is a required argument
+
+        name is required:
+            the `--name` argument is a required argument
+    ___ . ___
+
+ */</span>
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'arguable'</span>)(<span class="hljs-built_in">module</span>, <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, program</span>) </span>{
+    <span class="hljs-keyword">var</span> Shuttle = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prolific.shuttle'</span>)
+    <span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+    <span class="hljs-keyword">var</span> Channel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./channel'</span>)
+    <span class="hljs-keyword">var</span> Merger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./merger'</span>)
+    <span class="hljs-keyword">var</span> Staccato = <span class="hljs-built_in">require</span>(<span class="hljs-string">'staccato'</span>)
+    <span class="hljs-keyword">var</span> Recorder = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./recorder'</span>)
+    <span class="hljs-keyword">var</span> byline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'byline'</span>)
+
+    <span class="hljs-keyword">var</span> Conduit = <span class="hljs-built_in">require</span>(<span class="hljs-string">'conduit'</span>)
+
+    <span class="hljs-keyword">var</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'prolific.logger'</span>).createLogger(<span class="hljs-string">'compassion.channel'</span>)
+
+    <span class="hljs-keyword">var</span> shuttle = Shuttle.shuttle(program, logger)
+    <span class="hljs-keyword">var</span> Monitor = <span class="hljs-built_in">require</span>(<span class="hljs-string">'compassion.colleague/monitor'</span>)
+    <span class="hljs-keyword">var</span> Kibitzer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kibitz'</span>)
+    <span class="hljs-keyword">var</span> coalesce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extant'</span>)
+    <span class="hljs-keyword">var</span> Destructible = <span class="hljs-built_in">require</span>(<span class="hljs-string">'destructible'</span>)
+    <span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+
+    <span class="hljs-keyword">var</span> Reader = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./reader'</span>)
+
+    program.helpIf(program.ultimate.help)
+
+    <span class="hljs-keyword">var</span> stream = program.ultimate.log == <span class="hljs-literal">null</span>
+               ? program.stdin
+               : fs.createReadStream(program.ultimate.log)
+
+    <span class="hljs-keyword">var</span> kibitzer = <span class="hljs-keyword">new</span> Kibitzer({
+        <span class="hljs-attr">id</span>: program.ultimate.id,
+        <span class="hljs-attr">ping</span>: coalesce(program.ultimate.ping, <span class="hljs-number">1000</span>),
+        <span class="hljs-attr">timeout</span>: coalesce(program.ultimate.timeout, <span class="hljs-number">5000</span>)
+    })
+
+    <span class="hljs-keyword">var</span> channel = <span class="hljs-keyword">new</span> Channel(kibitzer)
+    <span class="hljs-keyword">var</span> monitor = <span class="hljs-keyword">new</span> Monitor
+
+    <span class="hljs-keyword">var</span> merger = <span class="hljs-keyword">new</span> Merger(kibitzer, channel)
+
+    kibitzer.played.shifter().pump(<span class="hljs-keyword">new</span> Recorder(<span class="hljs-string">'kibitz'</span>, logger, merger.play), <span class="hljs-string">'push'</span>)
+    kibitzer.paxos.outbox.shifter().pump(<span class="hljs-keyword">new</span> Recorder(<span class="hljs-string">'paxos'</span>, logger, merger.play), <span class="hljs-string">'push'</span>)
+    kibitzer.islander.outbox.shifter().pump(<span class="hljs-keyword">new</span> Recorder(<span class="hljs-string">'islander'</span>, logger, merger.play), <span class="hljs-string">'push'</span>)
+
+    <span class="hljs-keyword">var</span> destructible = <span class="hljs-keyword">new</span> Destructible(<span class="hljs-string">'channel.bin'</span>)
+
+    program.on(<span class="hljs-string">'shutdown'</span>, destructible.destroy.bind(destructible))
+
+    destructible.addDestructor(<span class="hljs-string">'shuttle'</span>, shuttle, <span class="hljs-string">'close'</span>)
+
+    <span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
+
+    destructible.completed.wait(<span class="hljs-keyword">async</span>())
+
+    <span class="hljs-keyword">var</span> Descendent = <span class="hljs-built_in">require</span>(<span class="hljs-string">'descendent'</span>)
+    <span class="hljs-keyword">var</span> descendent = <span class="hljs-keyword">new</span> Descendent(program)
+
+    destructible.addDestructor(<span class="hljs-string">'descendent'</span>, descendent, <span class="hljs-string">'decrement'</span>)
+
+    <span class="hljs-keyword">async</span>([<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        destructible.destroy()
+    }], <span class="hljs-function"><span class="hljs-keyword">function</span>  (<span class="hljs-params"></span>) </span>{
+        destructible.addDestructor(<span class="hljs-string">'monitor'</span>, monitor, <span class="hljs-string">'destroy'</span>)
+        cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async</span>) </span>{
+            <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                monitor.run(program, descendent, <span class="hljs-keyword">async</span>())
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">exitCode, signal</span>) </span>{
+                logger.info(<span class="hljs-string">'exited'</span>, { <span class="hljs-attr">exitCode</span>: exitCode, <span class="hljs-attr">signal</span>: signal })
+            })
+        })(destructible.monitor(<span class="hljs-string">'monitor'</span>))
+        Signal.first(monitor.ready, destructible.completed, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        destructible.addDestructor(<span class="hljs-string">'channel'</span>, channel, <span class="hljs-string">'destroy'</span>)
+        setImmediate(<span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">var</span> conduit = <span class="hljs-keyword">new</span> Conduit(monitor.child.stdio[<span class="hljs-number">3</span>], monitor.child.stdio[<span class="hljs-number">3</span>], channel)
+        destructible.addDestructor(<span class="hljs-string">'conduit'</span>, conduit, <span class="hljs-string">'destroy'</span>)
+        destructible.addDestructor(<span class="hljs-string">'write'</span>, channel.write, <span class="hljs-string">'push'</span>)
+        conduit.listen(<span class="hljs-literal">null</span>, destructible.monitor(<span class="hljs-string">'conduit'</span>))
+        Signal.first(conduit.ready, destructible.completed, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">var</span> reader = <span class="hljs-keyword">new</span> Reader
+        destructible.addDestructor(<span class="hljs-string">'reader'</span>, reader, <span class="hljs-string">'destroy'</span>)
+        reader.read(stream, merger.replay, destructible.rescue(<span class="hljs-string">'readable'</span>))
+        Signal.first(reader.ready, destructible.completed, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        destructible.addDestructor(<span class="hljs-string">'merger'</span>, merger, <span class="hljs-string">'destroy'</span>)
+        merger.merge(destructible.monitor(<span class="hljs-string">'merger'</span>))
+        Signal.first(merger.ready, destructible.completed, <span class="hljs-keyword">async</span>())
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        logger.info(<span class="hljs-string">'started'</span>, { <span class="hljs-attr">parameters</span>: program.utlimate, <span class="hljs-attr">argv</span>: program.argv })
+        program.ready.unlatch()
+        destructible.completed.wait(<span class="hljs-keyword">async</span>())
+    })
+}))
+
+</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>

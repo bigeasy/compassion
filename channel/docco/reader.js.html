@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>reader.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+
+
+                <a class="source" href="channel.bin.js.html">
+                  channel.bin.js
+                </a>
+
+
+                <a class="source" href="channel.js.html">
+                  channel.js
+                </a>
+
+
+                <a class="source" href="merger.js.html">
+                  merger.js
+                </a>
+
+
+                <a class="source" href="reader.js.html">
+                  reader.js
+                </a>
+
+
+                <a class="source" href="recorder.js.html">
+                  recorder.js
+                </a>
+
+            </div>
+          </div>
+        </li>
+      </ul>
+
+    <ul class="sections">
+
+          <li id="title">
+              <div class="annotation">
+                  <h1>reader.js</h1>
+              </div>
+          </li>
+
+
+
+        <li id="section-1">
+            <div class="annotation">
+
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+
+            </div>
+
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Destructible = <span class="hljs-built_in">require</span>(<span class="hljs-string">'destructible'</span>)
+<span class="hljs-keyword">var</span> cadence = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cadence'</span>)
+<span class="hljs-keyword">var</span> Signal = <span class="hljs-built_in">require</span>(<span class="hljs-string">'signal'</span>)
+<span class="hljs-keyword">var</span> byline = <span class="hljs-built_in">require</span>(<span class="hljs-string">'byline'</span>)
+<span class="hljs-keyword">var</span> Staccato = <span class="hljs-built_in">require</span>(<span class="hljs-string">'staccato'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Reader</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>._destructible = <span class="hljs-keyword">new</span> Destructible(<span class="hljs-string">'reader'</span>)
+    <span class="hljs-keyword">this</span>.ready = <span class="hljs-keyword">new</span> Signal
+}
+
+Reader.prototype.read = cadence(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">async, stream, queue</span>) </span>{
+    <span class="hljs-keyword">var</span> readable = <span class="hljs-keyword">new</span> Staccato.Readable(byline(stream))
+    <span class="hljs-keyword">this</span>._destructible.addDestructor(<span class="hljs-string">'readable'</span>, readable, <span class="hljs-string">'destroy'</span>)
+    <span class="hljs-keyword">var</span> loop = <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        readable.read(<span class="hljs-keyword">async</span>())
+        <span class="hljs-keyword">this</span>.ready.unlatch()
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">line</span>) </span>{
+        <span class="hljs-keyword">async</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            queue.enqueue(line &amp;&amp; <span class="hljs-built_in">JSON</span>.parse(line.toString()), <span class="hljs-keyword">async</span>())
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">if</span> (line == <span class="hljs-literal">null</span>) {
+                <span class="hljs-keyword">return</span> [ loop.break ]
+            }
+        })
+    })()
+})
+
+Reader.prototype.destroy = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>._destructible.destroy()
+}
+
+<span class="hljs-built_in">module</span>.exports = Reader
+
+</pre></div></div>
+
+        </li>
+
+    </ul>
+  </div>
+</body>
+</html>
