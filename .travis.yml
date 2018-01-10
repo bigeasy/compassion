@@ -14,7 +14,7 @@ branches:
     - travis-ci
 
 install:
-  - for dir in compassion.*; do (cd $dir && npm install); done
-  - npm install
-  - npm install istanbul coveralls
+  - for dir in compassion.*; do (cd $dir && yarn install --no-lockfile); done
+  - yarn install --no-lockfile
+  - yarn global add istanbul coveralls
   - git checkout .
