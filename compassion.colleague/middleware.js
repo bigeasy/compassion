@@ -94,39 +94,5 @@ Middleware.prototype.health = cadence(function (async) {
     }
 })
 
-Middleware.prototype.recoverable = cadence(function (async) {
-    async(function () {
-        this._recoverable(async())
-    }, function (recoverable) {
-        return [ 200, { 'content-type': 'text/plain' }, recoverable + '\n' ]
-    })
-})
-
-Middleware.prototype._recoverable = cadence(function (async) {
-    if (this._unrecoverable) {
-        return 'No'
-    }
-    async(function () {
-        this._chaperon.action(async())
-    }, function (body) {
-        if (body.name == 'unstable') {
-            return 'Yes'
-        }
-        if (this._joined) {
-            this._unrecoverable = body.name != 'recoverable'
-            return this._unrecoverable ? 'No' : 'Yes'
-        }
-        if (body.name == 'recoverable') {
-            this._joined = true
-            return 'Yes'
-        }
-        if (Date.now() - this._startedAt > 30000) {
-            this._unrecoverable = true
-            return 'No'
-        }
-        return 'Yes'
-    })
-})
-
 // Export as constructor.
 module.exports = Middleware
