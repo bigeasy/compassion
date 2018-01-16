@@ -42,8 +42,8 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     case 'naturalized':
         // this._kibitzer.naturalize()
         break
-    case 'broadcast':
     case 'reduce':
+    case 'broadcast':
         // this._channel._kibitzer.publish(envelope)
         break
     default: // (pipe, boundary, record, retry)
