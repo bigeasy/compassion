@@ -28,6 +28,7 @@ function Middleware (startedAt, island, kibitzer, colleague) {
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /join', 'join')
         dispatcher.dispatch('GET /health', 'health')
         dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
@@ -57,6 +58,17 @@ Middleware.prototype.bootstrap = cadence(function (async, request) {
     this._decided = true
     async(function () {
         this._colleague.bootstrap(request.body.republic, request.body.url.self, async())
+    }, function () {
+        return 200
+    })
+})
+
+Middleware.prototype.join = cadence(function (async, request) {
+    this._alreadyDecided()
+    this._decided = true
+    async(function () {
+        var body = request.body
+        this._colleague.join(body.republic, body.url.leader, body.url.self, async())
     }, function () {
         return 200
     })
