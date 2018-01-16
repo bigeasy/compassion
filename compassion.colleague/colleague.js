@@ -30,7 +30,7 @@ var http = require('http')
 
 var coalesce = require('extant')
 
-function Colleague (ua, kibitzer, island, timeout, chaperon) {
+function Colleague (ua, kibitzer, island, timeout) {
     this._ua = ua
 
     this._Date = Date
@@ -64,7 +64,7 @@ function Colleague (ua, kibitzer, island, timeout, chaperon) {
 
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
-    var middleware = this._middleware = new Middleware(Date.now(), island, this.kibitzer, this, chaperon)
+    var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
     this._envoy = new Envoy(middleware.reactor.middleware)
 
     this.ready = new Signal
@@ -135,6 +135,10 @@ Colleague.prototype.listen = cadence(function (async, host, port) {
     async([function () {
         this._destructible.destroy()
     }], function () {
+        this.getProperties(async())
+    }, function (properties) {
+        this.properties = properties
+    }, function () {
         var ready = new Signal
         this._startEnvoy(ready, host, port, this._destructible.monitor('envoy'))
         // Remove the import of finalist, or otherwise add an exception here,
@@ -186,21 +190,16 @@ Colleague.prototype.getProperties = cadence(function (async) {
 
 Colleague.prototype.bootstrap = cadence(function (async, republic, url) {
     require('assert')(republic != null)
-    async(function () {
-        this.getProperties(async())
-    }, function (properties) {
-        properties.url = url
-        this.kibitzer.bootstrap(republic, properties)
-    })
+    this.properties.url = url
+    this.kibitzer.bootstrap(republic, this.properties)
 })
 
 // TODO Using Abend! instead of Destructible.
+// Why not just wait?
 Colleague.prototype.join = cadence(function (async, republic, leader, url) {
     async(function () {
-        this.getProperties(async())
-    }, function (properties) {
-        properties.url = url
-        this.kibitzer.join(republic, { url: leader }, properties, require('abend'))
+        this.properties.url = url
+        this.kibitzer.join(republic, { url: leader }, this.properties, require('abend'))
     })
 })
 

@@ -115,15 +115,15 @@ require('arguable')(module, require('cadence')(function (async, program) {
         // necessary?
         setImmediate(async())
     }, function () {
-        var parsed = url.parse(program.ultimate.conduit)
-        destructible.addDestructor('colleague', colleague, 'destroy')
-        colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
-        Signal.first(colleague.ready, destructible.completed, async())
-    }, function () {
         var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
         destructible.addDestructor('conduit', conduit, 'destroy')
         conduit.listen(null, destructible.monitor('conduit'))
         Signal.first(conduit.ready, destructible.completed, async())
+    }, function () {
+        var parsed = url.parse(program.ultimate.conduit)
+        destructible.addDestructor('colleague', colleague, 'destroy')
+        colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
+        Signal.first(colleague.ready, destructible.completed, async())
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()

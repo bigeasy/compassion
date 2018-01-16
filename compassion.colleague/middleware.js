@@ -21,12 +21,13 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 // band messages to the given Conduit `Caller`.
 
 //
-function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
+function Middleware (startedAt, island, kibitzer, colleague) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /kibitz', 'kibitz')
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /request', 'request')
+        dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('GET /health', 'health')
         dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
@@ -35,7 +36,7 @@ function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
     this._island = island
     this._kibitzer = kibitzer
     this._colleague = colleague
-    this._chaperon = chaperon
+    this._decided = false
 }
 
 // Return an index message.
@@ -43,6 +44,18 @@ function Middleware (startedAt, island, kibitzer, colleague, chaperon) {
 //
 Middleware.prototype.index = cadence(function (async) {
     return [ 200, { 'content-type': 'text/plain' }, 'Compassion Colleague API\n' ]
+})
+
+Middleware.prototype.bootstrap = cadence(function (async, request) {
+    if (this._decided) {
+        return 401
+    }
+    this._decided = true
+    async(function () {
+        this._colleague.bootstrap(request.body.republic, request.body.url.self, async())
+    }, function () {
+        return 200
+    })
 })
 
 Middleware.prototype.backlog = cadence(function (async, request) {
