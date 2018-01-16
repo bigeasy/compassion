@@ -46,10 +46,14 @@ Middleware.prototype.index = cadence(function (async) {
     return [ 200, { 'content-type': 'text/plain' }, 'Compassion Colleague API\n' ]
 })
 
-Middleware.prototype.bootstrap = cadence(function (async, request) {
+Middleware.prototype._alreadyDecided = function () {
     if (this._decided) {
-        return 401
+        throw 401
     }
+}
+
+Middleware.prototype.bootstrap = cadence(function (async, request) {
+    this._alreadyDecided()
     this._decided = true
     async(function () {
         this._colleague.bootstrap(request.body.republic, request.body.url.self, async())
