@@ -1,6 +1,6 @@
 require('proof')(1, require('cadence')(prove))
 
-function prove (async, assert) {
+function prove (async, okay) {
     var Merger = require('../merger')
-    assert(Merger, 'require')
+    okay(Merger, 'require')
 }
