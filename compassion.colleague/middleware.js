@@ -119,6 +119,7 @@ Middleware.prototype.health = cadence(function (async) {
         island: this._island,
         id: this._kibitzer.paxos.id,
         republic: coalesce(this._kibitzer.paxos.republic),
+        rejoining: coalesce(this._colleague.properties.rejoining),
         government: this._kibitzer.paxos.government
     }
 })

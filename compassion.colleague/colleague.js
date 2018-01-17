@@ -67,6 +67,8 @@ function Colleague (ua, kibitzer, island, timeout) {
     var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
     this._envoy = new Envoy(middleware.reactor.middleware)
 
+    this.properties = {}
+
     this.ready = new Signal
 }
 
