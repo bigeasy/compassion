@@ -6,6 +6,7 @@ function prove (async, okay) {
     var middleware = new Middleware(0, 'island', {
         paxos: { id: 'x', republic: 0, government: { promise: '1/0' } }
     }, {
+        properties: {},
         bootstrap: cadence(function (async, republic, url) {
             okay({
                 republic: republic,
@@ -28,6 +29,7 @@ function prove (async, okay) {
             island: 'island',
             id: 'x',
             republic: 0,
+            rejoining: null,
             government: { promise: '1/0' }
         }, 'health')
         middleware.bootstrap({
