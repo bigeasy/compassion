@@ -21,7 +21,7 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 // band messages to the given Conduit `Caller`.
 
 //
-function Middleware (startedAt, island, kibitzer, colleague) {
+function Middleware (startedAt, island, colleague) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /kibitz', 'kibitz')
@@ -35,7 +35,6 @@ function Middleware (startedAt, island, kibitzer, colleague) {
     this._joined = false
     this._startedAt = startedAt
     this._island = island
-    this._kibitzer = kibitzer
     this._colleague = colleague
     this._decided = false
 }
@@ -106,7 +105,7 @@ Middleware.prototype.request = cadence(function (async, request) {
 //
 Middleware.prototype.kibitz = cadence(function (async, request) {
     logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
-    this._kibitzer.request(request.body, async())
+    this._colleague.kibitzer.request(request.body, async())
 })
 
 // Report on the health and provide general info for bootstrap discovery.
@@ -117,10 +116,11 @@ Middleware.prototype.health = cadence(function (async) {
         dispatcher: this.reactor.turnstile.health,
         startedAt: this._startedAt,
         island: this._island,
-        id: this._kibitzer.paxos.id,
-        republic: coalesce(this._kibitzer.paxos.republic),
+        id: this._colleague.kibitzer.paxos.id,
+        // TODO Just use the republic that is now in every government.
+        republic: coalesce(this._colleague.kibitzer.paxos.republic),
         rejoining: coalesce(this._colleague.properties.rejoining),
-        government: this._kibitzer.paxos.government
+        government: this._colleague.kibitzer.paxos.government
     }
 })
 

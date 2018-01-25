@@ -64,7 +64,7 @@ function Colleague (ua, kibitzer, island, timeout) {
 
     this._destructible.addDestructor('connected', this.connected, 'unlatch')
 
-    var middleware = new Middleware(Date.now(), island, this.kibitzer, this)
+    var middleware = new Middleware(Date.now(), island, this)
     this._envoy = new Envoy(middleware.reactor.middleware)
 
     this.properties = {}

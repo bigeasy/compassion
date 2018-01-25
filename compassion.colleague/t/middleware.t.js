@@ -4,8 +4,9 @@ function prove (async, okay) {
     var cadence = require('cadence')
     var Middleware = require('../middleware')
     var middleware = new Middleware(0, 'island', {
-        paxos: { id: 'x', republic: 0, government: { promise: '1/0' } }
-    }, {
+        kibitzer: {
+            paxos: { id: 'x', republic: 0, government: { promise: '1/0' } }
+        },
         properties: {},
         bootstrap: cadence(function (async, republic, url) {
             okay({
@@ -50,7 +51,7 @@ function prove (async, okay) {
     }, function (error) {
         okay(error, 401, 'already decided')
     }], function () {
-        middleware = new Middleware(0, 'island', {}, {
+        middleware = new Middleware(0, 'island', {
             join: cadence(function (async, republic, leader, url) {
                 okay({
                     republic: republic,
