@@ -1,32 +1,28 @@
-require('proof')(2, require('cadence')(prove))
+require('proof')(1, require('cadence')(prove))
 
-function prove (async, assert) {
-    var Monitor = require('../monitor')
+function prove (async, okay) {
     var Descendent = require('descendent')
+    var Destructible = require('destructible')
     var descendent = new Descendent(process)
+    var monitor = require('../monitor')
+    var destructible = new Destructible('monitor')
+    var path = require('path')
+    destructible.completed.wait(async())
     async(function () {
-        var monitor = new Monitor
-        async(function () {
-            monitor.ready.wait(async())
-        }, function () {
-            assert(monitor.destroyed, 'canceled')
-        })
-        monitor.destroy()
+        destructible.monitor('monitor', monitor,  {
+            argv: [ 'node', path.join(__dirname, 'child.js') ],
+            env: JSON.parse(JSON.stringify(process.env))
+        }, descendent, async())
     }, function () {
-        var monitor = new Monitor
-        var path = require('path')
-        async(function () {
-            monitor.run({
-                argv: [ 'node', path.join(__dirname, 'child.js') ],
-                env: JSON.parse(JSON.stringify(process.env))
-            }, descendent, async())
-        }, function () {
-            assert(monitor.destroyed, 'ran')
-        })
-        async(function () {
-            monitor.ready.wait(async())
-        }, function () {
-            monitor.destroy()
-        })
+        destructible.completed.wait(async())
+        destructible.destroy()
+    }, function (exitCode, signal) {
+        okay({
+            exitCode: exitCode,
+            signal: signal
+        }, {
+            exitCode: null,
+            signal: 'SIGTERM'
+        }, 'ran')
     })
 }

@@ -57,7 +57,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
 
     var Colleague = require('./colleague')
-    var Monitor = require('./monitor')
+    var monitor = require('./monitor')
     var Destructible = require('destructible')
     var Vizsla = require('vizsla')
     var Interlocutor = require('interlocutor')
@@ -97,8 +97,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var startedAt = Date.now()
 
-    var monitor = new Monitor
-
     var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
     colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
 
@@ -107,15 +105,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async([function () {
         destructible.destroy()
     }], function  () {
-        destructible.addDestructor('monitor', monitor, 'destroy')
-        monitor.run(program, descendent, destructible.monitor('monitor'))
-        Signal.first(monitor.ready, destructible.completed, async())
-    }, function () {
-        // Gives an `ENOENT` time to report and cancel the series. Still
-        // necessary?
-        setImmediate(async())
-    }, function () {
-        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], colleague)
+        destructible.monitor('monitor', monitor, program, descendent, async())
+    }, function (child) {
+        var conduit = new Conduit(child.stdio[3], child.stdio[3], colleague)
         destructible.addDestructor('conduit', conduit, 'destroy')
         conduit.listen(null, destructible.monitor('conduit'))
         Signal.first(conduit.ready, destructible.completed, async())
