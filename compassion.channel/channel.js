@@ -39,8 +39,8 @@ Channel.prototype._enqueue = cadence(function (async, envelope) {
     }
     this.chatter.push(envelope)
     switch (envelope.method) {
-    case 'naturalized':
-        // this._kibitzer.naturalize()
+    case 'acclimated':
+        // this._kibitzer.acclimated()
         break
     case 'reduce':
     case 'broadcast':

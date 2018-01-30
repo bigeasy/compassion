@@ -86,6 +86,7 @@ module.exports = function (Colleague, Conduit) {
     })
 
     Counterfeiter.prototype.join = cadence(function (async, options) {
+        require('assert')(options.republic != null)
         async(function () {
             this._run(options, async())
         }, function (colleague) {

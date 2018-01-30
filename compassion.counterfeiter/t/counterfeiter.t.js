@@ -36,11 +36,12 @@ function prove (async, assert) {
             return envelope.promise == '1/0'
         }, async())
     }, function (entry) {
+            console.log(counterfeiter.kibitzers['first'].paxos.government)
         counterfeiter.join({
             conference: createConference(),
             id: 'second',
             leader: 'first',
-            republic: counterfeiter.kibitzers['first'].paxos.republic
+            republic: counterfeiter.kibitzers['first'].paxos.government.republic
         }, async())
     }, function () {
         counterfeiter.events['second'].join(function (envelope) {
@@ -51,7 +52,7 @@ function prove (async, assert) {
             conference: createConference(),
             id: 'third',
             leader: 'first',
-            republic: counterfeiter.kibitzers['first'].paxos.republic
+            republic: counterfeiter.kibitzers['first'].paxos.government.republic
         }, async())
     }, function () {
         counterfeiter.events['first'].join(function (envelope) {
@@ -66,7 +67,7 @@ function prove (async, assert) {
             conference: fourth = createConference(),
             id: 'fourth',
             leader: 'first',
-            republic: counterfeiter.kibitzers['first'].paxos.republic
+            republic: counterfeiter.kibitzers['first'].paxos.government.republic
         }, async())
     }, function () {
         counterfeiter.events['first'].join(function (envelope) {
@@ -100,7 +101,6 @@ function prove (async, assert) {
     }, function () {
         setTimeout(async(), 1000)
     }, function () {
-        console.log('here')
         var writable = fs.createWriteStream(path.resolve(__dirname, 'counterfeiter.first.jsons'))
         var shifter = counterfeiter.loggers['first'].shifter()
         var loop = async(function () {
