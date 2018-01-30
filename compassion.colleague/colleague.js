@@ -101,8 +101,8 @@ Colleague.prototype._read = cadence(function (async, envelope) {
     case 'replay':
         // For these cases, it was enough to record them.
         break
-    case 'naturalized':
-        this.kibitzer.naturalize()
+    case 'acclimated':
+        this.kibitzer.acclimate()
         break
     case 'broadcast':
     case 'reduce':
@@ -200,6 +200,7 @@ Colleague.prototype.bootstrap = cadence(function (async, republic, url) {
 // Why not just wait?
 Colleague.prototype.join = cadence(function (async, republic, leader, url) {
     async(function () {
+        require('assert')(republic != null)
         this.properties.url = url
         this.kibitzer.join(republic, { url: leader }, this.properties, require('abend'))
     })
