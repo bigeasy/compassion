@@ -48,7 +48,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var logger = require('prolific.logger').createLogger('compassion.channel')
 
     var shuttle = Shuttle.shuttle(program, logger)
-    var Monitor = require('compassion.colleague/monitor')
+    var monitor = require('compassion.colleague/monitor')
     var Kibitzer = require('kibitz')
     var coalesce = require('extant')
     var Destructible = require('destructible')
@@ -69,7 +69,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     })
 
     var channel = new Channel(kibitzer)
-    var monitor = new Monitor
 
     var merger = new Merger(kibitzer, channel)
 
@@ -95,20 +94,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async([function () {
         destructible.destroy()
     }], function  () {
-        destructible.addDestructor('monitor', monitor, 'destroy')
-        cadence(function (async) {
-            async(function () {
-                monitor.run(program, descendent, async())
-            }, function (exitCode, signal) {
-                logger.info('exited', { exitCode: exitCode, signal: signal })
-            })
-        })(destructible.monitor('monitor'))
-        Signal.first(monitor.ready, destructible.completed, async())
-    }, function () {
+        destructible.monitor('monitor', monitor, program, descendent, async())
+    }, function (child) {
         destructible.addDestructor('channel', channel, 'destroy')
-        setImmediate(async())
-    }, function () {
-        var conduit = new Conduit(monitor.child.stdio[3], monitor.child.stdio[3], channel)
+        var conduit = new Conduit(child.stdio[3], child.stdio[3], channel)
         destructible.addDestructor('conduit', conduit, 'destroy')
         destructible.addDestructor('write', channel.write, 'push')
         conduit.listen(null, destructible.monitor('conduit'))
