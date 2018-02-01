@@ -1,4 +1,4 @@
-require('proof')(7, require('cadence')(prove))
+require('proof')(9, require('cadence')(prove))
 
 function prove (async, okay) {
     var cadence = require('cadence')
@@ -63,6 +63,8 @@ function prove (async, okay) {
                     url: 'http://127.0.0.1:8486/2/'
                 }, 'join')
             })
+        }, function () {
+            okay(true, 'terminated')
         })
         middleware.join({
             body: {
@@ -73,6 +75,9 @@ function prove (async, okay) {
                 republic: 2
             }
         }, async())
+    }, function (response) {
+        okay(response, 200, 'joined')
+        middleware.terminate(async())
     }, function (response) {
         okay(response, 200, 'joined')
     })

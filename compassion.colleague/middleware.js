@@ -21,7 +21,7 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 // band messages to the given Conduit `Caller`.
 
 //
-function Middleware (startedAt, island, colleague) {
+function Middleware (startedAt, island, colleague, terminator) {
     this.reactor  = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /kibitz', 'kibitz')
@@ -29,6 +29,7 @@ function Middleware (startedAt, island, colleague) {
         dispatcher.dispatch('POST /request', 'request')
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /join', 'join')
+        dispatcher.dispatch('GET /terminate', 'terminate')
         dispatcher.dispatch('GET /health', 'health')
         dispatcher.dispatch('GET /recoverable', 'recoverable')
     })
@@ -37,6 +38,7 @@ function Middleware (startedAt, island, colleague) {
     this._island = island
     this._colleague = colleague
     this._decided = false
+    this._terminator = terminator
 }
 
 // Return an index message.
@@ -106,6 +108,11 @@ Middleware.prototype.request = cadence(function (async, request) {
 Middleware.prototype.kibitz = cadence(function (async, request) {
     logger.info('recorded', { source: 'middleware', method: request.body.method, url: request.url, $body: request.body })
     this._colleague.kibitzer.request(request.body, async())
+})
+
+Middleware.prototype.terminate = cadence(function (async, request) {
+    this._terminator.call()
+    return 200
 })
 
 // Report on the health and provide general info for bootstrap discovery.
