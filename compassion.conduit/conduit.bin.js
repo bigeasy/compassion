@@ -33,7 +33,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Operation = require('operation/variadic')
 
-    var Middleware = require('./middleware')
     var Shuttle = require('prolific.shuttle')
 
     var Destructible = require('destructible')
