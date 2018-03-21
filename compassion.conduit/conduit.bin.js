@@ -36,7 +36,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
 
     var Destructible = require('destructible')
-
     var destructible = new Destructible(3000, 'compassion.conduit')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
