@@ -21,20 +21,20 @@
     "dependencies":
     {
                             "abend":                        "1.0.x",
-                            "arguable":                     "6.1.x",
-                            "assignation":                  "0.12.x",
+                            "arguable":                     "6.2.x",
+                            "assignation":                  "0.14.x",
                             "cadence":                      "1.0.x",
-                            "connect":                      "3.6.5",
+                            "connect":                      "3.6.6",
                             "delta":                        "1.2.x",
-                            "destructible":                 "0.17.x",
+                            "destructible":                 "0.27.x",
                             "downgrader":                   "0.1.x",
-                            "happenstance":                 "5.0.x",
+                            "happenstance":                 "10.0.x",
                             "operation":                    "1.6.x",
                             "prolific.logger":              "5.0.x",
                             "prolific.shuttle":             "17.0.x",
                             "reactor":                      "10.1.x",
                             "server-destroy":               "1.0.1",
-                            "signal":                       "3.2.x"
+                            "signal":                       "3.4.x"
     },
     "devDependencies":
     {

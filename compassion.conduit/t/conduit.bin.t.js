@@ -5,6 +5,7 @@ function prove (async, assert) {
     var program
     async(function () {
         program = bin([ '--bind', '127.0.0.1:8888' ], async())
+        return
         async(function () {
             program.ready.wait(async())
         }, function () {
