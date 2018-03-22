@@ -57,9 +57,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     destructible.completed.wait(async())
 
-    async([function () {
-        destructible.destroy()
-    }], function () {
+    async(function () {
         destructible.monitor('rendezvous', Rendezvous, async())
     }, function (rendezvous) {
         var downgrader = new Downgrader
@@ -86,5 +84,6 @@ require('arguable')(module, require('cadence')(function (async, program) {
         })
     }, function () {
         logger.info('started', { paraemters: program.ultimate })
+        program.ready.unlatch()
     })
 }))
