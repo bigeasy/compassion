@@ -23,73 +23,26 @@ var Multiplexer = require('conduit/multiplexer')
 var Envoy = require('assignation/envoy')
 var Middleware = require('./middleware')
 
-var UserAgent = require('./ua')
-var Vizsla = require('vizsla')
-
 var http = require('http')
 
 var coalesce = require('extant')
 
-function Colleague (ua, kibitzer, island, timeout) {
-    this._ua = ua
-
+function Colleague (client, caller, kibitzer, island, timeout) {
     this._Date = Date
 
     this.kibitzer = kibitzer
-
-    var procedure = new Procedure(new UserAgent(new Vizsla, +coalesce(timeout, 1000)), 'request')
-
-    kibitzer.read.shifter().pump(procedure.write, 'enqueue')
-    procedure.read.shifter().pump(kibitzer.write, 'enqueue')
-
-    // TODO Not `this._`.
-    this._multiplexer = new Multiplexer({
-        conference: this._caller = new Caller,
-        incoming: this._client = new Client
-    })
-
-    this.read = this._multiplexer.read
-    this.write = this._multiplexer.write
-
-    this._write = this.read
-
-    this.write.shifter().pump(this, '_read')
 
     this.chatter = new Procession
 
     this._destructible = new Destructible(1000, 'colleague')
     this._destructible.markDestroyed(this)
 
-    this.connected = new Signal
-
-    this._destructible.addDestructor('connected', this.connected, 'unlatch')
-
-    var middleware = new Middleware(Date.now(), island, this)
-    this._envoy = new Envoy(middleware.reactor.middleware)
+    this.middleware = new Middleware(Date.now(), island, this).reactor.middleware
 
     this.properties = {}
-
-    this.ready = new Signal
 }
 
-Colleague.prototype._startEnvoy = cadence(function (async, ready, host, port) {
-    var id = this.kibitzer.paxos.id
-    async(function () {
-        var request = http.request({
-            host: host,
-            port: port,
-            headers: Envoy.headers('/' + id, { host: host + ':' + port })
-        })
-        delta(async()).ee(request).on('upgrade')
-        request.end()
-    }, function (request, socket, head) {
-        this._destructible.addDestructor('envoy', this._envoy, 'close')
-        this._envoy.ready.wait(ready, 'unlatch')
-        this._envoy.connect(request, socket, head, async())
-    })
-})
-
-Colleague.prototype._read = cadence(function (async, envelope) {
+Colleague.prototype.read = cadence(function (async, envelope) {
     if (envelope == null || envelope.module == 'conduit/multiplexer') {
         return
     }

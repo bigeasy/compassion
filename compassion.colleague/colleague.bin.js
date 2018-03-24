@@ -57,13 +57,21 @@ require('arguable')(module, require('cadence')(function (async, program) {
     var Shuttle = require('prolific.shuttle')
 
     var Colleague = require('./colleague')
-    var monitor = require('./monitor')
+    var Monitor = require('./monitor')
     var Destructible = require('destructible')
     var Vizsla = require('vizsla')
     var Interlocutor = require('interlocutor')
     var UserAgent = require('./ua')
     var Conduit = require('conduit')
+    var Procedure = require('conduit/procedure')
+    var Caller = require('conduit/caller')
+    var Client = require('conduit/client')
+    var Multiplexer = require('conduit/multiplexer')
     var Signal = require('signal')
+
+    var Envoy = require('assignation/envoy')
+
+    var Pump = require('procession/pump')
 
     var Kibitzer = require('kibitz')
     var Recorder = require('./recorder')
@@ -72,17 +80,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var url = require('url')
 
-    var kibitzer = new Kibitzer({
-        id: program.ultimate.id,
-        ping: coalesce(program.ultimate.ping, 1000),
-        timeout: coalesce(program.ultimate.timeout, 5000)
-    })
-
     var cadence = require('cadence')
-
-    kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
-    kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
-    kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
 
     // program.on('shutdown', colleague.shutdown.bind(colleague))
     var destructible = new Destructible(1000, 'colleague')
@@ -91,31 +89,70 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Descendent = require('descendent')
     var descendent = new Descendent(program)
-    destructible.addDestructor('descendent', descendent, 'decrement')
 
-    destructible.addDestructor('shutdown', shuttle, 'close')
-
-    var startedAt = Date.now()
-
-    var colleague = new Colleague(new Vizsla, kibitzer, program.ultimate.island, program.ultimate['http-timeout'])
-    colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
+    destructible.destruct.wait(shuttle, 'close')
+    destructible.destruct.wait(descendent, 'decrement')
 
     destructible.completed.wait(async())
 
     async([function () {
         destructible.destroy()
     }], function  () {
-        destructible.monitor('monitor', monitor, program, descendent, async())
-    }, function (child) {
-        var conduit = new Conduit(child.stdio[3], child.stdio[3], colleague)
-        destructible.addDestructor('conduit', conduit, 'destroy')
-        conduit.listen(null, destructible.monitor('conduit'))
-        Signal.first(conduit.ready, destructible.completed, async())
-    }, function () {
-        var parsed = url.parse(program.ultimate.conduit)
-        destructible.addDestructor('colleague', colleague, 'destroy')
-        colleague.listen(parsed.hostname, parsed.port, destructible.monitor('colleague'))
-        Signal.first(colleague.ready, destructible.completed, async())
+        async(function () {
+            destructible.monitor('caller', Caller, async())
+            destructible.monitor('client', Client, async())
+        }, function (caller, client) {
+            async(function () {
+                var timeout = +coalesce(program.ultimate['http-timeout'], 1000)
+                destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, timeout), 'request', async())
+            }, function (procedure) {
+                caller.read.shifter().pumpify(procedure.write)
+                procedure.read.shifter().pumpify(caller.write)
+                destructible.monitor('kibitzer', Kibitzer, {
+                    caller: caller,
+                    id: program.ultimate.id,
+                    ping: coalesce(program.ultimate.ping, 1000),
+                    timeout: coalesce(program.ultimate.timeout, 5000)
+                }, async())
+            }, function (kibitzer) {
+                // TODO This is really a mess.
+                new Pump(kibitzer.played.shifter(), new Recorder('kibitz', logger), 'push').pumpify(destructible.monitor('kibitz.logger'))
+                destructible.destruct.wait(function () { kibitzer.played.push(null) })
+                new Pump(kibitzer.paxos.outbox.shifter(), new Recorder('paxos', logger), 'push').pumpify(destructible.monitor('paxos.logger'))
+                destructible.destruct.wait(function () { kibitzer.paxos.outbox.push(null) })
+                new Pump(kibitzer.islander.outbox.shifter(), new Recorder('islander', logger), 'push').pumpify(destructible.monitor('islander.logger'))
+                destructible.destruct.wait(function () { kibitzer.islander.outbox.push(null) })
+                var colleague = new Colleague(client, caller, kibitzer, program.ultimate.island)
+                new Pump(colleague.chatter.shifter(), new Recorder('colleague', logger), 'push').pumpify(destructible.monitor('colleague.logger'))
+                destructible.destruct.wait(function () { colleague.chatter.push(null) })
+                async(function () {
+                    destructible.monitor('multiplexer', Multiplexer, {
+                        conference: caller,
+                        incoming: client
+                    }, async())
+                }, function (multiplexer) {
+                    destructible.destruct.wait(function () {
+                        multiplexer.write.push(null)
+                    })
+                    async(function () {
+                        destructible.monitor('monitor', Monitor, program, descendent, async())
+                    }, function (child) {
+                        destructible.monitor('conduit', Conduit, child.stdio[3], child.stdio[3], multiplexer, async())
+                    })
+                }, function () {
+                    var parsed = url.parse(program.ultimate.conduit)
+                    var request = http.request({
+                        host: parsed.hostname,
+                        port: parsed.port,
+                        headers: Envoy.headers('/' + program.ultimate.id, { host: parsed.hostname + ':' + parsed.port })
+                    })
+                    delta(async()).ee(request).on('upgrade')
+                    request.end()
+                }, function (request, socket, header) {
+                    destructible.monitor([ 'envoy', 1 ], Envoy, colleague.middleware, socket, header, async())
+                })
+            })
+        })
     }, function () {
         logger.info('started', { parameters: program.utlimate, argv: program.argv })
         program.ready.unlatch()

@@ -9,13 +9,25 @@ var Destructible = require('destructible')
 
 var noop = require('nop')
 
-module.exports = cadence(function (async, program, descendent, initializer) {
-    var cookie
+var exit = cadence(function (async, child, destruct) {
+    var cookie = destruct.wait(child, 'kill')
     async([function () {
-        descendent.decrement()
+        destruct.cancel(cookie)
     }], function () {
-        descendent.increment()
+        delta(async()).ee(child).on('exit')
+    }, function (exitCode, signal) {
+        interrupt.assert(exitCode == 0 || signal == 'SIGTERM', 'childExit', {
+            exitCode: coalesce(exitCode),
+            signal: coalesce(signal)
+        })
+    })
+})
 
+module.exports = cadence(function (async, destructible, program, descendent) {
+    var cookie
+    descendent.increment()
+    destructible.destruct.wait(descendent, 'decrement')
+    async(function () {
         var env = JSON.parse(JSON.stringify(program.env))
         env.COMPASSION_COLLEAGUE_FD = 3
         var argv = program.argv.slice()
@@ -26,11 +38,7 @@ module.exports = cadence(function (async, program, descendent, initializer) {
             env: env
         })
 
-        var cookie = initializer.destructor(child, 'kill')
-
-        async([function () {
-            initializer.cancel(cookie)
-        }], function () {
+        async(function () {
             // At shutdown, there may be no one listening to the pipe. The Conduit
             // might get shut down so that it does not have an error handler
             // registered. If there is an error on the pipe and no one is listening
@@ -41,19 +49,15 @@ module.exports = cadence(function (async, program, descendent, initializer) {
             descendent.addChild(child, null)
 
             // Wait for an exit.
-            delta(async()).ee(child).on('exit')
+            exit(child, destructible.destruct, destructible.monitor('child'))
 
             // Give it 30ms to start up, which gives it a chance to ENOENT.
             async(function () {
                 setTimeout(async(), 30)
             }, function () {
-                initializer.ready(null, child)
+                return [ child ]
             })
         }, function (exitCode, signal) {
-            interrupt.assert(exitCode == 0 || signal == 'SIGTERM', 'childExit', {
-                exitCode: coalesce(exitCode),
-                signal: coalesce(signal)
-            })
         })
     })
 })
