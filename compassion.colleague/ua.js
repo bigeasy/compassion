@@ -22,12 +22,16 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
                 'x-kibitz-envelope': JSON.stringify(envelope)
             },
             post: envelope,
-            timeout: this._timeout,
-            gateways: [ nullify(), jsonify({}) ]
+            timeout: 30000, //  this._timeout,
+            gateways: [ /* nullify(), */ jsonify({}) ]
         }, async())
     }, function (body, response) {
+        if (response.okay) {
+            return [ body ]
+        }
+        console.log(response.statusCode)
         logger.info('recorded', { source: 'ua', method: envelope.method, $body: body })
-        return [ body ]
+        return [ null ]
     })
 })
 

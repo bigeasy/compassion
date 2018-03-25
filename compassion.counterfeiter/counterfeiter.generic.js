@@ -1,10 +1,9 @@
 module.exports = function (Colleague, Conduit) {
     var cadence = require('cadence')
     var abend = require('abend')
-    var Destructor = require('destructible')
     var Colleague = require('../compassion.colleague/colleague')
+    var Extracted = require('../compassion.colleague/extracted')
     var Kibitzer = require('kibitz')
-    var Conduit = require('../compassion.conduit/conduit')
     var Vizsla = require('vizsla')
     var Signal = require('signal')
     var Procession = require('procession')
@@ -14,81 +13,107 @@ module.exports = function (Colleague, Conduit) {
 
     var interrupt = require('interrupt').createInterrupter('compassion.counterfeiter')
 
-    function Counterfeiter (address, port) {
+    function Counterfeiter (destructible) {
         this._colleagues = {}
         // TODO Getting silly, just expose Denizen.
         this.events = {}
-        this.kibitzers = {}
         this.loggers = {}
-        this._port = port
-        this._address = address
-        this._destructible = new Destructor(1000, 'counterfeiter')
+        this._instance = 0
+        this._destructibles = {}
+        this._destructible = destructible
         this._destructible.markDestroyed(this, 'destroyed')
+        this._destructible.completed.wait(function (error) {
+            if (error) {
+                console.log(error.stack)
+            }
+        })
+        this._destructible.destruct.wait(function () {
+            console.log('GOT THE KILLING!')
+        })
     }
 
-    Counterfeiter.prototype._run = cadence(function (async, options) {
-        interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        var kibitzer = new Kibitzer({ id: options.id, ping: 1000, timeout: 3000 })
-
-        var colleague = new Colleague(new Vizsla, kibitzer, 'island')
-        this._colleagues[options.id] = colleague
-        this.kibitzers[options.id] = colleague.kibitzer
-        this._destructible.addDestructor([ 'colleague', options.id ], colleague, 'destroy')
-
+    Counterfeiter.prototype._run = cadence(function (async, destructible, options) {
         // Create loggers suitable for replaying.
         var logger = new Procession
 
-        kibitzer.played.shifter().pump(new Recorder('kibitz', logger), 'push')
-        kibitzer.paxos.outbox.shifter().pump(new Recorder('paxos', logger), 'push')
-        kibitzer.islander.outbox.shifter().pump(new Recorder('islander', logger), 'push')
-        colleague.chatter.shifter().pump(new Recorder('colleague', logger), 'push')
+        this._destructibles[options.id] = destructible
 
-        this._destructible.addDestructor([ 'logger', options.id ], logger, 'push')
+        destructible.destruct.wait(function () {
+            console.log('DESTRUCTING!!!', options.id)
+        })
 
         this.loggers[options.id] = logger.shifter()
 
-        var consumed = new Procession()
-
-        this.events[options.id] = consumed.shifter()
-
-        var events = colleague.kibitzer.log.shifter()
-
-        // Connect colleague directly to conference.
-        colleague.read.shifter().pump(options.conference.write, 'enqueue')
-        options.conference.read.shifter().pump(colleague.write, 'enqueue')
-        options.conference.read.shifter().pump(function (comeback) {
-            if (comeback.method == 'consumed') {
-                consumed.push(events.shift())
-            }
-        })
-
-        // Start colleague.
         async(function () {
-            colleague.ready.wait(async())
-            colleague.listen(this._address, this._port, this._destructible.rescue([ 'colleague', options.id ]))
-        }, function () {
-            setImmediate(async())
-        }, function () {
-    //        this.events[options.id] = colleague.kibitzer.log.shifter()
+            destructible.monitor('colleague', Extracted, {
+                id: options.id,
+                ping: 1000,
+                conduit: 'http://127.0.0.1:8888',
+                island: 'island',
+                timeout: 3000,
+                httpTimeout: 1000,
+                recorder: function (name) { return new Recorder(name, logger) }
+            }, async())
+        }, function (multiplexer, colleague) {
+            var consumed = new Procession()
+
+            this.events[options.id] = consumed.shifter()
+
+            var Pump = require('procession/pump')
+            var events = colleague.kibitzer.log.shifter()
+            var shifter = null
+            new Pump(shifter = colleague.kibitzer.log.shifter(), function (entry) {
+                multiplexer.read.push({ method: 'entry', body: entry })
+            }).pumpify(destructible.monitor('entry'))
+            destructible.destruct.wait(shifter, 'destroy')
+            destructible.destruct.wait(function () {
+                multiplexer.read.push(null)
+                multiplexer.write.push(null)
+            })
+
+            // Connect colleague directly to conference.
+            multiplexer.read.shifter().pumpify(options.conference.write)
+
+            /*
+            new Pump(colleague.kibitzer.paxos.log.shifter(), function (envelope) {
+            }).pumpify(destructible.monitor('dump'))
+            */
+
+            new Pump(multiplexer.write.shifter(), colleague, 'read').pumpify(destructible.monitor('colleague'))
+
+            options.conference.read.shifter().pump(multiplexer.write, 'enqueue')
+            options.conference.read.shifter().pump(function (comeback) {
+                if (comeback.method == 'consumed') {
+                    console.log('consumified', comeback)
+                    consumed.push(events.shift())
+                }
+            })
+            destructible.destruct.wait(function () {
+                console.log('will null!!!!!!!')
+                consumed.push(null)
+            })
+
+            this._colleagues[options.id] = colleague
         })
     })
 
     // TODO This is half-baked. Chaperon has same logic in different package.
     Counterfeiter.prototype.bootstrap = cadence(function (async, options) {
         async(function () {
-            this._run(options, async())
+            this._destructible.monitor([ 'conference', this._instance++ ], true, this, '_run', options, async())
         }, function (colleague) {
+            // TODO Use HTTP instead.
             var url = 'http://127.0.0.1:8888/' + options.id + '/'
             this._colleagues[options.id].bootstrap(options.republic, url, async())
         }, function () {
-            console.log('done')
+            console.log('----- done')
         })
     })
 
     Counterfeiter.prototype.join = cadence(function (async, options) {
         require('assert')(options.republic != null)
         async(function () {
-            this._run(options, async())
+            this._destructible.monitor([ 'conference', this._instance++ ], true, this, '_run', options, async())
         }, function (colleague) {
             var leader = 'http://127.0.0.1:8888/' + options.leader + '/'
             var url = 'http://127.0.0.1:8888/' + options.id + '/'
@@ -99,8 +124,9 @@ module.exports = function (Colleague, Conduit) {
     })
 
     Counterfeiter.prototype.leave = function (id) {
-        interrupt.assert(!this.destroyed, 'destroyed', {}, this._destructible.errors[0])
-        this._destructible.invokeDestructor([ 'colleague', id ])
+        interrupt.assert(!this.destroyed, 'destroyed', {})
+        this._destructibles[id].destroy()
+        delete this._destructible[id]
     }
 
     Counterfeiter.prototype.destroy = function () {
@@ -109,18 +135,21 @@ module.exports = function (Colleague, Conduit) {
 
     // TODO You should just listen here.
     Counterfeiter.prototype.listen = cadence(function (async, port, address) {
-        this._address = address
-        this._port = port
-        var ready = new Signal
-        var conduit = new Conduit
-        this._destructible.addDestructor('conduit', conduit, 'destroy')
-        conduit.ready.wait(async())
-        conduit.listen(port, address, this._destructible.monitor('conduit'))
+        async(function () {
+        }, function () {
+            conduit.listen(port, address, this._destructible.monitor('conduit'))
+        })
     })
 
     Counterfeiter.prototype.completed = function (callback) {
         this._destructible.completed.wait(callback)
     }
 
-    return Counterfeiter
+    return cadence(function (async, destructible, port, address) {
+        async(function () {
+            destructible.monitor('conduit', Conduit, port, address, async())
+        }, function () {
+            return new Counterfeiter(destructible)
+        })
+    })
 }

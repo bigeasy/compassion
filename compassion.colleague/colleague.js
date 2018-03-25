@@ -34,6 +34,9 @@ function Colleague (client, caller, kibitzer, island, timeout) {
 
     this.chatter = new Procession
 
+    this._caller = caller
+    this._client = client
+
     this._destructible = new Destructible(1000, 'colleague')
     this._destructible.markDestroyed(this)
 
@@ -86,14 +89,11 @@ Colleague.prototype._log = cadence(function (async) {
 })
 
 Colleague.prototype.listen = cadence(function (async, host, port) {
+    throw new Error
     this._destructible.completed.wait(async())
     async([function () {
         this._destructible.destroy()
     }], function () {
-        this.getProperties(async())
-    }, function (properties) {
-        this.properties = properties
-    }, function () {
         var ready = new Signal
         this._startEnvoy(ready, host, port, this._destructible.monitor('envoy'))
         // Remove the import of finalist, or otherwise add an exception here,
@@ -123,9 +123,12 @@ Colleague.prototype.backlog = cadence(function (async, body) {
 
 Colleague.prototype.newOutOfBand = cadence(function (async, header) {
     var socket = { read: new Procession, write: new Procession }
-    this._client.connect(header, socket)
-    socket.read.push(null)
-    return [ socket.write.shifter() ]
+    async(function () {
+        this._client.connect(socket, header, async())
+    }, function () {
+        socket.read.push(null)
+        return [ socket.write.shifter() ]
+    })
 })
 
 Colleague.prototype.getProperties = cadence(function (async) {
@@ -139,20 +142,32 @@ Colleague.prototype.getProperties = cadence(function (async) {
             }
         }, async())
     }, function (properties) {
+        console.log('called')
         return [ properties ]
     })
 })
 
 Colleague.prototype.bootstrap = cadence(function (async, republic, url) {
-    require('assert')(republic != null)
-    this.properties.url = url
-    this.kibitzer.bootstrap(republic, this.properties)
+    async(function () {
+        this.getProperties(async())
+    }, function (properties) {
+        this.properties = properties
+    }, function () {
+        require('assert')(republic != null)
+        this.properties.url = url
+        this.kibitzer.bootstrap(republic, this.properties)
+    })
 })
 
 // TODO Using Abend! instead of Destructible.
 // Why not just wait?
 Colleague.prototype.join = cadence(function (async, republic, leader, url) {
     async(function () {
+        this.getProperties(async())
+    }, function (properties) {
+        console.log('properties', properties)
+        this.properties = properties
+    }, function () {
         require('assert')(republic != null)
         this.properties.url = url
         this.kibitzer.join(republic, { url: leader }, this.properties, require('abend'))

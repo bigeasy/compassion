@@ -52,26 +52,14 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Shuttle = require('prolific.shuttle')
 
-    var Colleague = require('./colleague')
-    var Monitor = require('./monitor')
     var Destructible = require('destructible')
-    var Vizsla = require('vizsla')
-    var Interlocutor = require('interlocutor')
-    var UserAgent = require('./ua')
-    var Conduit = require('conduit')
-    var Procedure = require('conduit/procedure')
-    var Caller = require('conduit/caller')
-    var Client = require('conduit/client')
-    var Multiplexer = require('conduit/multiplexer')
-    var Signal = require('signal')
 
     var shuttle = Shuttle.shuttle(program, logger)
 
     var coalesce = require('extant')
     var Extracted = require('./extracted')
 
-    // program.on('shutdown', colleague.shutdown.bind(colleague))
-    var destructible = new Destructible(1000, 'colleague')
+    var destructible = new Destructible(1000, 'colleague.bin.js')
 
     var Monitor = require('./monitor')
     var Conduit = require('conduit')

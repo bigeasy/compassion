@@ -27,10 +27,14 @@ module.exports = cadence(function (async, destructible, options) {
         destructible.monitor('client', Client, async())
     }, function (caller, client) {
         async(function () {
+            destructible.monitor('caller', Caller, async())
             destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, options.httpTimeout), 'request', async())
-        }, function (procedure) {
+        }, function (caller, procedure) {
             caller.read.shifter().pumpify(procedure.write)
             procedure.read.shifter().pumpify(caller.write)
+            new Pump(caller.read.shifter(), function (envelope) {
+                console.log(envelope)
+            }).pumpify(require('abend'))
             destructible.monitor('kibitzer', Kibitzer, {
                 caller: caller,
                 id: options.id,
@@ -58,8 +62,13 @@ module.exports = cadence(function (async, destructible, options) {
                 delta(async()).ee(request).on('upgrade')
                 request.end()
             }, function (request, socket, header) {
+                destructible.destruct.wait(function () {
+                    console.log('buh bye!!!')
+                })
                 destructible.destruct.wait(socket, 'destroy')
                 destructible.monitor('envoy', Envoy, colleague.middleware, socket, header, async())
+            }, function() {
+                setTimeout(async(), 1000)
             }, function() {
                 destructible.monitor('multiplexer', Multiplexer, {
                     conference: caller,
@@ -69,9 +78,7 @@ module.exports = cadence(function (async, destructible, options) {
                 destructible.destruct.wait(function () {
                     multiplexer.write.push(null)
                 })
-                return multiplexer
-                x.x.x.x
-            }, function () {
+                return [ multiplexer, colleague ]
             })
         })
     })
