@@ -27,23 +27,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.validate(require('arguable/bindable'), 'bind')
 
-    var delta = require('delta')
-
-    var http = require('http')
-
-    var Operation = require('operation/variadic')
-
     var Shuttle = require('prolific.shuttle')
 
     var Destructible = require('destructible')
     var destructible = new Destructible(3000, 'compassion.conduit')
-
-    var Rendezvous = require('assignation/rendezvous')
-    var Downgrader = require('downgrader')
-
-    var Middleware = require('./middleware')
-
-    var destroyer = require('server-destroy')
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
@@ -55,35 +42,17 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var bind = program.ultimate.bind
 
+    var Conduit = require('./conduit')
+
     destructible.completed.wait(async())
 
-    async(function () {
-        destructible.monitor('rendezvous', Rendezvous, async())
-    }, function (rendezvous) {
-        var downgrader = new Downgrader
-
-        downgrader.on('socket', Operation([ rendezvous, 'upgrade' ]))
-
-        var connect = require('connect')
-        var app = require('connect')()
-            .use(Operation([ rendezvous, 'middleware' ]))
-            .use(new Middleware(rendezvous).reactor.middleware)
-
-        var server = http.createServer(app)
-
-        destroyer(server)
-
-        server.on('upgrade', Operation([ downgrader, 'upgrade' ]))
-
-        destructible.destruct.wait(server, 'destroy')
-
-        async(function () {
-            server.listen(bind.port, bind.address, async())
-        }, function () {
-            delta(destructible.monitor('http')).ee(server).on('close')
-        })
+    async([function () {
+        destructible.destroy()
+    }], function () {
+        destructible.monitor('conduit', Conduit, bind.port, bind.address, async())
     }, function () {
         logger.info('started', { paraemters: program.ultimate })
         program.ready.unlatch()
+        destructible.completed.wait(async())
     })
 }))
