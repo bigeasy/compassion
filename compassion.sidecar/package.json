@@ -22,7 +22,9 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "conduit":                      "2.6.x"
+                            "conduit":                      "2.6.x",
+                            "destructible":                 "0.27.x",
+                            "kibitz":                       "0.18.x"
     },
     "devDependencies":
     {
