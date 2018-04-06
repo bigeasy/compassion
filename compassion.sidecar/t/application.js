@@ -1,18 +1,33 @@
-function Application (expect) {
-    this._expect = expect
+var cadence = require('cadence')
+var Reactor = require('reactor')
+var Vizsla = require('vizsla')
+var jsonify = require('vizsla/jsonify')
+var Signal = require('signal')
+
+function Application (id) {
+    this._id = id
+    this.arrived = new Signal
+    this._ua = new Vizsla().bind({ gateways: [ jsonify({}) ] })
+    this.reactor = new Reactor(this, function (dispatcher) {
+        dispatcher.dispatch('POST /bootstrap', 'bootstrap')
+    })
 }
 
-Application.prototype.register = cadence(function (async) {
+Application.prototype.register = cadence(function (async, url) {
     async(function () {
-        this._ua.fetch{
+        this._ua.fetch({
+            url: 'http://127.0.0.1:8386/'
+        }, {
             url: '/register',
             post: {
                 island: 'island',
                 id: this._id,
+                url: url,
                 properties: { key: this._id }
             }
         }, async())
     }, function () {
+        console.log('xxx')
     })
 })
 
@@ -52,6 +67,9 @@ Application.prototype.join = cadence(function (async, request) {
 })
 
 Application.prototype.arrive = cadence(function (async, request) {
+    if (request.body.government.arrival.id == this._id) {
+        this.arrived.unlatch()
+    }
     if (request.body.government.arrival.id == 'fourth') {
         okay(true, 'arrived')
     }

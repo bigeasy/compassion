@@ -24,7 +24,12 @@
                             "cadence":                      "1.0.x",
                             "conduit":                      "2.6.x",
                             "destructible":                 "0.27.x",
-                            "kibitz":                       "0.18.x"
+                            "delta":                        "1.2.x",
+                            "kibitz":                       "0.18.x",
+                            "reactor":                      "10.1.x",
+                            "server-destroy":               "1.0.1",
+                            "signal":                       "3.4.x",
+                            "vizsla":                       "11.0.x"
     },
     "devDependencies":
     {

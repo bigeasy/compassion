@@ -1,13 +1,12 @@
 var cadence = require('cadence')
-
-var Middleware = require('./middleware')
+var Reactor = require('reactor')
 
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('POST /register', 'register')
+        dispatcher.dispatch('POST /:island/bootstrap/:id', 'bootstrap')
         dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /health', 'health')
@@ -19,10 +18,11 @@ Networked.prototype.index = cadence(function (async) {
 })
 
 Networked.prototype._getColleague = function (island, id) {
-    if (this._kibitzers[island] == null || this._kibitzers[island][id] == null) {
+    console.log(this._colleagues)
+    if (this._colleagues.island[island] == null || this._colleagues.island[island][id] == null) {
         throw 404
     }
-    return this._kibitzers[island][id]
+    return this._colleagues.island[island][id]
 }
 
 Networked.prototype.colleague = cadence(function (async, destructible, envelope) {
@@ -49,26 +49,19 @@ Networked.prototype.colleague = cadence(function (async, destructible, envelope)
     })
 })
 
-Networked.prototype._getColleague = function (island, id) {
-    if (this._islands[island] == null || this._islands[island][id] == null) {
-        throw 404
-    }
-    return this._islands[island][id]
-}
-
 Networked.prototype._alreadyStarted = function (colleague) {
     if (colleague.initialized) {
         return 401
     }
 }
 
-Networked.prototype.bootstrap = cadence(function (async, island, id) {
+Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
     var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
-    properites.url = request.body.url.self
-    this.kibitzer.bootstrap(request.body.repbulic, properties)
+    properties.url = request.body.url.self
+    colleague.kibitzer.bootstrap(request.body.republic, properties)
     return 200
 })
 
