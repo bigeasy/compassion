@@ -1,13 +1,15 @@
 var cadence = require('cadence')
 var Reactor = require('reactor')
 
+var logger = require('prolific.logger').createLogger('compassion.networked')
+
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /:island/bootstrap/:id', 'bootstrap')
-        dispatcher.dispatch('POST /backlog', 'backlog')
+        dispatcher.dispatch('POST /:island/kibitz/:id', 'kibitz')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /health', 'health')
     })
@@ -61,6 +63,7 @@ Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     colleague.initialized = true
     var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
     properties.url = request.body.url.self
+    console.log(properties)
     colleague.kibitzer.bootstrap(request.body.republic, properties)
     return 200
 })
@@ -82,7 +85,7 @@ Networked.prototype.join = cadence(function (async, island, id) {
     })
 })
 
-Networked.prototype.kibitz = cadence(function (async, request) {
+Networked.prototype.kibitz = cadence(function (async, request, island, id) {
     logger.info('recorded', {
         source: 'middleware',
         method: request.body.method,

@@ -5,22 +5,21 @@ var logger = require('prolific.logger').createLogger('compassion.colleague')
 var nullify = require('vizsla/nullify')
 var jsonify = require('vizsla/jsonify')
 
-function UserAgent (ua, timeout) {
+function UserAgent (ua, timeout, island, id) {
     this._ua = ua
     this._timeout = timeout
+    this._island = island
+    this._id = id
 }
 
 UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
         logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
+        console.log(envelope.to, envelope.method)
         this._ua.fetch({
             url: envelope.to.url,
         }, {
-            url: './kibitz',
-            headers: {
-                'x-kibitz-method': envelope.method,
-                'x-kibitz-envelope': JSON.stringify(envelope)
-            },
+            url: [ '.', this._island, 'kibitz', this._id ].join('/'),
             post: envelope,
             timeout: 30000, //  this._timeout,
             gateways: [ /* nullify(), */ jsonify({}) ]

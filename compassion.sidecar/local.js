@@ -37,7 +37,7 @@ Local.prototype.index = cadence(function (async) {
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
     async(function () {
         destructible.monitor('caller', Caller, async())
-        destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout), 'request', async())
+        destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout, envelope.island, envelope.id), 'request', async())
     }, function (caller, procedure) {
         caller.read.shifter().pumpify(procedure.write)
         destructible.destruct.wait(function () { caller.write.push(null) })
@@ -76,7 +76,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     url: [ '', envelope.island, 'bootstrap', envelope.id ].join('/'),
                     post: {
                         republic: 0,
-                        url: { self: envelope.url }
+                        url: { self: this._networkedUrl }
                     }
                 }, async())
             }
