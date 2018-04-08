@@ -11,6 +11,10 @@ var UserAgent = require('../compassion.colleague/ua')
 // Sencha Connect middleware builder.
 var Reactor = require('reactor')
 
+var Conference = require('./conference')
+
+var Pump = require('procession/pump')
+
 function Local (destructible, colleagues, networkedUrl) {
     this._destructible = destructible
     this._colleagues = colleagues
@@ -45,7 +49,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.destruct.wait(function () { procedure.write.push(null) })
         destructible.monitor('kibitzer', Kibitzer, {
             caller: caller,
-            id: this._id,
+            id: envelope.id,
             ping: this._ping,
             timeout: this._timeout
         }, async())
@@ -56,6 +60,9 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         } else {
             existed = true
         }
+        var conference = new Conference(envelope.id, envelope)
+        destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
+        new Pump(kibitzer.paxos.log.shifter(), conference, 'entry').pumpify(destructible.monitor('entries'))
         var colleague = this._colleagues.island[envelope.island][envelope.id] = {
             initalizer: envelope,
             kibitzer: kibitzer,

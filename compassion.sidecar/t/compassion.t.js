@@ -13,8 +13,6 @@ function prove (async, okay) {
 
     destructible.completed.wait(async())
 
-    okay(Sidecar, 'require')
-
     async([function () {
         destructible.destroy()
     }], function () {
@@ -35,7 +33,7 @@ function prove (async, okay) {
             }
         }, async())
     }, function () {
-        var application = new Application('first')
+        var application = new Application('first', okay)
         applications.push(application)
         async(function () {
             var server = http.createServer(application.reactor.middleware)
@@ -44,7 +42,7 @@ function prove (async, okay) {
             delta(destructible.monitor('first')).ee(server).on('close')
             server.listen(8088, '127.0.0.1', async())
         }, function () {
-            application.register('http://127.0.0.1:8080/', async())
+            application.register('http://127.0.0.1:8088/', async())
         }, function () {
             destructible.destruct.wait(application.arrived, 'unlatch')
             application.arrived.wait(async())

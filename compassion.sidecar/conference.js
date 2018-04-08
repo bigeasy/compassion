@@ -1,23 +1,54 @@
 var cadence = require('cadence')
-var interrupt = require('interrupt').createInterruptor('compassion.conference')
+var interrupt = require('interrupt').createInterrupter('compassion.conference')
 var Procession = require('procession')
+var Monotonic = require('monotonic').asString
+var assert = require('assert')
+var Vizsla = require('vizsla')
+var raiseify = require('vizsla/raiseify')
+var bufferify = require('vizsla/bufferify')
+var coalesce = require('extant')
 
-function Conference (ua, id) {
-    this._ua = ua
+function Conference (id, registration) {
+    this._ua = new Vizsla().bind({
+        url: registration.url,
+        gateways: [ raiseify(), bufferify({}) ]
+    })
     this._id = id
+    this._url = registration.url
     this._government = null
     this.outbox = new Procession
+    this._boundary = '0'
+    this._postbacks = { reduced: {}, receive: {} }
+    ; ('bootstrap join arrive acclimiated depart'.split(' ')).forEach(function (postback) {
+        this._postbacks[postback] = !! registration[postback]
+    }, this)
+    coalesce(registration.reduced, []).forEach(function (method) {
+        this._postbacks.reduced[method] = true
+    }, this)
+    coalesce(registration.receive, []).forEach(function (method) {
+        this._postbacks.receive[method] = true
+    }, this)
+}
+
+Conference.prototype._nextBoundary = function () {
+    return this._boundary = Monotonic.increment(this._boundary, 0)
 }
 
 Conference.prototype._postback = cadence(function (async, path, envelope) {
-    async([function () {
-        this._ua.postback.fetch({
-            url: [ this._government.island, this._id ].concat(path).join('/'),
-            post: envelope
-        }, async())
-    }, function (error) {
-        throw interrupt('postback', error)
-    }])
+    var search = path.slice(), postbacks = this._postbacks
+    while (search.length != 0) {
+        postbacks = postbacks[search.shift()]
+    }
+    if (postbacks) {
+        async([function () {
+            this._ua.fetch({
+                url: path.join('/'),
+                post: envelope
+            }, async())
+        }, function (error) {
+            throw interrupt('postback', error)
+        }])
+    }
 })
 
 Conference.prototype.entry = cadence(function (async, entry) {
@@ -54,11 +85,10 @@ Conference.prototype._consume = cadence(function (async, entry) {
                 var arrival = entry.body.arrive
                 async(function () {
                     if (entry.body.promise == '1/0') {
-                        this._postback('bootstrap', {
+                        this._postback([ 'bootstrap' ], {
                             self: this._id,
                             government: this._government
                         }, async())
-                        this._operate([ 'bootstrap' ], [ this ], async())
                     } else if (arrival.id == this._id) {
                         this._postback('join', {
                             self: this._id,
@@ -66,9 +96,10 @@ Conference.prototype._consume = cadence(function (async, entry) {
                         }, async())
                     }
                 }, function () {
-                    this._operate('arrive', {
+                    this._postback([ 'arrive' ], {
                         self: this._id,
-                        government: this._government
+                        government: this._government,
+                        arrived: arrival
                     }, async())
                 }, function () {
                     if (arrival.id != this._id) {
@@ -90,8 +121,9 @@ Conference.prototype._consume = cadence(function (async, entry) {
             } else if (entry.body.departed) {
                 async(function () {
                     this._postback('depart', {
-                        self: this._id
-                        government: this._government
+                        self: this._id,
+                        government: this._government,
+                        departed: entry.body.departed
                     }, async())
                 }, function () {
                     var depart = entry.body.departed
@@ -109,13 +141,13 @@ Conference.prototype._consume = cadence(function (async, entry) {
             }
         }, function () {
             if (entry.body.acclimate != null) {
-                this._operate('acclimated', {
+                this._postback([ 'acclimated' ], {
                     self: this._id,
                     government: this._government
                 }, async())
             }
         }, function () {
-            this._postback('government', {
+            this._postback([ 'government' ], {
                 self: this._id,
                 government: this._government
             }, async())
@@ -191,7 +223,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
                 arrayed: reduced,
                 mapped: broadcast.responses
             }
-        ], async())
+        }, async())
         delete this._broadcasts[broadcast.key]
     }
 })

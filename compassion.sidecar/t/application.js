@@ -4,12 +4,15 @@ var Vizsla = require('vizsla')
 var jsonify = require('vizsla/jsonify')
 var Signal = require('signal')
 
-function Application (id) {
+function Application (id, okay) {
     this._id = id
+    this._okay = okay
     this.arrived = new Signal
     this._ua = new Vizsla().bind({ gateways: [ jsonify({}) ] })
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /arrive', 'arrive')
+        dispatcher.dispatch('POST /acclimated', 'acclimated')
     })
 }
 
@@ -23,7 +26,14 @@ Application.prototype.register = cadence(function (async, url) {
                 island: 'island',
                 id: this._id,
                 url: url,
-                properties: { key: this._id }
+                properties: { key: this._id },
+                bootstrap: true,
+                join: true,
+                arrive: true,
+                depart: true,
+                acclimated: true,
+                receive: [ 'message' ],
+                reduced: [ 'message' ]
             }
         }, async())
     }, function () {
@@ -36,7 +46,7 @@ Application.prototype.backlog = cadence(function (async, request) {
 })
 
 Application.prototype.bootstrap = cadence(function (async, request) {
-    okay(request.body.government.promise, '1/0', 'bootstrapped')
+    this._okay.call(null, request.body.government.promise, '1/0', 'bootstrapped')
     return 200
 })
 
@@ -67,18 +77,22 @@ Application.prototype.join = cadence(function (async, request) {
 })
 
 Application.prototype.arrive = cadence(function (async, request) {
-    if (request.body.government.arrival.id == this._id) {
-        this.arrived.unlatch()
+    console.log(request.body, this._id, request.body.government)
+    if (request.body.arrived.id == this._id) {
+        console.log('SUCH AN UNLATCH AS YOU EVER DID SEE!!!')
+        setTimeout(function () { this.arrived.unlatch() }.bind(this), 1000)
     }
-    if (request.body.government.arrival.id == 'fourth') {
+    if (request.body.arrived.id == 'fourth') {
         okay(true, 'arrived')
     }
+    return 200
 })
 
 Application.prototype.acclimated = cadence(function (async, request) {
-    if (request.body.government.arrival.id == 'fourth') {
+    if (request.body.government.arrived.id == 'fourth') {
         okay(true, 'arrived')
     }
+    return 200
 })
 
 Application.prototype.depart = cadence(function (async, request) {
