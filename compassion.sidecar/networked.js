@@ -8,8 +8,8 @@ function Networked (destructible, colleagues) {
     this._colleagues = colleagues
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('POST /:island/bootstrap/:id', 'bootstrap')
-        dispatcher.dispatch('POST /:island/kibitz/:id', 'kibitz')
+        dispatcher.dispatch('POST /:island/:id/bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /:island/:id/kibitz', 'kibitz')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /health', 'health')
     })

@@ -8,7 +8,7 @@ function Application (id, okay) {
     this._id = id
     this._okay = okay
     this.arrived = new Signal
-    this._ua = new Vizsla().bind({ gateways: [ jsonify({}) ] })
+    this._ua = new Vizsla().bind({ gateways: [ jsonify() ] })
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /arrive', 'arrive')

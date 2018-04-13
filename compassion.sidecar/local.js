@@ -6,7 +6,7 @@ var jsonify = require('vizsla/jsonify')
 var Caller = require('conduit/caller')
 var Procedure = require('conduit/procedure')
 var Kibitzer = require('kibitz')
-var UserAgent = require('../compassion.colleague/ua')
+var UserAgent = require('./ua')
 
 // Sencha Connect middleware builder.
 var Reactor = require('reactor')
@@ -14,6 +14,8 @@ var Reactor = require('reactor')
 var Conference = require('./conference')
 
 var Pump = require('procession/pump')
+
+var url = require('url')
 
 function Local (destructible, colleagues, networkedUrl) {
     this._destructible = destructible
@@ -68,19 +70,20 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             kibitzer: kibitzer,
             ua: new Vizsla().bind({
                 url: envelope.url,
-                gateways: [ raiseify(), jsonify({}) ]
+                gateways: [ jsonify(), raiseify() ]
             })
         }
         async(function () {
             console.log(envelope)
+            var kibitzUrl = url.resolve(this._networkedUrl, [ '', envelope.island, envelope.id, 'kibitz' ].join('/'))
             if (existed) {
             } else {
                 this._ua.fetch({
                     url: this._networkedUrl,
                     timeout: 1000,
-                    gateways: [ raiseify(), jsonify({}) ]
+                    gateways: [ jsonify(), raiseify() ]
                 }, {
-                    url: [ '', envelope.island, 'bootstrap', envelope.id ].join('/'),
+                    url: [ '', envelope.island, envelope.id, 'bootstrap' ].join('/'),
                     post: {
                         republic: 0,
                         url: { self: this._networkedUrl }

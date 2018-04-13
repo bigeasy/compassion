@@ -5,13 +5,13 @@ var Monotonic = require('monotonic').asString
 var assert = require('assert')
 var Vizsla = require('vizsla')
 var raiseify = require('vizsla/raiseify')
-var bufferify = require('vizsla/bufferify')
+var nullify = require('vizsla/nullify')
 var coalesce = require('extant')
 
 function Conference (id, registration) {
     this._ua = new Vizsla().bind({
         url: registration.url,
-        gateways: [ raiseify(), bufferify({}) ]
+        gateways: [ nullify([ 0 ]), raiseify() ]
     })
     this._id = id
     this._url = registration.url
