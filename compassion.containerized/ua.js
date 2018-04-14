@@ -16,14 +16,15 @@ function UserAgent (ua, timeout, island, id) {
 UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
         logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
-        console.log(envelope.to, envelope.method)
+        console.log('>>>', envelope.to, envelope.method)
         this._ua.fetch({
             url: envelope.to.url,
             post: envelope,
             timeout: 30000, //  this._timeout,
-            gateways: [ unify(), jsonify(), nullify() ]
+            gateways: [ jsonify(), nullify() ]
         }, async())
-    }, function (body) {
+    }, function (body, response) {
+        console.log('>>>>', body, response)
         return [ body ]
     })
 })

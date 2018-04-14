@@ -86,7 +86,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     url: [ '', envelope.island, envelope.id, 'bootstrap' ].join('/'),
                     post: {
                         republic: 0,
-                        url: { self: this._networkedUrl }
+                        url: { self: kibitzUrl }
                     }
                 }, async())
             }
