@@ -24,7 +24,9 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
             gateways: [ jsonify(), nullify() ]
         }, async())
     }, function (body, response) {
-        console.log('>>>>', body, response)
+        if (body == null) {
+            console.log(response)
+        }
         return [ body ]
     })
 })

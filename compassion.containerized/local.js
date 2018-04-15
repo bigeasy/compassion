@@ -8,6 +8,8 @@ var Procedure = require('conduit/procedure')
 var Kibitzer = require('kibitz')
 var UserAgent = require('./ua')
 
+var Monotonic = require('monotonic').asString
+
 // Sencha Connect middleware builder.
 var Reactor = require('reactor')
 
@@ -17,15 +19,22 @@ var Pump = require('procession/pump')
 
 var url = require('url')
 
+var Procession = require('procession')
+
 function Local (destructible, colleagues, networkedUrl) {
     this._destructible = destructible
-    this._colleagues = colleagues
+    var count = 0
+    this._destructible.destruct.wait(function () {
+        console.log('local is destructing!!!!', ++count)
+    })
+    this.colleagues = colleagues
     this._ping = 1000
     this._ua = new Vizsla
     this._timeout = 5000
     this._httpTimeout = 5000
     this._instance = 0
     this._networkedUrl = networkedUrl
+    this.events = new Procession
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
@@ -57,26 +66,67 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         }, async())
     }, function (kibitzer) {
         var existed = false
-        if (this._colleagues.island[envelope.island] == null) {
-            this._colleagues.island[envelope.island] = {}
+        if (this.colleagues.island[envelope.island] == null) {
+            this.colleagues.island[envelope.island] = {}
         } else {
             existed = true
         }
         var conference = new Conference(envelope.id, envelope)
+        /*
+        new Pump(conference.outbox.shifter(), function (envelope) {
+            switch(coalesce(envelope, {}).method) {
+            case 'acclimated':
+                kibitzer.acclimated()
+                break
+            case 'reduce':
+                kibitzer.publish(envelope)
+                break
+            }
+        }).pumpify(destructible.monitor('conference'))
+        */
         destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
         new Pump(kibitzer.paxos.log.shifter(), conference, 'entry').pumpify(destructible.monitor('entries'))
-        var colleague = this._colleagues.island[envelope.island][envelope.id] = {
+        var events = this.events
+        new Pump(kibitzer.paxos.log.shifter(), function (entry) {
+            if (entry != null) {
+                events.push({
+                    type: 'entry',
+                    id: envelope.id,
+                    entry: entry
+                })
+            }
+        }).pumpify(destructible.monitor('events'))
+        var colleague = this.colleagues.island[envelope.island][envelope.id] = {
+            events: events,
             initalizer: envelope,
             kibitzer: kibitzer,
+            conference: conference,
             ua: new Vizsla().bind({
                 url: envelope.url,
                 gateways: [ jsonify(), raiseify() ]
             })
         }
         async(function () {
-            console.log(envelope)
             var kibitzUrl = url.resolve(this._networkedUrl, [ '', envelope.island, envelope.id, 'kibitz' ].join('/'))
             if (existed) {
+                var island = this.colleagues.island[envelope.island]
+                var government = Object.keys(island).map(function (id) {
+                    return island[id].kibitzer.paxos.government
+                }).sort(function (a, b) {
+                    return Monotonic.compare(a.promise, b.promise)
+                }).pop()
+                var leaderUrl = government.properties[government.majority[0]].url
+                this._ua.fetch({
+                    url: kibitzUrl,
+                    timeout: 1000,
+                    gateways: [ jsonify(), raiseify() ]
+                }, {
+                    url: './join',
+                    post: {
+                        republic: 0,
+                        url: { self: kibitzUrl, leader: leaderUrl }
+                    }
+                }, async())
             } else {
                 this._ua.fetch({
                     url: this._networkedUrl,
@@ -100,7 +150,7 @@ Local.prototype._getColleague = function () {
     if (request.authorization.scheme != 'Bearer') {
         throw 401
     }
-    var colleague = this._colleagues.token[request.authorization.credentials]
+    var colleague = this.colleagues.token[request.authorization.credentials]
     if (colleague == null) {
         throw 401
     }
@@ -132,9 +182,15 @@ Local.prototype.broadcast = cadence(function (async, request) {
 })
 
 Local.prototype.register = cadence(function (async, request) {
+    console.log('why no ?')
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
-    this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', request.body, async())
+    async(function () {
+        this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', request.body, async())
+    }, function (result) {
+        console.log(result)
+        return result
+    })
 })
 
 module.exports = Local

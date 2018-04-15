@@ -24,6 +24,7 @@
                             "cadence":                      "1.0.x",
                             "extant":                       "1.0.x",
                             "conduit":                      "2.6.x",
+                            "cubbyhole":                    "1.0.x",
                             "destructible":                 "0.27.x",
                             "delta":                        "1.2.x",
                             "kibitz":                       "0.18.x",

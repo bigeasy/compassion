@@ -2,6 +2,7 @@ var cadence = require('cadence')
 var Reactor = require('reactor')
 var Vizsla = require('vizsla')
 var jsonify = require('vizsla/jsonify')
+var raiseify = require('vizsla/raiseify')
 var Signal = require('signal')
 
 function Application (id, okay) {
@@ -11,6 +12,7 @@ function Application (id, okay) {
     this._ua = new Vizsla().bind({ gateways: [ jsonify() ] })
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /join', 'join')
         dispatcher.dispatch('POST /arrive', 'arrive')
         dispatcher.dispatch('POST /acclimated', 'acclimated')
     })
@@ -34,9 +36,11 @@ Application.prototype.register = cadence(function (async, url) {
                 acclimated: true,
                 receive: [ 'message' ],
                 reduced: [ 'message' ]
-            }
+            },
+            gateways: [ jsonify(), raiseify() ]
         }, async())
-    }, function () {
+    }, function (body, response) {
+        console.log(response)
         console.log('xxx')
     })
 })
@@ -46,7 +50,7 @@ Application.prototype.backlog = cadence(function (async, request) {
 })
 
 Application.prototype.bootstrap = cadence(function (async, request) {
-    this._okay.call(null, request.body.government.promise, '1/0', 'bootstrapped')
+    this._okay.call(null, request.body.government.properties.first.url, 'http://127.0.0.1:8486/island/first/kibitz', 'url')
     return 200
 })
 
@@ -79,18 +83,19 @@ Application.prototype.join = cadence(function (async, request) {
 Application.prototype.arrive = cadence(function (async, request) {
     console.log(request.body, this._id, request.body.government)
     if (request.body.arrived.id == this._id) {
-        console.log('SUCH AN UNLATCH AS YOU EVER DID SEE!!!')
-        setTimeout(function () { this.arrived.unlatch() }.bind(this), 1000)
+        setTimeout(function () { this.arrived.unlatch() }.bind(this), 250)
     }
-    if (request.body.arrived.id == 'fourth') {
-        okay(true, 'arrived')
+    if (request.body.arrived.id == 'second') {
+        this._okay.call(null, true, 'arrived')
+    } else if (request.body.arrived.id == 'fourth') {
+        return 500
     }
     return 200
 })
 
 Application.prototype.acclimated = cadence(function (async, request) {
-    if (request.body.government.arrived.id == 'fourth') {
-        okay(true, 'arrived')
+    if (request.body.government.arrived.id == 'second') {
+        this._okay.call(null, true, 'arrived')
     }
     return 200
 })

@@ -9,7 +9,9 @@ function Networked (destructible, colleagues) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /:island/:id/bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /:island/:id/join', 'join')
         dispatcher.dispatch('POST /:island/:id/kibitz', 'kibitz')
+        dispatcher.dispatch('POST /:island/:id/broadcasts', 'broadcasts')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /health', 'health')
     })
@@ -68,14 +70,15 @@ Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     return 200
 })
 
-Networked.prototype.join = cadence(function (async, island, id) {
+Networked.prototype.join = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
     var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
-    properites.url = request.body.url.self
+    properties.url = request.body.url.self
     async(function () {
-        colleague.kibitzer.join(request.body.repbulic, { url: request.body.url.leader }, properties, async())
+        console.log(request.body)
+        colleague.kibitzer.join(request.body.republic, { url: request.body.url.leader }, properties, async())
     }, function (success) {
         if (!success) {
             colleague.destructible.destroy()
@@ -86,6 +89,7 @@ Networked.prototype.join = cadence(function (async, island, id) {
 })
 
 Networked.prototype.kibitz = cadence(function (async, request, island, id) {
+    console.log('kibitz', request.body)
     logger.info('recorded', {
         source: 'middleware',
         method: request.body.method,
@@ -93,6 +97,10 @@ Networked.prototype.kibitz = cadence(function (async, request, island, id) {
         $body: request.body
     })
     this._getColleague(island, id).kibitzer.request(request.body, async())
+})
+
+Networked.prototype.broadcasts = cadence(function (async, request, island, id) {
+    this._getColleague(island, id).conference.getSnapshot(request.body.promise, async())
 })
 
 Networked.prototype.backlog = cadence(function (async, request, island, id) {

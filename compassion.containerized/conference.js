@@ -6,7 +6,9 @@ var assert = require('assert')
 var Vizsla = require('vizsla')
 var raiseify = require('vizsla/raiseify')
 var nullify = require('vizsla/nullify')
+var jsonify = require('vizsla/jsonify')
 var coalesce = require('extant')
+var Cubbyhole = require('cubbyhole')
 
 function Conference (id, registration) {
     this._ua = new Vizsla().bind({
@@ -18,6 +20,7 @@ function Conference (id, registration) {
     this._government = null
     this.outbox = new Procession
     this._boundary = '0'
+    this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
     ; ('bootstrap join arrive acclimiated depart'.split(' ')).forEach(function (postback) {
         this._postbacks[postback] = !! registration[postback]
@@ -51,31 +54,14 @@ Conference.prototype._postback = cadence(function (async, path, envelope) {
     }
 })
 
+Conference.prototype.getSnapshot = cadence(function (async, promise) {
+    this._snapshots.wait(promise, async())
+})
+
 Conference.prototype.entry = cadence(function (async, entry) {
     if (entry == null) {
         return []
     }
-    this.outbox.push({
-        module: 'conference',
-        method: 'boundary',
-        id: this._nextBoundary(),
-        // TODO Rename promise.
-        entry: entry.promise
-    })
-    async(function () {
-        this._consume(entry, async())
-    }, function () {
-        this.outbox.push({
-            module: 'conference',
-            method: 'consumed',
-            id: this._nextBoundary(),
-            // TODO Rename promise.
-            entry: entry.promise
-        })
-    })
-})
-
-Conference.prototype._consume = cadence(function (async, entry) {
     if (entry.method == 'government') {
         this._government = entry.government
         this.isLeader = this._government.majority[0] == this._id
@@ -90,7 +76,7 @@ Conference.prototype._consume = cadence(function (async, entry) {
                             government: this._government
                         }, async())
                     } else if (arrival.id == this._id) {
-                        this._postback('join', {
+                        this._postback([ 'join' ], {
                             self: this._id,
                             government: this._government
                         }, async())
@@ -107,16 +93,56 @@ Conference.prototype._consume = cadence(function (async, entry) {
                         for (var key in this._broadcasts) {
                             broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                         }
-                        this._backlogs.set(this._government.promise, null, broadcasts)
+                        this._snapshots.set(this._government.promise, null, broadcasts)
                     } else if (this._government.promise != '1/0') {
-                        this._getBacklog(async())
+                        var leaderUrl = this._government.properties[this._government.majority[0]].url
+                        async(function () {
+                            this._ua.fetch({
+                                url: leaderUrl
+                            }, {
+                                url: './broadcasts',
+                                post: { promise: this._government.promise },
+                                parse: [ jsonify(), raiseify() ]
+                            }, async())
+                        }, function (body) {
+                            async.forEach(function (broadcast) {
+                                async(function () {
+                                    this._consume({
+                                        // paxos
+                                        body: {
+                                            // islander
+                                            body: {
+                                                module: 'conference',
+                                                method: 'broadcast',
+                                                internal: broadcast.internal,
+                                                key: broadcast.key,
+                                                body: {
+                                                    method: broadcast.method,
+                                                    body: broadcast.request
+                                                }
+                                            }
+                                        }
+                                    }, async())
+                                }, function () {
+                                    async.forEach(function (promise) {
+                                        this._consume({
+                                            // paxos
+                                            body: {
+                                                // islander
+                                                body: {
+                                                    module: 'conference',
+                                                    method: 'reduce',
+                                                    from: promise,
+                                                    key: broadcast.key,
+                                                    body: broadcast.responses[promise]
+                                                }
+                                            }
+                                        }, async())
+                                    })(Object.keys(broadcast.responses))
+                                })
+                            })(body)
+                        })
                     }
-                }, function () {
-                    this.outbox.push({
-                        module: 'conference',
-                        method: 'acclimated',
-                        body: null
-                    })
                 })
             } else if (entry.body.departed) {
                 async(function () {
@@ -133,7 +159,7 @@ Conference.prototype._consume = cadence(function (async, entry) {
                         delete this._broadcasts[key].responses[promise]
                         broadcasts.push(this._broadcasts[key])
                     }
-                    this._backlogs.remove(promise)
+                    this._snapshots.remove(promise)
                     async.forEach(function (broadcast) {
                         this._checkReduced(broadcast, async())
                     })(broadcasts)
@@ -151,6 +177,12 @@ Conference.prototype._consume = cadence(function (async, entry) {
                 self: this._id,
                 government: this._government
             }, async())
+        }, function () {
+            this.outbox.push({
+                module: 'compassion.containerzed',
+                method: 'acclimated',
+                body: null
+            })
         })
     } else {
         assert(entry.body.body)
@@ -177,7 +209,7 @@ Conference.prototype._consume = cadence(function (async, entry) {
                 }, async())
             }, function (response) {
                 this.outbox.push({
-                    module: 'conference',
+                    module: 'compassion.containerized',
                     method: 'reduce',
                     key: envelope.key,
                     internal: coalesce(envelope.internal, false),
