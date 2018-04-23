@@ -1,5 +1,5 @@
 {
-    "name":                 "compassion.sidecar",
+    "name":                 "compassion.containerized",
     "private":              true,
     "version":              "9.9.9",
     "description":
