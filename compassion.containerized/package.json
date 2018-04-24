@@ -25,7 +25,7 @@
                             "extant":                       "1.0.x",
                             "conduit":                      "2.8.x",
                             "cubbyhole":                    "1.0.x",
-                            "destructible":                 "0.27.x",
+                            "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
                             "kibitz":                       "0.19.x",
                             "reactor":                      "10.2.x",
