@@ -65,7 +65,6 @@ Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     colleague.initialized = true
     var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
     properties.url = request.body.url.self
-    console.log(properties)
     colleague.kibitzer.bootstrap(request.body.republic, properties)
     return 200
 })

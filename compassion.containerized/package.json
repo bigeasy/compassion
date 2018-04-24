@@ -31,7 +31,7 @@
                             "reactor":                      "10.1.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "3.4.x",
-                            "vizsla":                       "12.2.x"
+                            "vizsla":                       "12.0.x"
     },
     "devDependencies":
     {

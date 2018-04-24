@@ -15,18 +15,12 @@ var Reactor = require('reactor')
 
 var Conference = require('./conference')
 
-var Pump = require('procession/pump')
-
 var url = require('url')
 
 var Procession = require('procession')
 
 function Local (destructible, colleagues, networkedUrl) {
     this._destructible = destructible
-    var count = 0
-    this._destructible.destruct.wait(function () {
-        console.log('local is destructing!!!!', ++count)
-    })
     this.colleagues = colleagues
     this._ping = 1000
     this._ua = new Vizsla
@@ -54,10 +48,10 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.monitor('caller', Caller, async())
         destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout, envelope.island, envelope.id), 'request', async())
     }, function (caller, procedure) {
-        caller.read.shifter().pumpify(procedure.write)
-        destructible.destruct.wait(function () { caller.write.push(null) })
-        procedure.read.shifter().pumpify(caller.write)
-        destructible.destruct.wait(function () { procedure.write.push(null) })
+        caller.outbox.shifter().pump(procedure.inbox)
+        destructible.destruct.wait(function () { caller.inbox.push(null) })
+        procedure.outbox.shifter().pump(caller.inbox)
+        destructible.destruct.wait(function () { procedure.inbox.push(null) })
         destructible.monitor('kibitzer', Kibitzer, {
             caller: caller,
             id: envelope.id,
@@ -85,9 +79,9 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         }).pumpify(destructible.monitor('conference'))
         */
         destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
-        new Pump(kibitzer.paxos.log.shifter(), conference, 'entry').pumpify(destructible.monitor('entries'))
+        kibitzer.paxos.log.shifter().pump(conference, 'entry', destructible.monitor('entries'))
         var events = this.events
-        new Pump(kibitzer.paxos.log.shifter(), function (entry) {
+        kibitzer.paxos.log.shifter().pump(function (entry) {
             if (entry != null) {
                 events.push({
                     type: 'entry',
@@ -95,7 +89,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     entry: entry
                 })
             }
-        }).pumpify(destructible.monitor('events'))
+        }, destructible.monitor('events'))
         var colleague = this.colleagues.island[envelope.island][envelope.id] = {
             events: events,
             initalizer: envelope,
@@ -182,13 +176,11 @@ Local.prototype.broadcast = cadence(function (async, request) {
 })
 
 Local.prototype.register = cadence(function (async, request) {
-    console.log('why no ?')
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
     async(function () {
         this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', request.body, async())
     }, function (result) {
-        console.log(result)
         return result
     })
 })

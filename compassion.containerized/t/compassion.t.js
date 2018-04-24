@@ -8,10 +8,16 @@ function prove (async, okay) {
     var destroyer = require('server-destroy')
     var http = require('http')
     var delta = require('delta')
+    var cadence = require('cadence')
 
     var applications = []
 
-    destructible.completed.wait(async())
+    async([function () {
+        destructible.completed.wait(async())
+    }, function (error) {
+        console.log(error.stack)
+        throw error
+    }])
 
     destructible.destruct.wait(function () {
         console.log('is destructing!!!!')
@@ -62,7 +68,6 @@ function prove (async, okay) {
                 delta(destructible.monitor('second')).ee(server).on('close')
                 server.listen(8089, '127.0.0.1', async())
             }, function () {
-                console.log('register')
                 application.register('http://127.0.0.1:8089/', async())
             }, function () {
                 destructible.destruct.wait(application.arrived, 'unlatch')
@@ -98,6 +103,5 @@ function prove (async, okay) {
             })
         }, function () {
         })
-    }, function () {
     })
 }
