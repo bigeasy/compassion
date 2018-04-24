@@ -1,4 +1,4 @@
-require('proof')(3, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')
@@ -9,6 +9,8 @@ function prove (async, okay) {
     var http = require('http')
     var delta = require('delta')
     var cadence = require('cadence')
+    var Vizsla = require('vizsla')
+    var ua = new Vizsla
 
     var applications = []
 
@@ -44,6 +46,13 @@ function prove (async, okay) {
         }, async())
     }, function (sidecar) {
         async(function () {
+            ua.fetch({ url: 'http://127.0.0.1:8386' }, async())
+        }, function (body) {
+            okay(body, 'Compassion Local API\n', 'local index')
+            ua.fetch({ url: 'http://127.0.0.1:8486' }, async())
+        }, function (body) {
+            okay(body, 'Compassion Networked API\n', 'networked index')
+        }, function () {
             var application = new Application('first', okay)
             applications.push(application)
             async(function () {
