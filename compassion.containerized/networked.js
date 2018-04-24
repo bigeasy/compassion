@@ -29,30 +29,6 @@ Networked.prototype._getColleague = function (island, id) {
     return this._colleagues.island[island][id]
 }
 
-Networked.prototype.colleague = cadence(function (async, destructible, envelope) {
-    async(function () {
-        destructible.monitor('caller', Caller, async())
-        destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, options.httpTimeout), 'request', async())
-    }, function (caller, procedure) {
-        caller.read.shifter().pumpify(procedure.write)
-        procedure.read.shifter().pumpify(caller.write)
-        destructible.monitor('kibitzer', Kibitzer, {
-            caller: caller,
-            id: options.id,
-            ping: options.ping,
-            timeout: options.timeout
-        }, async())
-    }, function (kibitzer) {
-        if (this._islands[envelope.island] == null) {
-            this._islands[envelope.island] = {}
-        }
-        this._colleagues[envelope.island][envelope.id] = {
-            initalizer: envelope,
-            kibitzer: kibitzer
-        }
-    })
-})
-
 Networked.prototype._alreadyStarted = function (colleague) {
     if (colleague.initialized) {
         return 401
