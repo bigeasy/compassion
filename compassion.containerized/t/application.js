@@ -56,13 +56,14 @@ Application.prototype.bootstrap = cadence(function (async, request) {
 
 Application.prototype.join = cadence(function (async, request) {
     var envelope = request.body
-    if (envelope.self != 'fourth') {
+    if (envelope.self != 'third') {
         return 200
     }
-    okay(envelope.government.properties.fourth, {
-        key: 'value',
-        url: 'http://127.0.0.1:8888/fourth/'
+    this._okay.call(null, envelope.government.properties.third, {
+        key: 'third',
+        url: 'http://127.0.0.1:8486/island/third/kibitz'
     }, 'properties')
+    return 200
     async(function () {
         this._ua.fetch({
             token: this._token,

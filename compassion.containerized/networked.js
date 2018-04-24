@@ -39,7 +39,7 @@ Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
+    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properties || {}))
     properties.url = request.body.url.self
     colleague.kibitzer.bootstrap(request.body.republic, properties)
     return 200
@@ -49,7 +49,7 @@ Networked.prototype.join = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properites || {}))
+    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properties || {}))
     properties.url = request.body.url.self
     async(function () {
         console.log(request.body)
