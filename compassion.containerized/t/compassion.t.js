@@ -1,4 +1,4 @@
-require('proof')(8, require('cadence')(prove))
+require('proof')(9, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')

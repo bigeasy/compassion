@@ -36,6 +36,7 @@ function Local (destructible, colleagues, networkedUrl) {
         dispatcher.dispatch('POST /register', 'register')
         dispatcher.dispatch('GET /backlog', 'backlog')
         dispatcher.dispatch('POST /publish', 'publish')
+        dispatcher.dispatch('POST /record', 'record')
         dispatcher.dispatch('GET /ping', 'ping')
         dispatcher.dispatch('GET /health', 'health')
     })
@@ -192,6 +193,15 @@ Local.prototype.register = cadence(function (async, request) {
     }, function (result) {
         return result
     })
+})
+
+Local.prototype.record = cadence(function (async, request) {
+    this.events.push({
+        module: 'compassion',
+        method: 'record',
+        body: request.body
+    })
+    return 200
 })
 
 module.exports = Local

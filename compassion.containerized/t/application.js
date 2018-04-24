@@ -75,17 +75,17 @@ Application.prototype.join = cadence(function (async, request) {
         }, async())
     }, function (body) {
         this._okay.call(null, body, { a: 1 }, 'backlog')
-        return [ async.break, 200 ]
         this._ua.fetch({
+            url: 'http://127.0.0.1:8386/'
+        }, {
             token: this._token,
             post: { a: 1 },
             url: '/record',
-            gateways: [ null, jsonify(), raiseify() ]
+            parse: [ jsonify(), raiseify() ]
         }, async())
-    }, function (body) {
-        console.log('here')
-        process.exit()
-        okay(body, { a: 1 }, 'record')
+    }, function (body, response) {
+        console.log(body, response.statusCode)
+        this._okay.call(null, true, 'record')
         return 200
     })
 })
