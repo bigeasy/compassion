@@ -8,6 +8,8 @@ var Procedure = require('conduit/procedure')
 var Kibitzer = require('kibitz')
 var UserAgent = require('./ua')
 
+var crypto = require('crypto')
+
 var Monotonic = require('monotonic').asString
 
 // Sencha Connect middleware builder.
@@ -32,7 +34,7 @@ function Local (destructible, colleagues, networkedUrl) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
-        dispatcher.dispatch('POST /backlog', 'backlog')
+        dispatcher.dispatch('GET /backlog', 'backlog')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /ping', 'ping')
         dispatcher.dispatch('GET /health', 'health')
@@ -135,12 +137,17 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 }, async())
             }
         }, function () {
-            return 200
+            crypto.randomBytes(32, async())
+        }, function (bytes) {
+            var token = bytes.toString('hex')
+            this.colleagues.token[token] = colleague
+            console.log('yalp', token)
+            return { grant_type: 'authorization_code', access_token: token }
         })
     })
 })
 
-Local.prototype._getColleague = function () {
+Local.prototype._getColleague = function (request) {
     if (request.authorization.scheme != 'Bearer') {
         throw 401
     }
@@ -151,23 +158,25 @@ Local.prototype._getColleague = function () {
     return colleague
 }
 
+// TODO Abend if the colleague is not waiting on a `join` notification.
 Local.prototype.backlog = cadence(function (async, request) {
     var colleague = this._getColleague(request)
+    var government = colleague.kibitzer.paxos.government
     async(function () {
         colleague.ua.fetch({
-            url: this._getLeaderURL()
+            url: government.properties[government.majority[0]].url
         }, {
-            url: [ 'backlog', colleague.island ].join('/'),
+            url: './backlog',
             post: {
-                promise: colleague.kibitz.paxos.government.arrivals.promise[this.id]
+                promise: government.arrived.promise[colleague.initalizer.id]
             },
-            gateways: []
+            gateways: [ null, raiseify() ]
         }, async())
     }, function (stream, response) {
         if (!response.okay) {
             throw 503
         }
-        return function (response) { stream.pipe(response) }
+        return [ 200, response.headers, function (response) { stream.pipe(response) } ]
     })
 })
 

@@ -3,6 +3,8 @@ var Reactor = require('reactor')
 
 var logger = require('prolific.logger').createLogger('compassion.networked')
 
+var raiseify = require('vizsla/raiseify')
+
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
@@ -12,6 +14,7 @@ function Networked (destructible, colleagues) {
         dispatcher.dispatch('POST /:island/:id/join', 'join')
         dispatcher.dispatch('POST /:island/:id/kibitz', 'kibitz')
         dispatcher.dispatch('POST /:island/:id/broadcasts', 'broadcasts')
+        dispatcher.dispatch('POST /:island/:id/backlog', 'backlog')
         dispatcher.dispatch('POST /publish', 'publish')
         dispatcher.dispatch('GET /health', 'health')
     })
@@ -82,15 +85,15 @@ Networked.prototype.backlog = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     async(function () {
         colleague.ua.fetch({
-            url: '/backlog',
+            url: './backlog',
             post: request.body,
-            gateways: []
+            gateways: [ null, raiseify() ]
         }, async())
     }, function (stream, response) {
         if (!response.okay) {
             throw 503
         }
-        return function (response) { stream.pipe(response) }
+        return [ 200, response.headers, function (response) { stream.pipe(response) } ]
     })
 })
 

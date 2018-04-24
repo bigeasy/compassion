@@ -9,7 +9,7 @@ function Sidecar (options) {
 }
 
 module.exports = cadence(function (async, destructible, options) {
-    var colleagues = { island: {} }, local, networked
+    var colleagues = { island: {}, token: {} }, local, networked
     async(function () {
         local = new Local(destructible, colleagues,
             'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/')

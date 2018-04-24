@@ -14,6 +14,7 @@ function Application (id, okay) {
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /join', 'join')
         dispatcher.dispatch('POST /arrive', 'arrive')
+        dispatcher.dispatch('POST /backlog', 'backlog')
         dispatcher.dispatch('POST /acclimated', 'acclimated')
     })
 }
@@ -37,15 +38,16 @@ Application.prototype.register = cadence(function (async, url) {
                 receive: [ 'message' ],
                 reduced: [ 'message' ]
             },
-            gateways: [ jsonify(), raiseify() ]
+            gateways: [ jsonify(), raiseify(), null ]
         }, async())
     }, function (body, response) {
-        console.log(response)
-        console.log('xxx')
+        this._token = body.access_token
+        return []
     })
 })
 
 Application.prototype.backlog = cadence(function (async, request) {
+    this._okay.call(null, request.body, { promise: '3/0' }, 'backlog promise')
     return { a: 1 }
 })
 
@@ -63,21 +65,28 @@ Application.prototype.join = cadence(function (async, request) {
         key: 'third',
         url: 'http://127.0.0.1:8486/island/third/kibitz'
     }, 'properties')
-    return 200
     async(function () {
         this._ua.fetch({
+            url: 'http://127.0.0.1:8386/'
+        }, {
             token: this._token,
-            url: '/backlog'
+            url: '/backlog',
+            parse: [ jsonify(), raiseify() ]
         }, async())
     }, function (body) {
-        okay(body, { a: 1 }, 'backlog')
+        this._okay.call(null, body, { a: 1 }, 'backlog')
+        return [ async.break, 200 ]
         this._ua.fetch({
             token: this._token,
             post: { a: 1 },
-            url: '/record'
+            url: '/record',
+            gateways: [ null, jsonify(), raiseify() ]
         }, async())
     }, function (body) {
+        console.log('here')
+        process.exit()
         okay(body, { a: 1 }, 'record')
+        return 200
     })
 })
 
