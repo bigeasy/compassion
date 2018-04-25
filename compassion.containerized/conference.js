@@ -19,7 +19,6 @@ function Conference (id, registration) {
     this._url = registration.url
     this._government = null
     this.outbox = new Procession
-    this._boundary = '0'
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
     ; ('bootstrap join arrive acclimiated depart'.split(' ')).forEach(function (postback) {
@@ -31,10 +30,6 @@ function Conference (id, registration) {
     coalesce(registration.receive, []).forEach(function (method) {
         this._postbacks.receive[method] = true
     }, this)
-}
-
-Conference.prototype._nextBoundary = function () {
-    return this._boundary = Monotonic.increment(this._boundary, 0)
 }
 
 Conference.prototype._postback = cadence(function (async, path, envelope) {
