@@ -18,7 +18,6 @@ function Conference (id, registration, kibitzer) {
     this._id = id
     this._url = registration.url
     this._government = null
-    this.outbox = new Procession
     this._kibitzer = kibitzer
     this._cookie = '0'
     this._snapshots = new Cubbyhole
@@ -179,11 +178,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 government: this._government
             }, async())
         }, function () {
-            this.outbox.push({
-                module: 'compassion.containerzed',
-                method: 'acclimated',
-                body: null
-            })
+            this._kibitzer.acclimate()
         })
     } else {
         assert(entry.body.body)

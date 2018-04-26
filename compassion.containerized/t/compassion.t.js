@@ -97,7 +97,7 @@ function prove (async, okay) {
                         if (
                             event.type == 'entry' &&
                             event.id == 'third' &&
-                            event.entry.method == 'government'
+                            event.entry.promise == '6/0'
                         ) {
                             return true
                         }
@@ -114,7 +114,7 @@ function prove (async, okay) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'second' &&
-                        event.entry.promise == '3/2'
+                        event.entry.promise == '6/2'
                     ) {
                         return true
                     }
@@ -141,7 +141,7 @@ function prove (async, okay) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'third' &&
-                        event.entry.promise == '4/2'
+                        event.entry.promise == '7/2'
                     ) {
                         return true
                     }

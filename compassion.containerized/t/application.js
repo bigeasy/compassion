@@ -135,7 +135,7 @@ Application.prototype.reducedMessage = cadence(function (async, request) {
             '1/0': { from: 'first' },
             '2/0': { from: 'second' },
             '3/0': { from: 'third' },
-            '4/0': { from: 'fourth' }
+            '7/0': { from: 'fourth' }
         }, 'message reduced')
     }
     return 200
