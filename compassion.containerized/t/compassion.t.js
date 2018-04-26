@@ -1,4 +1,4 @@
-require('proof')(11, require('cadence')(prove))
+require('proof')(12, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')
@@ -141,7 +141,7 @@ function prove (async, okay) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'third' &&
-                        event.entry.promise == '7/2'
+                        event.entry.promise == '8/0'
                     ) {
                         return true
                     }

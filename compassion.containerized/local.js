@@ -68,21 +68,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         } else {
             existed = true
         }
-        var conference = new Conference(envelope.id, envelope, kibitzer)
-        /*
-        new Pump(conference.outbox.shifter(), function (envelope) {
-            switch(coalesce(envelope, {}).method) {
-            case 'acclimated':
-                kibitzer.acclimated()
-                break
-            case 'reduce':
-                kibitzer.publish(envelope)
-                break
-            }
-        }).pumpify(destructible.monitor('conference'))
-        */
+        var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
+        var log = kibitzer.paxos.log.shifter()
         destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
-        kibitzer.paxos.log.shifter().pump(conference, 'entry', destructible.monitor('entries'))
+        destructible.destruct.wait(log, 'destroy')
+        log.pump(conference, 'entry', destructible.monitor('entries'))
         var events = this.events
         kibitzer.paxos.log.shifter().pump(function (entry) {
             if (entry != null) {
@@ -93,6 +83,9 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 })
             }
         }, destructible.monitor('events'))
+        destructible.destruct.wait(this, function () {
+            delete this.colleagues.island[envelope.island][envelope.id]
+        })
         var colleague = this.colleagues.island[envelope.island][envelope.id] = {
             events: events,
             initalizer: envelope,
@@ -142,7 +135,6 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         }, function (bytes) {
             var token = bytes.toString('hex')
             this.colleagues.token[token] = colleague
-            console.log('yalp', token)
             return { grant_type: 'authorization_code', access_token: token }
         })
     })

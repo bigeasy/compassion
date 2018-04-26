@@ -19,6 +19,7 @@ function Application (id, okay) {
         dispatcher.dispatch('POST /acclimated', 'acclimated')
         dispatcher.dispatch('POST /receive/message', 'receiveMessage')
         dispatcher.dispatch('POST /reduced/message', 'reducedMessage')
+        dispatcher.dispatch('POST /depart', 'depart')
     })
 }
 
@@ -38,6 +39,7 @@ Application.prototype.register = cadence(function (async, url) {
                 arrive: true,
                 depart: true,
                 acclimated: true,
+                government: false,
                 receive: [ 'message' ],
                 reduced: [ 'message' ]
             },
@@ -98,21 +100,28 @@ Application.prototype.arrive = cadence(function (async, request) {
     }
     if (request.body.arrived.id == 'second') {
         this._okay.call(null, true, 'arrived')
-    } else if (request.body.arrived.id == 'fourth') {
-        // return 500
+    } else if (request.body.self == 'fourth') {
+        return 500
     }
     return 200
 })
 
 Application.prototype.acclimated = cadence(function (async, request) {
-    if (request.body.government.arrived.id == 'second') {
-        this._okay.call(null, true, 'arrived')
+    console.log('acclimated', request.body.self)
+    if (request.body.self == 'fourth') {
+        console.log(request.body)
+        this._okay.call(null, true, 'acclimated')
+        return 500
     }
     return 200
 })
 
 Application.prototype.depart = cadence(function (async, request) {
-    okay(request.body.government.arrival.id == 'third', 'departed')
+    console.log(request.body)
+    if (request.body.self == 'second') {
+        this._okay.call(null, request.body.departed.id, 'fourth', 'departed')
+    }
+    return 200
 })
 
 var receiveNumber = 0
@@ -134,8 +143,7 @@ Application.prototype.reducedMessage = cadence(function (async, request) {
         this._okay.call(null, request.body.body.mapped, {
             '1/0': { from: 'first' },
             '2/0': { from: 'second' },
-            '3/0': { from: 'third' },
-            '7/0': { from: 'fourth' }
+            '3/0': { from: 'third' }
         }, 'message reduced')
     }
     return 200
