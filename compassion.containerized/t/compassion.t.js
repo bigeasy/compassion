@@ -1,4 +1,4 @@
-require('proof')(12, require('cadence')(prove))
+require('proof')(13, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')
@@ -137,10 +137,52 @@ function prove (async, okay) {
                     }
                     return false
                 }, async())
-                applications[2].blocker.unlatch()
+                applications[2].blocker.notify()
+            }, function () {
+                sidecar.events.shifter().join(function (event) {
+                    if (
+                        event.type == 'entry' &&
+                        event.id == 'second' &&
+                        event.entry.promise == '8/2'
+                    ) {
+                        return true
+                    }
+                    return false
+                }, async())
+                application.broadcast(1, async())
+            }, function () {
+                var application = new Application('fifth', okay)
+                applications.push(application)
+                async(function () {
+                    var server = http.createServer(application.reactor.middleware)
+                    destroyer(server)
+                    destructible.destruct.wait(server, 'destroy')
+                    delta(destructible.monitor('fifth')).ee(server).on('close')
+                    server.listen(8083, '127.0.0.1', async())
+                }, function () {
+                    application.register('http://127.0.0.1:8083/', async())
+                }, function () {
+                    destructible.destruct.wait(application.arrived, 'unlatch')
+                    application.arrived.wait(async())
+                })
+            }, function () {
+                sidecar.events.shifter().join(function (event) {
+                    console.log(event.id, event.entry)
+                    if (
+                        event.type == 'entry' &&
+                        event.id == 'third' &&
+                        event.entry.promise == 'a/0'
+                    ) {
+                        return true
+                    }
+                    return false
+                }, async())
+                applications[2].blocker.notify()
             })
         }, function () {
             setTimeout(async(), 1000)
+        }, function () {
+            console.log('here')
         })
     })
 }

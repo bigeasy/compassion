@@ -107,9 +107,7 @@ Application.prototype.arrive = cadence(function (async, request) {
 })
 
 Application.prototype.acclimated = cadence(function (async, request) {
-    console.log('acclimated', request.body.self)
     if (request.body.self == 'fourth') {
-        console.log(request.body)
         this._okay.call(null, true, 'acclimated')
         return 500
     }
@@ -139,12 +137,24 @@ Application.prototype.receiveMessage = cadence(function (async, request) {
 
 var reducedNumber = 0
 Application.prototype.reducedMessage = cadence(function (async, request) {
-    if (request.body.self == 'first' && ++reducedNumber == 1) {
-        this._okay.call(null, request.body.body.mapped, {
-            '1/0': { from: 'first' },
-            '2/0': { from: 'second' },
-            '3/0': { from: 'third' }
-        }, 'message reduced')
+    if (request.body.self == 'first') {
+        switch (++reducedNumber) {
+        case 1:
+            this._okay.call(null, request.body.body.mapped, {
+                '1/0': { from: 'first' },
+                '2/0': { from: 'second' },
+                '3/0': { from: 'third' }
+            }, 'message reduced during departure')
+            break
+        case 2:
+            this._okay.call(null, request.body.body.mapped, {
+                '1/0': { from: 'first' },
+                '2/0': { from: 'second' },
+                '3/0': { from: 'third' },
+                '9/0': { from: 'fifth' }
+            }, 'message reduced after backlog')
+            break
+        }
     }
     return 200
 })
