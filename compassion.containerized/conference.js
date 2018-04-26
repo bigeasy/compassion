@@ -10,7 +10,7 @@ var jsonify = require('vizsla/jsonify')
 var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 
-function Conference (id, registration) {
+function Conference (id, registration, kibitzer) {
     this._ua = new Vizsla().bind({
         url: registration.url,
         gateways: [ nullify([ 0 ]), raiseify() ]
@@ -19,8 +19,11 @@ function Conference (id, registration) {
     this._url = registration.url
     this._government = null
     this.outbox = new Procession
+    this._kibitzer = kibitzer
+    this._cookie = '0'
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
+    this._broadcasts = {}
     ; ('bootstrap join arrive acclimiated depart'.split(' ')).forEach(function (postback) {
         this._postbacks[postback] = !! registration[postback]
     }, this)
@@ -41,11 +44,14 @@ Conference.prototype._postback = cadence(function (async, path, envelope) {
         async([function () {
             this._ua.fetch({
                 url: path.join('/'),
-                post: envelope
+                post: envelope,
+                parse: [ jsonify(), raiseify() ]
             }, async())
         }, function (error) {
             throw interrupt('postback', error)
         }])
+    } else {
+        return null
     }
 })
 
@@ -102,7 +108,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                         }, function (body) {
                             async.forEach(function (broadcast) {
                                 async(function () {
-                                    this._consume({
+                                    this.entry({
                                         // paxos
                                         body: {
                                             // islander
@@ -120,7 +126,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                     }, async())
                                 }, function () {
                                     async.forEach(function (promise) {
-                                        this._consume({
+                                        this.entry({
                                             // paxos
                                             body: {
                                                 // islander
@@ -203,11 +209,10 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     body: envelope.body.body
                 }, async())
             }, function (response) {
-                this.outbox.push({
-                    module: 'compassion.containerized',
+                this._kibitzer.publish({
+                    module: 'compassion',
                     method: 'reduce',
                     key: envelope.key,
-                    internal: coalesce(envelope.internal, false),
                     from: this._government.arrived.promise[this._id],
                     body: coalesce(response)
                 })
@@ -254,5 +259,25 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
         delete this._broadcasts[broadcast.key]
     }
 })
+
+Conference.prototype.broadcast = function (method, message) {
+    var cookie = this._nextCookie()
+    var uniqueId = this._government.arrived.promise[this._id]
+    var key = method + '[' + uniqueId + '](' + cookie + ')'
+    this._kibitzer.publish({
+        module: 'conference',
+        method: 'broadcast',
+        key: key,
+        body: {
+            module: 'conference',
+            method: method,
+            body: message
+        }
+    })
+}
+
+Conference.prototype._nextCookie = function () {
+    return this._cookie = Monotonic.increment(this._cookie, 0)
+}
 
 module.exports = Conference

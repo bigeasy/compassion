@@ -25,7 +25,6 @@ Networked.prototype.index = cadence(function (async) {
 })
 
 Networked.prototype._getColleague = function (island, id) {
-    console.log(this._colleagues)
     if (this._colleagues.island[island] == null || this._colleagues.island[island][id] == null) {
         throw 404
     }
@@ -55,7 +54,6 @@ Networked.prototype.join = cadence(function (async, request, island, id) {
     var properties = JSON.parse(JSON.stringify(colleague.initalizer.properties || {}))
     properties.url = request.body.url.self
     async(function () {
-        console.log(request.body)
         colleague.kibitzer.join(request.body.republic, { url: request.body.url.leader }, properties, async())
     }, function (success) {
         if (!success) {
@@ -67,7 +65,6 @@ Networked.prototype.join = cadence(function (async, request, island, id) {
 })
 
 Networked.prototype.kibitz = cadence(function (async, request, island, id) {
-    console.log('kibitz', request.body)
     logger.info('recorded', {
         source: 'middleware',
         method: request.body.method,

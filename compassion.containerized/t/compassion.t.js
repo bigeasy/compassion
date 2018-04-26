@@ -1,4 +1,4 @@
-require('proof')(9, require('cadence')(prove))
+require('proof')(11, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')
@@ -109,8 +109,48 @@ function prove (async, okay) {
             }, function () {
                 destructible.destruct.wait(application.arrived, 'unlatch')
                 application.arrived.wait(async())
+            }, function () {
+                sidecar.events.shifter().join(function (event) {
+                    if (
+                        event.type == 'entry' &&
+                        event.id == 'second' &&
+                        event.entry.promise == '3/2'
+                    ) {
+                        return true
+                    }
+                    return false
+                }, async())
+                application.broadcast(1, async())
+            }, function () {
+                var application = new Application('fourth', okay)
+                applications.push(application)
+                async(function () {
+                    var server = http.createServer(application.reactor.middleware)
+                    destroyer(server)
+                    destructible.destruct.wait(server, 'destroy')
+                    delta(destructible.monitor('fourth')).ee(server).on('close')
+                    server.listen(8082, '127.0.0.1', async())
+                }, function () {
+                    application.register('http://127.0.0.1:8082/', async())
+                }, function () {
+                    destructible.destruct.wait(application.arrived, 'unlatch')
+                    application.arrived.wait(async())
+                })
+            }, function () {
+                sidecar.events.shifter().join(function (event) {
+                    if (
+                        event.type == 'entry' &&
+                        event.id == 'third' &&
+                        event.entry.promise == '4/2'
+                    ) {
+                        return true
+                    }
+                    return false
+                }, async())
+                applications[2].blocker.unlatch()
             })
         }, function () {
+            setTimeout(async(), 1000)
         })
     })
 }

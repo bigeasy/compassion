@@ -35,7 +35,7 @@ function Local (destructible, colleagues, networkedUrl) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
         dispatcher.dispatch('GET /backlog', 'backlog')
-        dispatcher.dispatch('POST /publish', 'publish')
+        dispatcher.dispatch('POST /broadcast', 'broadcast')
         dispatcher.dispatch('POST /record', 'record')
         dispatcher.dispatch('GET /ping', 'ping')
         dispatcher.dispatch('GET /health', 'health')
@@ -68,7 +68,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         } else {
             existed = true
         }
-        var conference = new Conference(envelope.id, envelope)
+        var conference = new Conference(envelope.id, envelope, kibitzer)
         /*
         new Pump(conference.outbox.shifter(), function (envelope) {
             switch(coalesce(envelope, {}).method) {
@@ -201,6 +201,12 @@ Local.prototype.record = cadence(function (async, request) {
         method: 'record',
         body: request.body
     })
+    return 200
+})
+
+Local.prototype.broadcast = cadence(function (async, request) {
+    var colleague = this._getColleague(request)
+    colleague.conference.broadcast(request.body.method, request.body.message)
     return 200
 })
 
