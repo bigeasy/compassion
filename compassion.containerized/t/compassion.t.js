@@ -110,16 +110,6 @@ function prove (async, okay) {
                 destructible.destruct.wait(application.arrived, 'unlatch')
                 application.arrived.wait(async())
             }, function () {
-                sidecar.events.shifter().join(function (event) {
-                    if (
-                        event.type == 'entry' &&
-                        event.id == 'second' &&
-                        event.entry.promise == '6/2'
-                    ) {
-                        return true
-                    }
-                    return false
-                }, async())
                 application.broadcast(1, async())
             }, function () {
                 var application = new Application('fourth', okay)
