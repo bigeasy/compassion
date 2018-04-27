@@ -1,4 +1,4 @@
-require('proof')(13, require('cadence')(prove))
+require('proof')(15, require('cadence')(prove))
 
 function prove (async, okay) {
     var Sidecar = require('../sidecar')
@@ -53,6 +53,21 @@ function prove (async, okay) {
         }, function (body) {
             okay(body, 'Compassion Networked API\n', 'networked index')
         }, function () {
+            ua.fetch({
+                url: 'http://127.0.0.1:8386/',
+            }, {
+                url: './backlog'
+            }, async())
+        }, function (body, response) {
+            okay(response.statusCode, 401, 'no authorization')
+            ua.fetch({
+                url: 'http://127.0.0.1:8386/',
+            }, {
+                token: 'x',
+                url: './backlog'
+            }, async())
+        }, function (body, response) {
+            okay(response.statusCode, 401, 'not found')
             var application = new Application('first', okay)
             applications.push(application)
             async(function () {

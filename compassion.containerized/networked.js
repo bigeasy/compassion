@@ -3,6 +3,8 @@ var Reactor = require('reactor')
 
 var logger = require('prolific.logger').createLogger('compassion.networked')
 
+var coalesce = require('extant')
+
 var raiseify = require('vizsla/raiseify')
 
 function Networked (destructible, colleagues) {
@@ -41,7 +43,7 @@ Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properties || {}))
+    var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
     properties.url = request.body.url.self
     colleague.kibitzer.bootstrap(request.body.republic, properties)
     return 200
@@ -51,7 +53,7 @@ Networked.prototype.join = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
     colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(colleague.initalizer.properties || {}))
+    var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
     properties.url = request.body.url.self
     async(function () {
         colleague.kibitzer.join(request.body.republic, { url: request.body.url.leader }, properties, async())
