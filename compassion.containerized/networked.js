@@ -91,12 +91,6 @@ Networked.prototype.backlog = cadence(function (async, request, island, id) {
     })
 })
 
-Networked.prototype.register = cadence(function (async) {
-    // If we already have one and it doesn't match, then we destroy this one.
-    // Create a new instance.
-    destructible.monitor('colleague', true, this, 'colleague', request.body, async())
-})
-
 Networked.prototype.health = cadence(function (async) {
     var colleagues = []
     for (var island in this._islands) {
