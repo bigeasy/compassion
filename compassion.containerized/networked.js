@@ -13,8 +13,7 @@ function Networked (destructible, colleagues) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('GET /island/:island/islanders', 'islanders')
-        dispatcher.dispatch('POST /island/:island/islander/:id/bootstrap', 'bootstrap')
-        dispatcher.dispatch('POST /island/:island/islander/:id/join', 'join')
+        dispatcher.dispatch('POST /island/:island/islander/:id/arrive', 'arrive')
         dispatcher.dispatch('POST /island/:island/islander/:id/kibitz', 'kibitz')
         dispatcher.dispatch('POST /island/:island/islander/:id/broadcasts', 'broadcasts')
         dispatcher.dispatch('POST /island/:island/islander/:id/backlog', 'backlog')
@@ -39,31 +38,10 @@ Networked.prototype._alreadyStarted = function (colleague) {
     }
 }
 
-Networked.prototype.bootstrap = cadence(function (async, request, island, id) {
+Networked.prototype.arrive = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     this._alreadyStarted(colleague)
-    colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
-    properties.url = request.body.url.self
-    colleague.kibitzer.bootstrap(request.body.republic, properties)
-    return 200
-})
-
-Networked.prototype.join = cadence(function (async, request, island, id) {
-    var colleague = this._getColleague(island, id)
-    this._alreadyStarted(colleague)
-    colleague.initialized = true
-    var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
-    properties.url = request.body.url.self
-    async(function () {
-        colleague.kibitzer.join(request.body.republic, { url: request.body.url.leader }, properties, async())
-    }, function (success) {
-        if (!success) {
-            colleague.destructible.destroy()
-            throw 500
-        }
-        return 200
-    })
+    return colleague.kibitzer.arrive(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
 })
 
 Networked.prototype.kibitz = cadence(function (async, request, island, id) {

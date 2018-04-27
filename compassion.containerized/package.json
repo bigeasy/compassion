@@ -27,7 +27,7 @@
                             "cubbyhole":                    "1.0.x",
                             "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
-                            "kibitz":                       "0.19.x",
+                            "kibitz":                       "0.20.x",
                             "reactor":                      "10.2.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "3.4.x",

@@ -21,6 +21,8 @@ var url = require('url')
 
 var Procession = require('procession')
 
+var coalesce = require('extant')
+
 function Local (destructible, colleagues, networkedUrl) {
     this._destructible = destructible
     this.colleagues = colleagues
@@ -97,8 +99,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             })
         }
         async(function () {
+            var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
             var kibitzUrl = url.resolve(this._networkedUrl, [ '', 'island', envelope.island, 'islander', envelope.id, 'kibitz' ].join('/'))
+            properties.url = kibitzUrl
             if (existed) {
+                colleague.kibitzer.join(0)
                 var island = this.colleagues.island[envelope.island]
                 var government = Object.keys(island).map(function (id) {
                     return island[id].kibitzer.paxos.government
@@ -107,28 +112,20 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 }).pop()
                 var leaderUrl = government.properties[government.majority[0]].url
                 this._ua.fetch({
-                    url: kibitzUrl,
+                    url: leaderUrl,
                     timeout: 1000,
                     gateways: [ jsonify(), raiseify() ]
                 }, {
-                    url: './join',
+                    url: './arrive',
                     post: {
                         republic: 0,
-                        url: { self: kibitzUrl, leader: leaderUrl }
+                        id: colleague.kibitzer.paxos.id,
+                        cookie: colleague.kibitzer.paxos.cookie,
+                        properties: properties
                     }
                 }, async())
             } else {
-                this._ua.fetch({
-                    url: kibitzUrl,
-                    timeout: 1000,
-                    gateways: [ jsonify(), raiseify() ]
-                }, {
-                    url: './bootstrap',
-                    post: {
-                        republic: 0,
-                        url: { self: kibitzUrl }
-                    }
-                }, async())
+                colleague.kibitzer.bootstrap(0, properties)
             }
         }, function () {
             crypto.randomBytes(32, async())
