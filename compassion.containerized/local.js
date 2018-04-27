@@ -173,10 +173,6 @@ Local.prototype.backlog = cadence(function (async, request) {
     })
 })
 
-Local.prototype.broadcast = cadence(function (async, request) {
-    this._getColleague(request).broadcast(request.method, request.message)
-})
-
 Local.prototype.register = cadence(function (async, request) {
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
