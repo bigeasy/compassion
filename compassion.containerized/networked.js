@@ -87,9 +87,6 @@ Networked.prototype.backlog = cadence(function (async, request, island, id) {
             gateways: [ null, raiseify() ]
         }, async())
     }, function (stream, response) {
-        if (!response.okay) {
-            throw 503
-        }
         return [ 200, response.headers, function (response) { stream.pipe(response) } ]
     })
 })
