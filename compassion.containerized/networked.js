@@ -10,12 +10,12 @@ function Networked (destructible, colleagues) {
     this._colleagues = colleagues
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('POST /:island/:id/bootstrap', 'bootstrap')
-        dispatcher.dispatch('POST /:island/:id/join', 'join')
-        dispatcher.dispatch('POST /:island/:id/kibitz', 'kibitz')
-        dispatcher.dispatch('POST /:island/:id/broadcasts', 'broadcasts')
-        dispatcher.dispatch('POST /:island/:id/backlog', 'backlog')
-        dispatcher.dispatch('POST /publish', 'publish')
+        dispatcher.dispatch('GET /island/:island/islanders', 'islanders')
+        dispatcher.dispatch('POST /island/:island/islander/:id/bootstrap', 'bootstrap')
+        dispatcher.dispatch('POST /island/:island/islander/:id/join', 'join')
+        dispatcher.dispatch('POST /island/:island/islander/:id/kibitz', 'kibitz')
+        dispatcher.dispatch('POST /island/:island/islander/:id/broadcasts', 'broadcasts')
+        dispatcher.dispatch('POST /island/:island/islander/:id/backlog', 'backlog')
         dispatcher.dispatch('GET /health', 'health')
     })
 }

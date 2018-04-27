@@ -97,7 +97,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             })
         }
         async(function () {
-            var kibitzUrl = url.resolve(this._networkedUrl, [ '', envelope.island, envelope.id, 'kibitz' ].join('/'))
+            var kibitzUrl = url.resolve(this._networkedUrl, [ '', 'island', envelope.island, 'islander', envelope.id, 'kibitz' ].join('/'))
             if (existed) {
                 var island = this.colleagues.island[envelope.island]
                 var government = Object.keys(island).map(function (id) {
@@ -119,11 +119,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 }, async())
             } else {
                 this._ua.fetch({
-                    url: this._networkedUrl,
+                    url: kibitzUrl,
                     timeout: 1000,
                     gateways: [ jsonify(), raiseify() ]
                 }, {
-                    url: [ '', envelope.island, envelope.id, 'bootstrap' ].join('/'),
+                    url: './bootstrap',
                     post: {
                         republic: 0,
                         url: { self: kibitzUrl }

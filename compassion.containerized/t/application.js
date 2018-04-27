@@ -57,7 +57,7 @@ Application.prototype.backlog = cadence(function (async, request) {
 })
 
 Application.prototype.bootstrap = cadence(function (async, request) {
-    this._okay.call(null, request.body.government.properties.first.url, 'http://127.0.0.1:8486/island/first/kibitz', 'url')
+    this._okay.call(null, request.body.government.properties.first.url, 'http://127.0.0.1:8486/island/island/islander/first/kibitz', 'url')
     return 200
 })
 
@@ -68,7 +68,7 @@ Application.prototype.join = cadence(function (async, request) {
     }
     this._okay.call(null, envelope.government.properties.third, {
         key: 'third',
-        url: 'http://127.0.0.1:8486/island/third/kibitz'
+        url: 'http://127.0.0.1:8486/island/island/islander/third/kibitz'
     }, 'properties')
     async(function () {
         this._ua.fetch({
