@@ -2,14 +2,14 @@ require('proof')(7, prove)
 
 function prove (okay) {
     var discovery = require('../discovery')
-    okay(discovery('a', [], true), null, 'empty')
-    okay(discovery('a', [{ id: 'x' }], true), null, 'not found')
-    okay(discovery('a', [{ id: 'a', republic: 0 }], false), null, 'bootstrap incomplete')
+    okay(discovery('a', [], true), { action: 'retry' }, 'empty')
+    okay(discovery('a', [{ id: 'x' }], true), { action: 'retry' }, 'not found')
+    okay(discovery('a', [{ id: 'a', republic: 0 }], false), { action: 'retry' }, 'bootstrap incomplete')
     okay(discovery('a', [{
         id: 'a', republic: 0, cookie: 2,
     }, {
         id: 'b', republic: 0, cookie: 1
-    }], true), null, 'bootstrap not earliest')
+    }], true), { action: 'retry' }, 'bootstrap not earliest')
     okay(discovery('a', [{
         id: 'a', republic: 0, cookie: 1, url: 'http://127.0.0.1:8888/'
     }, {
@@ -29,7 +29,7 @@ function prove (okay) {
             promise: '2/0',
             majority: [ 'b', 'c' ]
         }
-    }], true), null, 'join collapsed')
+    }], true), { action: 'retry' }, 'join collapsed')
     okay(discovery('a', [{
         id: 'a',
         republic: 0,
