@@ -28,6 +28,8 @@
                             "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
                             "kibitz":                       "0.20.x",
+                            "monotonic":                    "3.0.x",
+                            "prolific.logger":              "6.0.x",
                             "reactor":                      "10.2.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "3.4.x",

@@ -1,16 +1,16 @@
 require('proof')(7, prove)
 
 function prove (okay) {
-    var discovery = require('../discovery')
-    okay(discovery('a', [], true), { action: 'retry' }, 'empty')
-    okay(discovery('a', [{ id: 'x' }], true), { action: 'retry' }, 'not found')
-    okay(discovery('a', [{ id: 'a', republic: 0 }], false), { action: 'retry' }, 'bootstrap incomplete')
-    okay(discovery('a', [{
+    var discover = require('../discover')
+    okay(discover('a', [], true), { action: 'retry' }, 'empty')
+    okay(discover('a', [{ id: 'x' }], true), { action: 'retry' }, 'not found')
+    okay(discover('a', [{ id: 'a', republic: 0 }], false), { action: 'retry' }, 'bootstrap incomplete')
+    okay(discover('a', [{
         id: 'a', republic: 0, cookie: 2,
     }, {
         id: 'b', republic: 0, cookie: 1
     }], true), { action: 'retry' }, 'bootstrap not earliest')
-    okay(discovery('a', [{
+    okay(discover('a', [{
         id: 'a', republic: 0, cookie: 1, url: 'http://127.0.0.1:8888/'
     }, {
         id: 'b', republic: 0, cookie: 2
@@ -19,7 +19,7 @@ function prove (okay) {
         url: 'http://127.0.0.1:8888/',
         republic: 1
     }, 'bootstrap')
-    okay(discovery('a', [{
+    okay(discover('a', [{
         id: 'a', republic: 0, cookie: 1, url: 'http://127.0.0.1:8888/'
     }, {
         id: 'b',
@@ -30,7 +30,7 @@ function prove (okay) {
             majority: [ 'b', 'c' ]
         }
     }], true), { action: 'retry' }, 'join collapsed')
-    okay(discovery('a', [{
+    okay(discover('a', [{
         id: 'a',
         republic: 0,
         cookie: 1,
