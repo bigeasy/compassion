@@ -32,15 +32,8 @@ Networked.prototype._getColleague = function (island, id) {
     return this._colleagues.island[island][id]
 }
 
-Networked.prototype._alreadyStarted = function (colleague) {
-    if (colleague.initialized) {
-        return 401
-    }
-}
-
 Networked.prototype.arrive = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
-    this._alreadyStarted(colleague)
     return colleague.kibitzer.arrive(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
 })
 
