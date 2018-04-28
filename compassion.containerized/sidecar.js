@@ -5,9 +5,6 @@ var http = require('http')
 var delta = require('delta')
 var destroyer = require('server-destroy')
 
-function Sidecar (options) {
-}
-
 module.exports = cadence(function (async, destructible, options) {
     var colleagues = { island: {}, token: {} }, local, networked
     async(function () {
