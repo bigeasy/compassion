@@ -46,7 +46,7 @@ module.exports =  function (id, members, complete) {
     var government = unsplit[0].government
     var ids = unsplit.map(function (member) { return member.id })
 
-    if (government.majority.filter(function (id) {
+    if (government.majority.concat(government.minority).filter(function (id) {
         return !! ~ids.indexOf(id)
     }).length != government.majority.length) {
         return { action: 'retry' }
