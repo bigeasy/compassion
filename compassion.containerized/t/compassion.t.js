@@ -1,7 +1,7 @@
 require('proof')(15, require('cadence')(prove))
 
 function prove (async, okay) {
-    var Sidecar = require('../sidecar')
+    var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
     var Application = require('./application')
@@ -28,7 +28,7 @@ function prove (async, okay) {
     async([function () {
         destructible.destroy()
     }], function () {
-        destructible.monitor('sidecar', Sidecar, {
+        destructible.monitor('containerized', Containerized, {
             bind: {
                 local: {
                     listen: function (server, callback) {
@@ -44,7 +44,7 @@ function prove (async, okay) {
                 }
             }
         }, async())
-    }, function (sidecar) {
+    }, function (containerized) {
         async(function () {
             ua.fetch({ url: 'http://127.0.0.1:8386' }, async())
         }, function (body) {
@@ -108,7 +108,7 @@ function prove (async, okay) {
                 server.listen(8081, '127.0.0.1', async())
             }, function () {
                 async(function () {
-                    sidecar.events.shifter().join(function (event) {
+                    containerized.events.shifter().join(function (event) {
                         if (
                             event.type == 'entry' &&
                             event.id == 'third' &&
@@ -142,7 +142,7 @@ function prove (async, okay) {
                     application.arrived.wait(async())
                 })
             }, function () {
-                sidecar.events.shifter().join(function (event) {
+                containerized.events.shifter().join(function (event) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'third' &&
@@ -154,7 +154,7 @@ function prove (async, okay) {
                 }, async())
                 applications[2].blocker.notify()
             }, function () {
-                sidecar.events.shifter().join(function (event) {
+                containerized.events.shifter().join(function (event) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'second' &&
@@ -181,7 +181,7 @@ function prove (async, okay) {
                     application.arrived.wait(async())
                 })
             }, function () {
-                sidecar.events.shifter().join(function (event) {
+                containerized.events.shifter().join(function (event) {
                     console.log(event.id, event.entry)
                     if (
                         event.type == 'entry' &&
