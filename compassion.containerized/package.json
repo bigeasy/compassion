@@ -23,7 +23,7 @@
     {
                             "cadence":                      "1.0.x",
                             "extant":                       "1.0.x",
-                            "conduit":                      "2.8.x",
+                            "conduit":                      "2.9.x",
                             "cubbyhole":                    "1.0.x",
                             "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
