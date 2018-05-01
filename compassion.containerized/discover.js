@@ -17,10 +17,10 @@ module.exports =  function (id, members, complete) {
     }
 
     members.sort(function (a, b) {
-        return b.republic - a.republic
+        return b.government.republic - a.government.republic
     })
 
-    if (members[0].republic == 0) {
+    if (members[0].government.republic == 0) {
         if (!complete) {
             return { action: 'retry' }
         }
@@ -36,7 +36,7 @@ module.exports =  function (id, members, complete) {
     }
 
     var unsplit = members.filter(function (member) {
-        return member.republic == members[0].republic
+        return member.government.republic == members[0].government.republic
     })
 
     unsplit.sort(function (a, b) {
@@ -57,6 +57,6 @@ module.exports =  function (id, members, complete) {
     return {
         action: 'join',
         self: self.url,
-        republic: members[0].republic
+        republic: members[0].government.republic
     }
 }
