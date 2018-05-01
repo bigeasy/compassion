@@ -41,6 +41,7 @@
     },
     "devDependencies":
     {
+                            "interlocutor":                 "0.5.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",
