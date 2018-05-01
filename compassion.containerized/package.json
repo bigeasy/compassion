@@ -28,7 +28,7 @@
                             "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
                             "interrupt":                    "6.2.x",
-                            "kibitz":                       "0.20.x",
+                            "kibitz":                       "0.21.x",
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.18.x",
                             "prolific.logger":              "6.0.x",
