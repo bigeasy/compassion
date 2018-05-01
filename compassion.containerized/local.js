@@ -53,9 +53,9 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.monitor('caller', Caller, async())
         destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout, envelope.island, envelope.id), 'request', async())
     }, function (caller, procedure) {
-        caller.outbox.shifter().pump(procedure.inbox)
+        caller.outbox.pump(procedure.inbox)
         destructible.destruct.wait(function () { caller.inbox.push(null) })
-        procedure.outbox.shifter().pump(caller.inbox)
+        procedure.outbox.pump(caller.inbox)
         destructible.destruct.wait(function () { procedure.inbox.push(null) })
         destructible.monitor('kibitzer', Kibitzer, {
             caller: caller,
@@ -71,12 +71,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             existed = true
         }
         var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
-        var log = kibitzer.paxos.log.shifter()
+        var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
         destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
         destructible.destruct.wait(log, 'destroy')
-        log.pump(conference, 'entry', destructible.monitor('entries'))
         var events = this.events
-        kibitzer.paxos.log.shifter().pump(function (entry) {
+        kibitzer.paxos.log.pump(function (entry) {
             if (entry != null) {
                 events.push({
                     type: 'entry',
