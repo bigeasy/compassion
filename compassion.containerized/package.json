@@ -27,6 +27,7 @@
                             "cubbyhole":                    "1.0.x",
                             "destructible":                 "0.28.x",
                             "delta":                        "1.2.x",
+                            "interlocutor":                 "0.5.x",
                             "interrupt":                    "6.2.x",
                             "kibitz":                       "0.21.x",
                             "monotonic":                    "3.0.x",
