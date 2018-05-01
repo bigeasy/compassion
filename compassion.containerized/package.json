@@ -30,7 +30,7 @@
                             "interrupt":                    "6.2.x",
                             "kibitz":                       "0.21.x",
                             "monotonic":                    "3.0.x",
-                            "procession":                   "0.18.x",
+                            "procession":                   "0.19.x",
                             "prolific.logger":              "6.0.x",
                             "reactor":                      "10.2.x",
                             "rescue":                       "3.2.x",
