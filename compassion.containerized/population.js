@@ -20,10 +20,18 @@ Population.prototype.census = cadence(function (async, island) {
                         url: [ '.', 'island', island, 'islanders' ].join('/')
                     }, async())
                 }, function (body, response) {
-                    body.forEach(function (member) {
-                        member.url = url.resolve(location, [ '.', 'island', island, 'islander', member.id, ''].join('/'))
-                    })
-                    return [ body ]
+                    if (!body) {
+                        return null
+                    }
+                    return [ body.map(function (member) {
+                        var path = [ '.', 'island', island, 'islander', member.id, ''].join('/')
+                        return {
+                            id: member.id,
+                            government: member.government,
+                            cookie: member.cookie,
+                            url: url.resolve(location, path)
+                        }
+                    }) ]
                 })
             })(instances)
         }, function (results) {

@@ -18,7 +18,15 @@ function prove (async, okay) {
         })
     }
 
-    var islanders = [ [ 200, { 'content-type': 'application/json' }, [{ id: 'first' }, { id: 'second' }]], 404 ]
+    var islanders = [ [ 200, { 'content-type': 'application/json' }, [{
+        id: 'first',
+        government: {},
+        cookie: 0
+    }, {
+        id: 'second',
+        government: {},
+        cookie: 0
+    }]], 404 ]
     Service.prototype.islanders = cadence(function (async) {
         return islanders.shift()
     })
@@ -36,6 +44,16 @@ function prove (async, okay) {
         population.census('island', async())
     }, function (members, complete) {
         okay(!complete, 'incomplete')
-        okay(members, [{ id: 'first' }, { id: 'second' }], 'members')
+        okay(members, [{
+            id: 'first',
+            url: 'http://127.0.0.1:8080/island/island/islander/first/',
+            government: {},
+            cookie: 0
+        }, {
+            id: 'second',
+            url: 'http://127.0.0.1:8080/island/island/islander/second/',
+            government: {},
+            cookie: 0
+        }], 'members')
     })
 }

@@ -22,7 +22,6 @@ module.exports =  function (id, members, complete) {
     })
 
     if (members[0].government.republic == null) {
-        console.log('no no bad')
         if (!complete) {
             return { action: 'retry' }
         }
