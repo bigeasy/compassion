@@ -125,21 +125,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 island: colleague.initalizer.island,
                 id: colleague.initalizer.id
             })
-            return
-            if (existed) {
-                colleague.kibitzer.join(0)
-                var island = this.colleagues.island[envelope.island]
-                var government = Object.keys(island).map(function (id) {
-                    return island[id].kibitzer.paxos.government
-                }).sort(function (a, b) {
-                    return Monotonic.compare(a.promise, b.promise)
-                }).pop()
-                var leaderUrl = government.properties[government.majority[0]].url
-            } else {
-                colleague.kibitzer.bootstrap(0, properties)
-            }
         }, function () {
-        console.log('x')
             crypto.randomBytes(32, async())
         }, function (bytes) {
             var token = bytes.toString('hex')
