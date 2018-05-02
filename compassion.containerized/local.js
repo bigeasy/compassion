@@ -23,7 +23,17 @@ var Procession = require('procession')
 
 var coalesce = require('extant')
 
-function Local (destructible, colleagues, networkedUrl) {
+var Timer = require('happenstance/timer')
+var Scheduler = require('happenstance/scheduler')
+
+var Keyify = require('keyify')
+
+function Local (destructible, population, colleagues, networkedUrl) {
+    var scheduler = new Scheduler
+    var timer = new Timer(scheduler)
+    destructible.destruct.wait(scheduler, 'clear')
+    destructible.destruct.wait(timer.events.pump(this, '_scheduled', destructible.monitor('timer')), 'destroy')
+    destructible.destruct.wait(scheduler.events.pump(timer, 'enqueue', destructible.monitor('scheduler')), 'destroy')
     this._destructible = destructible
     this.colleagues = colleagues
     this._ping = 1000
@@ -32,7 +42,9 @@ function Local (destructible, colleagues, networkedUrl) {
     this._httpTimeout = 5000
     this._instance = 0
     this._networkedUrl = networkedUrl
+    this._population = population
     this.events = new Procession
+    this.scheduler = scheduler
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
@@ -64,11 +76,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             timeout: this._timeout
         }, async())
     }, function (kibitzer) {
-        var existed = false
         if (this.colleagues.island[envelope.island] == null) {
             this.colleagues.island[envelope.island] = {}
-        } else {
-            existed = true
         }
         var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
         var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
@@ -87,20 +96,36 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.destruct.wait(this, function () {
             delete this.colleagues.island[envelope.island][envelope.id]
         })
+        destructible.destruct.wait(this, function () {
+            this.scheduler.unschedule(Keyify.stringify({
+                island: envelope.island,
+                id: envelope.id
+            }))
+        })
+        var properties = JSON.parse(JSON.stringify(coalesce(envelope.properties, {})))
+        var kibitzUrl = url.resolve(this._networkedUrl, [ '', 'island', envelope.island, 'islander', envelope.id, 'kibitz' ].join('/'))
+        properties.url = kibitzUrl
         var colleague = this.colleagues.island[envelope.island][envelope.id] = {
             events: events,
             initalizer: envelope,
             kibitzer: kibitzer,
             conference: conference,
+            properties: properties,
             ua: new Vizsla().bind({
                 url: envelope.url,
                 gateways: [ jsonify(), raiseify() ]
             })
         }
         async(function () {
-            var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
-            var kibitzUrl = url.resolve(this._networkedUrl, [ '', 'island', envelope.island, 'islander', envelope.id, 'kibitz' ].join('/'))
-            properties.url = kibitzUrl
+            this.scheduler.schedule(Date.now(), Keyify.stringify({
+                island: colleague.initalizer.island,
+                id: colleague.initalizer.id
+            }), {
+                name: 'discover',
+                island: colleague.initalizer.island,
+                id: colleague.initalizer.id
+            })
+            return
             if (existed) {
                 colleague.kibitzer.join(0)
                 var island = this.colleagues.island[envelope.island]
@@ -110,29 +135,104 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     return Monotonic.compare(a.promise, b.promise)
                 }).pop()
                 var leaderUrl = government.properties[government.majority[0]].url
-                this._ua.fetch({
-                    url: leaderUrl,
-                    timeout: 1000,
-                    gateways: [ jsonify(), raiseify() ]
-                }, {
-                    url: './arrive',
-                    post: {
-                        republic: 0,
-                        id: colleague.kibitzer.paxos.id,
-                        cookie: colleague.kibitzer.paxos.cookie,
-                        properties: properties
-                    }
-                }, async())
             } else {
                 colleague.kibitzer.bootstrap(0, properties)
             }
         }, function () {
+        console.log('x')
             crypto.randomBytes(32, async())
         }, function (bytes) {
             var token = bytes.toString('hex')
             this.colleagues.token[token] = colleague
             return { grant_type: 'authorization_code', access_token: token }
         })
+    })
+})
+
+var discover = require('./discover')
+var embark = require('./embark')
+
+Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
+    console.log(this.colleagues)
+    var island = this.colleagues.island[envelope.island]
+    if (island == null) {
+        return
+    }
+    var colleague = island[envelope.id]
+    if (colleague == null) {
+        return null
+    }
+    var action
+    switch (envelope.name) {
+    case 'discover':
+        action = discover(envelope.id, members, complete)
+        break
+    case 'embark':
+        action = embark(members, 0)
+        break
+    case 'recoverable':
+        break
+    }
+    console.log(action)
+    switch (action.action) {
+    case 'bootstrap':
+        console.log(colleague.properties)
+        colleague.kibitzer.bootstrap(0, colleague.properties)
+        break
+    case 'join':
+        colleague.kibitzer.join(0)
+        this.scheduler.schedule(Date.now(), Keyify.stringify({
+            island: envelope.island,
+            id: envelope.id
+        }), {
+            name: 'embark',
+            island: envelope.island,
+            id: envelope.id,
+            self: action.self,
+            republic: action.republic
+        })
+        break
+    case 'embark':
+        this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
+            island: envelope.island,
+            id: envelope.id
+        }), {
+            name: 'embark',
+            island: envelope.island,
+            id: envelope.id,
+            self: envelope.self,
+            republic: envelope.republic
+        })
+        this._ua.fetch({
+            url: action.url,
+            timeout: 1000,
+            gateways: [ jsonify(), raiseify() ]
+        }, {
+            url: './arrive',
+            post: {
+                republic: envelope.republic,
+                id: colleague.kibitzer.paxos.id,
+                cookie: colleague.kibitzer.paxos.cookie,
+                properties: colleague.properties
+            }
+        }, async())
+        break
+    case 'retry':
+        console.log(envelope, action, members)
+        process.exit()
+        this.scheduler.schedule(now, event.id, { type: 'discover'  })
+        break
+    }
+})
+
+Local.prototype._scheduled = cadence(function (async, envelope) {
+    if (!(envelope != null && envelope.module == 'happenstance' && envelope.method == 'event')) {
+        return
+    }
+    async(function () {
+        this._population.census(envelope.body.island, async())
+    }, function (members, complete) {
+        this._overwatch(envelope.body, members, complete, async())
     })
 })
 

@@ -12,6 +12,9 @@ function prove (async, okay) {
     var Vizsla = require('vizsla')
     var ua = new Vizsla
 
+    var Population = require('../population')
+    var Resolver = { Static: require('../resolver/static') }
+
     var applications = []
 
     async([function () {
@@ -29,6 +32,7 @@ function prove (async, okay) {
         destructible.destroy()
     }], function () {
         destructible.monitor('containerized', Containerized, {
+            population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             bind: {
                 local: {
                     listen: function (server, callback) {

@@ -1,4 +1,5 @@
 var cadence = require('cadence')
+var url = require('url')
 
 function Population (resolver, ua) {
     this._resolver = resolver
@@ -11,12 +12,19 @@ Population.prototype.census = cadence(function (async, island) {
     }, function (instances) {
         var complete = true
         async(function () {
-            async.map(function (url) {
-                this._ua.fetch({
-                    url: url
-                }, {
-                    url: [ '.', 'island', island, 'islanders' ].join('/')
-                }, async())
+            async.map(function (location) {
+                async(function () {
+                    this._ua.fetch({
+                        url: location
+                    }, {
+                        url: [ '.', 'island', island, 'islanders' ].join('/')
+                    }, async())
+                }, function (body, response) {
+                    body.forEach(function (member) {
+                        member.url = url.resolve(location, [ '.', 'island', island, 'islander', member.id, ''].join('/'))
+                    })
+                    return [ body ]
+                })
             })(instances)
         }, function (results) {
             var members = []

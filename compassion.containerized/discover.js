@@ -1,4 +1,5 @@
 var Monotonic  = require('monotonic').asString
+var coalesce = require('extant')
 
 module.exports =  function (id, members, complete) {
     // Never mind.
@@ -17,10 +18,11 @@ module.exports =  function (id, members, complete) {
     }
 
     members.sort(function (a, b) {
-        return b.government.republic - a.government.republic
+        return coalesce(b.government.republic, 0) - coalesce(a.government.republic, 0)
     })
 
-    if (members[0].government.republic == 0) {
+    if (members[0].government.republic == null) {
+        console.log('no no bad')
         if (!complete) {
             return { action: 'retry' }
         }
@@ -46,9 +48,11 @@ module.exports =  function (id, members, complete) {
     var government = unsplit[0].government
     var ids = unsplit.map(function (member) { return member.id })
 
-    if (government.majority.concat(government.minority).filter(function (id) {
+    var synod = government.majority.concat(government.minority)
+
+    if (synod.filter(function (id) {
         return !! ~ids.indexOf(id)
-    }).length != government.majority.length) {
+    }).length != synod.length) {
         return { action: 'retry' }
     }
 

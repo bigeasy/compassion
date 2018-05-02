@@ -63,4 +63,20 @@ Networked.prototype.backlog = cadence(function (async, request, island, id) {
     })
 })
 
+Networked.prototype.islanders = cadence(function (async, request, island) {
+    var members = []
+    var island = this._colleagues.island[island]
+    if (island != null) {
+        for (var id in island) {
+            var colleague = island[id]
+            members.push({
+                id: colleague.initalizer.id,
+                government: colleague.kibitzer.paxos.government,
+                cookie: coalesce(colleague.kibitzer.paxos.cookie)
+            })
+        }
+    }
+    return [ 200, { 'content-type': 'application/json' }, members ]
+})
+
 module.exports = Networked
