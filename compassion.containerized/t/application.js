@@ -12,6 +12,7 @@ function Application (id, okay) {
     this.blocker = new Signal
     this._ua = new Vizsla().bind({ gateways: [ jsonify() ] })
     this.reactor = new Reactor(this, function (dispatcher) {
+        dispatcher.dispatch('POST /register', '_register')
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /join', 'join')
         dispatcher.dispatch('POST /arrive', 'arrive')
@@ -30,6 +31,7 @@ Application.prototype.register = cadence(function (async, url) {
         }, {
             url: '/register',
             post: {
+                token: 'x',
                 island: 'island',
                 id: this._id,
                 url: url,
@@ -45,10 +47,14 @@ Application.prototype.register = cadence(function (async, url) {
             },
             gateways: [ jsonify(), raiseify(), null ]
         }, async())
-    }, function (body, response) {
-        this._token = body.access_token
+    }, function () {
         return []
     })
+})
+
+Application.prototype._register = cadence(function (async, request) {
+    this._token = request.body.token
+    return 200
 })
 
 Application.prototype.backlog = cadence(function (async, request) {

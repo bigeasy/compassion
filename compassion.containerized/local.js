@@ -123,11 +123,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 island: colleague.initalizer.island,
                 id: colleague.initalizer.id
             }), {
-                name: 'discover',
+                name: 'register',
                 island: colleague.initalizer.island,
                 id: colleague.initalizer.id
             })
-            return { grant_type: 'authorization_code', access_token: token }
+            return []
         })
     })
 })
@@ -146,6 +146,12 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
     }
     var action
     switch (envelope.name) {
+    case 'register':
+        action = { action: 'register' }
+        break
+    case 'discover':
+        action = discover(envelope.id, members, complete)
+        break
     case 'discover':
         action = discover(envelope.id, members, complete)
         break
@@ -156,6 +162,31 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         break
     }
     switch (action.action) {
+    case 'register':
+        // TODO Handle 404.
+        async(function () {
+            this._ua.fetch({
+                url: colleague.initalizer.url,
+                token: colleague.initalizer.token,
+                timeout: 1000,
+                gateways: [ jsonify(), raiseify() ]
+            }, {
+                url: './register',
+                post: {
+                    token: colleague.token
+                }
+            }, async())
+        }, function () {
+            this.scheduler.schedule(Date.now(), Keyify.stringify({
+                island: envelope.island,
+                id: envelope.id
+            }), {
+                name: 'discover',
+                island: envelope.island,
+                id: envelope.id
+            })
+        })
+        break
     case 'bootstrap':
         var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
         properties.url = action.url
@@ -255,8 +286,8 @@ Local.prototype.register = cadence(function (async, request) {
     // Create a new instance.
     async(function () {
         this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', request.body, async())
-    }, function (result) {
-        return result
+    }, function () {
+        return 200
     })
 })
 
