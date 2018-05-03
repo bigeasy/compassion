@@ -76,44 +76,49 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             timeout: this._timeout
         }, async())
     }, function (kibitzer) {
-        if (this.colleagues.island[envelope.island] == null) {
-            this.colleagues.island[envelope.island] = {}
-        }
-        var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
-        var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
-        destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
-        destructible.destruct.wait(log, 'destroy')
-        var events = this.events
-        kibitzer.paxos.log.pump(function (entry) {
-            if (entry != null) {
-                events.push({
-                    type: 'entry',
-                    id: envelope.id,
-                    entry: entry
+        async(function () {
+            crypto.randomBytes(32, async())
+        }, function (bytes) {
+            if (this.colleagues.island[envelope.island] == null) {
+                this.colleagues.island[envelope.island] = {}
+            }
+            var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
+            var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
+            destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
+            destructible.destruct.wait(log, 'destroy')
+            var events = this.events
+            kibitzer.paxos.log.pump(function (entry) {
+                if (entry != null) {
+                    events.push({
+                        type: 'entry',
+                        id: envelope.id,
+                        entry: entry
+                    })
+                }
+            }, destructible.monitor('events'))
+            destructible.destruct.wait(this, function () {
+                delete this.colleagues.island[envelope.island][envelope.id]
+            })
+            destructible.destruct.wait(this, function () {
+                this.scheduler.unschedule(Keyify.stringify({
+                    island: envelope.island,
+                    id: envelope.id
+                }))
+            })
+            var token = bytes.toString('hex')
+            var colleague = this.colleagues.island[envelope.island][envelope.id] = {
+                token: token,
+                events: events,
+                initalizer: envelope,
+                kibitzer: kibitzer,
+                conference: conference,
+                createdAt: Date.now(),
+                ua: new Vizsla().bind({
+                    url: envelope.url,
+                    gateways: [ jsonify(), raiseify() ]
                 })
             }
-        }, destructible.monitor('events'))
-        destructible.destruct.wait(this, function () {
-            delete this.colleagues.island[envelope.island][envelope.id]
-        })
-        destructible.destruct.wait(this, function () {
-            this.scheduler.unschedule(Keyify.stringify({
-                island: envelope.island,
-                id: envelope.id
-            }))
-        })
-        var colleague = this.colleagues.island[envelope.island][envelope.id] = {
-            events: events,
-            initalizer: envelope,
-            kibitzer: kibitzer,
-            conference: conference,
-            createdAt: Date.now(),
-            ua: new Vizsla().bind({
-                url: envelope.url,
-                gateways: [ jsonify(), raiseify() ]
-            })
-        }
-        async(function () {
+            this.colleagues.token[token] = colleague
             this.scheduler.schedule(Date.now(), Keyify.stringify({
                 island: colleague.initalizer.island,
                 id: colleague.initalizer.id
@@ -122,11 +127,6 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 island: colleague.initalizer.island,
                 id: colleague.initalizer.id
             })
-        }, function () {
-            crypto.randomBytes(32, async())
-        }, function (bytes) {
-            var token = bytes.toString('hex')
-            this.colleagues.token[token] = colleague
             return { grant_type: 'authorization_code', access_token: token }
         })
     })
