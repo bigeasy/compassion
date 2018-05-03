@@ -27,11 +27,11 @@ module.exports =  function (id, members, complete) {
         }
         self = self.shift()
         members.sort(function (a, b) {
-            return a.cookie - b.cookie
+            return a.createdAt - b.createdAt
         })
 
-        if (self.cookie == members[0].cookie) {
-            return { action: 'bootstrap', url: self.url, republic: self.cookie  }
+        if (self.createdAt == members[0].createdAt) {
+            return { action: 'bootstrap', url: self.url  }
         }
         return { action: 'retry' }
     }
@@ -59,7 +59,7 @@ module.exports =  function (id, members, complete) {
 
     return {
         action: 'join',
-        self: self.url,
+        url: self.url,
         republic: members[0].government.republic
     }
 }

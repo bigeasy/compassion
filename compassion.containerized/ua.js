@@ -16,8 +16,16 @@ function UserAgent (ua, timeout, island, id) {
 UserAgent.prototype.request = cadence(function (async, envelope) {
     async(function () {
         logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
+        if (!envelope.to) {
+            Error.stackTraceLimit = 84
+            console.log(new Error().stack)
+            console.log(envelope)
+            process.exit()
+        }
         this._ua.fetch({
-            url: envelope.to.url,
+            url: envelope.to.url
+        }, {
+            url: './kibitz',
             post: envelope,
             timeout: 30000, //  this._timeout,
             parse: [ jsonify(), nullify() ]

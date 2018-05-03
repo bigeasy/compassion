@@ -6,23 +6,22 @@ function prove (okay) {
     okay(discover('a', [{ id: 'x' }], true), { action: 'retry' }, 'not found')
     okay(discover('a', [{ id: 'a', government: { republic: null } }], false), { action: 'retry' }, 'bootstrap incomplete')
     okay(discover('a', [{
-        id: 'a', government: { republic: null }, cookie: 2,
+        id: 'a', government: { republic: null }, createdAt: 2,
     }, {
-        id: 'b', government: { republic: null }, cookie: 1
+        id: 'b', government: { republic: null }, createdAt: 1
     }], true), { action: 'retry' }, 'bootstrap not earliest')
     okay(discover('a', [{
-        id: 'a', government: { republic: null }, cookie: 1, url: 'http://127.0.0.1:8888/'
+        id: 'a', government: { republic: null }, createdAt: 1, url: 'http://127.0.0.1:8888/'
     }, {
-        id: 'b', government: { republic: null }, cookie: 2
+        id: 'b', government: { republic: null }, createdAt: 2
     }], true), {
         action: 'bootstrap',
-        url: 'http://127.0.0.1:8888/',
-        republic: 1
+        url: 'http://127.0.0.1:8888/'
     }, 'bootstrap')
     okay(discover('a', [{
         id: 'a',
         government: { republic: null },
-        cookie: 1,
+        createdAt: 1,
         url: 'http://127.0.0.1:8888/'
     }, {
         id: 'b',
@@ -36,7 +35,7 @@ function prove (okay) {
     okay(discover('a', [{
         id: 'a',
         government: { republic: null },
-        cookie: 1,
+        createdAt: 1,
         url: 'http://127.0.0.1:8888/'
     }, {
         id: 'b',
@@ -55,7 +54,7 @@ function prove (okay) {
         }
     }], true), {
         action: 'join',
-        self: 'http://127.0.0.1:8888/',
+        url: 'http://127.0.0.1:8888/',
         republic: 1
     }, 'join')
 }

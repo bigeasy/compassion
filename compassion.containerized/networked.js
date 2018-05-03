@@ -72,7 +72,8 @@ Networked.prototype.islanders = cadence(function (async, request, island) {
             members.push({
                 id: colleague.initalizer.id,
                 government: colleague.kibitzer.paxos.government,
-                cookie: coalesce(colleague.kibitzer.paxos.cookie)
+                cookie: coalesce(colleague.kibitzer.paxos.cookie),
+                createdAt: colleague.createdAt
             })
         }
     }

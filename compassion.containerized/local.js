@@ -102,15 +102,12 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 id: envelope.id
             }))
         })
-        var properties = JSON.parse(JSON.stringify(coalesce(envelope.properties, {})))
-        var kibitzUrl = url.resolve(this._networkedUrl, [ '', 'island', envelope.island, 'islander', envelope.id, 'kibitz' ].join('/'))
-        properties.url = kibitzUrl
         var colleague = this.colleagues.island[envelope.island][envelope.id] = {
             events: events,
             initalizer: envelope,
             kibitzer: kibitzer,
             conference: conference,
-            properties: properties,
+            createdAt: Date.now(),
             ua: new Vizsla().bind({
                 url: envelope.url,
                 gateways: [ jsonify(), raiseify() ]
@@ -139,7 +136,6 @@ var discover = require('./discover')
 var embark = require('./embark')
 
 Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
-    console.log(this.colleagues)
     var island = this.colleagues.island[envelope.island]
     if (island == null) {
         return
@@ -159,11 +155,11 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
     case 'recoverable':
         break
     }
-    console.log(action)
     switch (action.action) {
     case 'bootstrap':
-        console.log(colleague.properties)
-        colleague.kibitzer.bootstrap(0, colleague.properties)
+        var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
+        properties.url = action.url
+        colleague.kibitzer.bootstrap(0, properties)
         break
     case 'join':
         colleague.kibitzer.join(0)
@@ -174,7 +170,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
             name: 'embark',
             island: envelope.island,
             id: envelope.id,
-            self: action.self,
+            url: action.url,
             republic: action.republic
         })
         break
@@ -186,9 +182,11 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
             name: 'embark',
             island: envelope.island,
             id: envelope.id,
-            self: envelope.self,
+            url: envelope.url,
             republic: envelope.republic
         })
+        var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
+        properties.url = envelope.url
         this._ua.fetch({
             url: action.url,
             timeout: 1000,
@@ -199,7 +197,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
                 republic: envelope.republic,
                 id: colleague.kibitzer.paxos.id,
                 cookie: colleague.kibitzer.paxos.cookie,
-                properties: colleague.properties
+                properties: properties
             }
         }, async())
         break
