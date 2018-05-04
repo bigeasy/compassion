@@ -113,7 +113,6 @@ function prove (async, okay) {
             }, function () {
                 async(function () {
                     containerized.events.shifter().join(function (event) {
-                        console.log('>>>>', event)
                         if (
                             event.type == 'entry' &&
                             event.id == 'third' &&
@@ -200,8 +199,6 @@ function prove (async, okay) {
             })
         }, function () {
             setTimeout(async(), 1000)
-        }, function () {
-            console.log('here')
         })
     })
 }

@@ -62,6 +62,18 @@ Local.prototype.index = cadence(function (async) {
     return [ 200, { 'content-type': 'text/plain' }, 'Compassion Local API\n' ]
 })
 
+Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
+    destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
+    destructible.destruct.wait(function () { kibitzer.played.push(null) })
+    destructible.destruct.wait(function () { kibitzer.paxos.outbox.push(null) })
+    destructible.destruct.wait(function () { kibitzer.islander.outbox.push(null) })
+    kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record', destructible.monitor('played'))
+    kibitzer.paxos.log.pump(new Recorder(this.events, id, 'entry'), 'record', destructible.monitor('log'))
+    kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record', destructible.monitor('paxos'))
+    kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander'))
+    return kibitzer
+})
+
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
     async(function () {
         destructible.monitor('caller', Caller, async())
@@ -78,6 +90,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             timeout: this._timeout
         }, async())
     }, function (kibitzer) {
+        destructible.monitor('record', this, '_record', kibitzer, envelope.id, async())
+    }, function (kibitzer) {
         async(function () {
             crypto.randomBytes(32, async())
         }, function (bytes) {
@@ -86,9 +100,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             }
             var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
-            destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
             destructible.destruct.wait(log, 'destroy')
-            kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
+            // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(this, function () {
                 delete this.colleagues.island[envelope.island][envelope.id]
             })
