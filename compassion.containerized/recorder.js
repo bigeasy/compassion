@@ -6,7 +6,7 @@ function Recorder (events, id, type) {
 
 Recorder.prototype.record = function (body) {
     if (body != null) {
-        this._events.push({ type: this._type, id: this._id, body: body })
+        this._events.push({ type: this._type, id: this._id, body: JSON.parse(JSON.stringify(body)) })
     }
 }
 
