@@ -98,7 +98,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             if (this.colleagues.island[envelope.island] == null) {
                 this.colleagues.island[envelope.island] = {}
             }
-            var conference = new Conference(destructible, envelope.id, envelope, kibitzer)
+            var conference = new Conference(destructible, envelope, kibitzer)
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))

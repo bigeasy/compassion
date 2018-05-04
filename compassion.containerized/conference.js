@@ -11,13 +11,13 @@ var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
-function Conference (destructible, id, registration, kibitzer) {
+function Conference (destructible, registration, kibitzer) {
     this._destructible = destructible
     this._ua = new Vizsla().bind({
         url: registration.url,
         gateways: [ nullify([ 0 ]), raiseify() ]
     })
-    this._id = id
+    this._id = registration.id
     this._url = registration.url
     this._government = null
     this._kibitzer = kibitzer
