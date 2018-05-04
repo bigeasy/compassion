@@ -28,6 +28,8 @@ var Scheduler = require('happenstance/scheduler')
 
 var Keyify = require('keyify')
 
+var Recorder = require('./recorder')
+
 function Local (destructible, population, colleagues, networkedUrl) {
     var scheduler = new Scheduler
     var timer = new Timer(scheduler)
@@ -86,16 +88,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
             destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
             destructible.destruct.wait(log, 'destroy')
-            var events = this.events
-            kibitzer.paxos.log.pump(function (entry) {
-                if (entry != null) {
-                    events.push({
-                        type: 'entry',
-                        id: envelope.id,
-                        entry: entry
-                    })
-                }
-            }, destructible.monitor('events'))
+            kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(this, function () {
                 delete this.colleagues.island[envelope.island][envelope.id]
             })
@@ -108,7 +101,6 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             var token = bytes.toString('hex')
             var colleague = this.colleagues.island[envelope.island][envelope.id] = {
                 token: token,
-                events: events,
                 initalizer: envelope,
                 kibitzer: kibitzer,
                 conference: conference,

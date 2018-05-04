@@ -113,10 +113,11 @@ function prove (async, okay) {
             }, function () {
                 async(function () {
                     containerized.events.shifter().join(function (event) {
+                        console.log('>>>>', event)
                         if (
                             event.type == 'entry' &&
                             event.id == 'third' &&
-                            event.entry.promise == '6/0'
+                            event.body.promise == '6/0'
                         ) {
                             return true
                         }
@@ -150,7 +151,7 @@ function prove (async, okay) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'third' &&
-                        event.entry.promise == '8/0'
+                        event.body.promise == '8/0'
                     ) {
                         return true
                     }
@@ -162,7 +163,7 @@ function prove (async, okay) {
                     if (
                         event.type == 'entry' &&
                         event.id == 'second' &&
-                        event.entry.promise == '8/2'
+                        event.body.promise == '8/2'
                     ) {
                         return true
                     }
@@ -186,11 +187,10 @@ function prove (async, okay) {
                 })
             }, function () {
                 containerized.events.shifter().join(function (event) {
-                    console.log(event.id, event.entry)
                     if (
                         event.type == 'entry' &&
                         event.id == 'third' &&
-                        event.entry.promise == 'a/0'
+                        event.body.promise == 'a/0'
                     ) {
                         return true
                     }
