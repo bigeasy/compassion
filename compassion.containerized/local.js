@@ -75,6 +75,7 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
 })
 
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
+    var kibitzer
     async(function () {
         destructible.monitor('caller', Caller, async())
         destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout, envelope.island, envelope.id), 'request', async())
@@ -83,13 +84,14 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.destruct.wait(function () { caller.inbox.push(null) })
         procedure.outbox.pump(caller.inbox)
         destructible.destruct.wait(function () { procedure.inbox.push(null) })
-        destructible.monitor('kibitzer', Kibitzer, {
+        kibitzer = new Kibitzer({
             caller: caller,
             id: envelope.id,
             ping: this._ping,
             timeout: this._timeout
-        }, async())
-    }, function (kibitzer) {
+        })
+        destructible.monitor('kibitzer', kibitzer, 'listen', async())
+    }, function () {
         destructible.monitor('record', this, '_record', kibitzer, envelope.id, async())
     }, function (kibitzer) {
         async(function () {
