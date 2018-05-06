@@ -11,11 +11,15 @@ function prove (async, okay) {
     var cadence = require('cadence')
     var Vizsla = require('vizsla')
     var ua = new Vizsla
+    var fs = require('fs')
+    var path = require('path')
 
     var Population = require('../population')
     var Resolver = { Static: require('../resolver/static') }
 
     var applications = []
+
+    var events = null
 
     async([function () {
         destructible.completed.wait(async())
@@ -49,6 +53,7 @@ function prove (async, okay) {
             }
         }, async())
     }, function (containerized) {
+        events = containerized.events.shifter()
         async(function () {
             ua.fetch({ url: 'http://127.0.0.1:8386' }, async())
         }, function (body) {
@@ -199,6 +204,23 @@ function prove (async, okay) {
             })
         }, function () {
             setTimeout(async(), 1000)
+        }, function () {
+            destructible.destroy()
+        }, function () {
+            var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
+            var shifter = events.shifter()
+            var loop = async(function () {
+                async(function () {
+                    shifter.dequeue(async())
+                }, function (envelope) {
+                    if (envelope == null) {
+                        writable.end()
+                        return [ loop.break ]
+                    } else {
+                        writable.write(JSON.stringify(envelope) + '\n', async())
+                    }
+                })
+            })()
         })
     })
 }

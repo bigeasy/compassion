@@ -101,11 +101,32 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 this.colleagues.island[envelope.island] = {}
             }
             var conference = new Conference(destructible, envelope, kibitzer)
+            conference.outbox.pump(this, function (envelope) {
+                if (envelope != null) {
+                    this.events.push({
+                        type: 'conference',
+                        id: envelope.id,
+                        body: envelope
+                    })
+                    switch (envelope.method) {
+                    case 'acclimate':
+                        kibitzer.acclimate()
+                        break
+                    case 'broadcast':
+                    case 'reduce':
+                        kibitzer.publish(envelope)
+                        break
+                    }
+                }
+            }, destructible.monitor('conference'))
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(this, function () {
                 delete this.colleagues.island[envelope.island][envelope.id]
+            })
+            destructible.destruct.wait(function () {
+                conference.outbox.push(null)
             })
             destructible.destruct.wait(this, function () {
                 this.scheduler.unschedule(Keyify.stringify({

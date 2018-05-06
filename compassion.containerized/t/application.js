@@ -47,7 +47,9 @@ Application.prototype.register = cadence(function (async, url) {
             },
             gateways: [ jsonify(), raiseify(), null ]
         }, async())
+        console.log('DOING')
     }, function () {
+        console.log('DONE')
         return []
     })
 })
