@@ -5,6 +5,7 @@
 !/compassion.channel/node_modules/example.js
 !/compassion.root/node_modules/compassion.test.js
 /compassion.counterfeiter/t/counterfeiter.*.jsons
+/compassion.containerized/t/*.jsons
 /.proof.out
 /coverage
 /*/coverage
