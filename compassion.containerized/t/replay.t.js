@@ -63,6 +63,6 @@ function prove (async, okay) {
             application.arrived.wait(async())
         })
     }, function () {
-        setTimeout(async(), 5000)
+        setTimeout(async(), 250)
     })
 }

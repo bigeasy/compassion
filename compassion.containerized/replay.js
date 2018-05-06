@@ -28,11 +28,13 @@ function Replay (destructible, readable) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
+        /*
         dispatcher.dispatch('GET /backlog', 'backlog')
         dispatcher.dispatch('POST /broadcast', 'broadcast')
         dispatcher.dispatch('POST /record', 'record')
         dispatcher.dispatch('GET /ping', 'ping')
         dispatcher.dispatch('GET /health', 'health')
+        */
     })
 }
 
@@ -104,11 +106,6 @@ Replay.prototype._play = cadence(function (async, colleague) {
             }
             switch (envelope.type) {
             case 'kibitzer':
-                if (envelope.body.method == 'publish') {
-                    if (envelope.body.body.key == 'message[3/0](2)') {
-                        console.log('kibitzer', envelope.body)
-                    }
-                }
                 colleague.kibitzer.replay(envelope.body)
                 break
             case 'entry':
@@ -120,9 +117,6 @@ Replay.prototype._play = cadence(function (async, colleague) {
                 departure.raise(outboxes.paxos.shift(), envelope.body)
                 break
             case 'islander':
-                if (envelope.body.cookie == '2') {
-                    console.log('ISLANDER!!!', envelope.body)
-                }
                 departure.raise(outboxes.islander.shift(), envelope.body)
                 break
             }
