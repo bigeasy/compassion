@@ -11,6 +11,7 @@ var Kibitzer = require('kibitz')
 
 var crypto = require('crypto')
 var Procession = require('procession')
+var Throttle = require('procession/throttle')
 
 var Vizsla = require('vizsla')
 var jsonify = require('vizsla/jsonify')
@@ -21,19 +22,19 @@ var departure = require('departure')
 var Conference = require('./conference')
 
 function Replay (destructible, readable) {
-    this.events = new Procession
     this._destructible = destructible
     this._readable = readable
     this._ua = new Vizsla
+    this._events = []
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
         /*
-        dispatcher.dispatch('GET /backlog', 'backlog')
-        dispatcher.dispatch('POST /broadcast', 'broadcast')
-        dispatcher.dispatch('POST /record', 'record')
-        dispatcher.dispatch('GET /ping', 'ping')
-        dispatcher.dispatch('GET /health', 'health')
+            dispatcher.dispatch('GET /backlog', 'backlog')
+            dispatcher.dispatch('POST /broadcast', 'broadcast')
+            dispatcher.dispatch('POST /record', 'record')
+            dispatcher.dispatch('GET /ping', 'ping')
+            dispatcher.dispatch('GET /health', 'health')
         */
     })
 }
@@ -61,14 +62,18 @@ Replay.prototype.register = cadence(function (async, request) {
 Replay.prototype._advance = cadence(function (async, id) {
     var loop = async(function () {
         async(function () {
-            this._readable.read(async())
-        }, function (line) {
-            if (line == null) {
+            if (this._events.length == 0) {
                 return [ loop.break, null ]
             }
-            var entry = JSON.parse(line.toString())
-            if (entry.id == id) {
-                return [ loop.break, entry ]
+            this._events[0].dequeue(async())
+        }, function (entry) {
+            console.log(entry)
+            if (entry == null) {
+                this._events.shift()
+            } else {
+                if (entry.id == id) {
+                    return [ loop.break, entry ]
+                }
             }
         })
     })()
@@ -124,6 +129,20 @@ Replay.prototype._play = cadence(function (async, colleague) {
     })
 })
 
+Replay.prototype._pump = cadence(function (async, events) {
+    var loop = async(function () {
+        this._readable.read(async())
+    }, function (line) {
+        if (line == null) {
+           console.log('I TOO REACHED END')
+           events.push(null)
+           return [ loop.break ]
+        } else {
+           events.enqueue(JSON.parse(line.toString()), async())
+        }
+    })()
+})
+
 Replay.prototype.registration = cadence(function (async, destructible, envelope) {
     async(function () {
         destructible.monitor('caller', Caller, async())
@@ -138,7 +157,6 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
         kibitzer.paxos.log.pump(kibitzer.islander, 'enqueue', destructible.monitor('islander'))
         // TODO Wonky. Should destroy out of Kibitzer.
         destructible.destruct.wait(function () {
-            console.log('I DID NULL IT')
             kibitzer.paxos.log.push(null)
         })
         async(function () {
@@ -146,15 +164,19 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
         }, function (bytes) {
             var token = bytes.toString('hex')
             this._registration = {}
+            var log = new Throttle(3)
+            this._events.unshift(log.trailer)
+            this._pump(log, destructible.monitor('pump'))
             this._play({
                 token: token,
                 initializer: envelope,
-                events: this.events.shifter(),
                 kibitzer: kibitzer,
                 conference: new Conference(destructible, envelope, kibitzer)
             }, destructible.monitor('play'))
+        }, function () {
+            console.log('I am here')
+            return []
         })
-        return []
     })
 })
 
