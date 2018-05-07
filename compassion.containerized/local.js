@@ -86,7 +86,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.destruct.wait(function () { caller.inbox.push(null) })
         procedure.outbox.pump(caller.inbox)
         destructible.destruct.wait(function () { procedure.inbox.push(null) })
-        destructible.destruct.wait(this, function() { this.events.push(null) })
+//        destructible.destruct.wait(this, function() { this.events.push(null) })
         kibitzer = new Kibitzer({
             caller: caller,
             id: envelope.id,

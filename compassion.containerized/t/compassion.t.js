@@ -207,6 +207,9 @@ function prove (async, okay) {
         }, function () {
             destructible.destroy()
         }, function () {
+            setTimeout(async(), 1000)
+        }, function () {
+            containerized.events.push(null)
             var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
             var shifter = events.shifter()
             var loop = async(function () {
