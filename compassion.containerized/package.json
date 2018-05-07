@@ -41,6 +41,7 @@
                             "rescue":                       "3.2.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "3.4.x",
+                            "staccato":                     "6.1.x",
                             "vizsla":                       "12.2.x"
     },
     "devDependencies":
