@@ -103,9 +103,30 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             if (this.colleagues.island[envelope.island] == null) {
                 this.colleagues.island[envelope.island] = {}
             }
+            var events = this.events
             var conference = new Conference(destructible, {
                 acclimate: function () { kibitzer.acclimate() },
-                publish: function (record, envelope) { kibitzer.publish(envelope) }
+                publish: function (record, envelope) { kibitzer.publish(envelope) },
+                broadcasts: cadence(function (async, promise) {
+                    async(function () {
+                        var government = kibitzer.paxos.government
+                        var leaderUrl = government.properties[government.majority[0]].url
+                        colleague.ua.fetch({
+                            url: leaderUrl
+                        }, {
+                            url: './broadcasts',
+                            post: { promise: promise },
+                            parse: [ jsonify(), raiseify() ]
+                        }, async())
+                    }, function (body) {
+                        events.push({
+                            type: 'broadcasts',
+                            id: colleague.initalizer.id,
+                            body: body
+                        })
+                        return [ body ]
+                    })
+                })
             }, envelope, kibitzer)
             conference.outbox.pump(this, function (envelope) {
                 if (envelope != null) {

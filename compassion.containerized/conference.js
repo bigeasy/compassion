@@ -99,15 +99,8 @@ Conference.prototype.entry = cadence(function (async, entry) {
                             }
                             this._snapshots.set(this._government.promise, null, broadcasts)
                         } else if (this._government.promise != '1/0') {
-                            var leaderUrl = this._government.properties[this._government.majority[0]].url
                             async(function () {
-                                this._ua.fetch({
-                                    url: leaderUrl
-                                }, {
-                                    url: './broadcasts',
-                                    post: { promise: this._government.promise },
-                                    parse: [ jsonify(), raiseify() ]
-                                }, async())
+                                this._network.broadcasts(this._government.promise, async())
                             }, function (body) {
                                 async.forEach(function (broadcast) {
                                     async(function () {

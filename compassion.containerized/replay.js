@@ -173,7 +173,14 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                 kibitzer: kibitzer,
                 conference: new Conference(destructible, {
                     acclimate: function () {},
-                    publish: function () {}
+                    publish: function () {},
+                    broadcasts: cadence(function (async, promise) {
+                        async(function () {
+                            this._advance(envelope.id, 'broadcasts', async())
+                        }, function (envelope) {
+                            return [ envelope.body ]
+                        })
+                    }).bind(this)
                 }, envelope, kibitzer)
             }, destructible.monitor('play'))
         }, function () {
