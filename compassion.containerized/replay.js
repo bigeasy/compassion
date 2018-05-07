@@ -171,7 +171,10 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                 token: token,
                 initializer: envelope,
                 kibitzer: kibitzer,
-                conference: new Conference(destructible, envelope, kibitzer)
+                conference: new Conference(destructible, {
+                    acclimate: function () {},
+                    publish: function () {}
+                }, envelope, kibitzer)
             }, destructible.monitor('play'))
         }, function () {
             console.log('I am here')

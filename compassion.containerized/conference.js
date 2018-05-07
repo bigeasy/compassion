@@ -11,7 +11,7 @@ var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
-function Conference (destructible, registration) {
+function Conference (destructible, network, registration) {
     this._destructible = destructible
     this._ua = new Vizsla().bind({
         url: registration.url,
@@ -21,6 +21,7 @@ function Conference (destructible, registration) {
     this._url = registration.url
     this._government = null
     this.outbox = new Procession
+    this._network = network
     this._cookie = '0'
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
@@ -181,10 +182,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     government: this._government
                 }, async())
             }, function () {
-                this.outbox.push({
-                    module: 'compassion',
-                    method: 'acclimate'
-                })
+                this._network.acclimate()
             })
         } else {
             assert(entry.body.body)
@@ -210,7 +208,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                         body: envelope.body.body
                     }, async())
                 }, function (response) {
-                    this.outbox.push({
+                    this._network.publish(true, {
                         module: 'compassion',
                         method: 'reduce',
                         key: envelope.key,
@@ -268,7 +266,7 @@ Conference.prototype.broadcast = function (method, message) {
     var cookie = this._nextCookie()
     var uniqueId = this._government.arrived.promise[this._id]
     var key = method + '[' + uniqueId + '](' + cookie + ')'
-    this.outbox.push({
+    this._network.publish(false, {
         module: 'conference',
         method: 'broadcast',
         key: key,
