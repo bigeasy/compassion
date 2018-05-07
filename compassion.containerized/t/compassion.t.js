@@ -221,6 +221,8 @@ function prove (async, okay) {
                     }
                 })
             })()
+        }, function () {
+            console.log('written')
         })
     })
 }

@@ -30,6 +30,8 @@ var Keyify = require('keyify')
 
 var Recorder = require('./recorder')
 
+var Backlogger = require('./backlogger')
+
 function Local (destructible, population, colleagues, networkedUrl) {
     var scheduler = new Scheduler
     var timer = new Timer(scheduler)
@@ -84,6 +86,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         destructible.destruct.wait(function () { caller.inbox.push(null) })
         procedure.outbox.pump(caller.inbox)
         destructible.destruct.wait(function () { procedure.inbox.push(null) })
+        destructible.destruct.wait(this, function() { this.events.push(null) })
         kibitzer = new Kibitzer({
             caller: caller,
             id: envelope.id,
@@ -305,7 +308,12 @@ Local.prototype.backlog = cadence(function (async, request) {
             gateways: [ null, raiseify() ]
         }, async())
     }, function (stream, response) {
-        return [ 200, response.headers, function (response) { stream.pipe(response) } ]
+        return [ 200, response.headers, Backlogger({
+            events: this.events,
+            id: colleague.initalizer.id,
+            headers: response.headers,
+            stream: stream
+        }) ]
     })
 })
 
