@@ -70,7 +70,6 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
     destructible.destruct.wait(function () { kibitzer.paxos.outbox.push(null) })
     destructible.destruct.wait(function () { kibitzer.islander.outbox.push(null) })
     kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record', destructible.monitor('played'))
-    kibitzer.paxos.log.pump(new Recorder(this.events, id, 'entry'), 'record', destructible.monitor('log'))
     kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record', destructible.monitor('paxos'))
     kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander'))
     return kibitzer
@@ -146,6 +145,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     }
                 }
             }, destructible.monitor('conference'))
+            conference.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('log'))
+            destructible.destruct.wait(function () { conference.log.push(null) })
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
