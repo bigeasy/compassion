@@ -26,10 +26,10 @@ function Replay (destructible, readable) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
+        dispatcher.dispatch('GET /backlog', 'backlog')
+        dispatcher.dispatch('POST /record', 'record')
         /*
-            dispatcher.dispatch('GET /backlog', 'backlog')
             dispatcher.dispatch('POST /broadcast', 'broadcast')
-            dispatcher.dispatch('POST /record', 'record')
             dispatcher.dispatch('GET /ping', 'ping')
             dispatcher.dispatch('GET /health', 'health')
         */
@@ -66,6 +66,7 @@ Replay.prototype._advance = cadence(function (async, type) {
             }
             envelope = JSON.parse(envelope.toString('utf8'))
             if (envelope.id == this._colleague.initializer.id) {
+                    console.log(type, envelope)
                 switch (envelope.type) {
                 case 'kibitzer':
                     this._colleague.kibitzer.replay(envelope.body)
@@ -113,7 +114,11 @@ Replay.prototype._play = cadence(function (async) {
             }
             var entry = this._colleague.log.shift()
             departure.raise(entry, envelope.body)
-            this._colleague.conference.entry(entry, async())
+            async(function () {
+                this._colleague.conference.entry(entry, async())
+            }, function () {
+                console.log('DONE SENDING')
+            })
         })()
     })
 })
@@ -132,6 +137,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
         kibitzer.paxos.log.pump(kibitzer.islander, 'enqueue', destructible.monitor('islander'))
         // TODO Wonky. Should destroy out of Kibitzer.
         destructible.destruct.wait(function () {
+            console.log('GOING TO NULL')
             kibitzer.paxos.log.push(null)
         })
         async(function () {
@@ -153,7 +159,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                             return [ envelope.body ]
                         })
                     }).bind(this)
-                }, envelope, kibitzer),
+                }, envelope, kibitzer, true),
                 paxos: kibitzer.paxos.outbox.shifter(),
                 islander: kibitzer.islander.outbox.shifter(),
                 log: kibitzer.paxos.log.shifter()
@@ -163,6 +169,47 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
             console.log('I am here')
             return []
         })
+    })
+})
+
+Replay.prototype.backlog = cadence(function (async, request) {
+    // TODO To unit test entirely, break out advance and seek as members of a
+    // reader class, then create a backlog replayer that takes that class.
+    async(function () {
+        this._advance('backlog', async())
+    }, function (envelope) {
+        console.log(envelope.body)
+        switch (envelope.body) {
+        case 'application/json':
+            console.log('advance')
+            async(function () {
+                this._advance('body', async())
+            }, function (body) {
+                return body.body
+            })
+            break
+        case 'application/json-stream':
+            return cadence(function (async, response) {
+                var loop = async(function () {
+                    this._seek('body', async())
+                }, function (body) {
+                    if (body.body == null) {
+                        response.end()
+                        return [ loop.break ]
+                    } else {
+                        response.write(JSON.stringify(body.body) + '\n', async())
+                    }
+                })()
+            })
+        }
+    })
+})
+
+Replay.prototype.record = cadence(function (async, request) {
+    async(function () {
+        this._advance('record', async())
+    }, function (envelope) {
+        return envelope.body
     })
 })
 

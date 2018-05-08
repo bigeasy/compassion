@@ -1,4 +1,4 @@
-require('proof')(6, require('cadence')(prove))
+require('proof')(4, require('cadence')(prove))
 
 function prove (async, okay) {
     var Staccato = require('staccato')
@@ -33,7 +33,7 @@ function prove (async, okay) {
         var readable = new Staccato.Readable(byline(input))
         destructible.monitor('replay', Replay, {
             readable: readable,
-            id: 'first',
+            id: 'third',
             bind: {
                 listen: function (server, callback) {
                     server.listen(8386, '127.0.0.1', callback)
@@ -48,13 +48,14 @@ function prove (async, okay) {
         }, async())
     }, function (body) {
         okay(body, 'Compassion Replay API\n', 'index')
-        var application = new Application('first', okay)
+        var application = new Application('third', okay)
         applications.push(application)
+        application.blocker.unlatch()
         async(function () {
             var server = http.createServer(application.reactor.middleware)
             destroyer(server)
             destructible.destruct.wait(server, 'destroy')
-            delta(destructible.monitor('first')).ee(server).on('close')
+            delta(destructible.monitor('third')).ee(server).on('close')
             server.listen(8088, '127.0.0.1', async())
         }, function () {
             application.register('http://127.0.0.1:8088/', async())

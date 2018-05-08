@@ -71,6 +71,7 @@ Application.prototype.bootstrap = cadence(function (async, request) {
 
 Application.prototype.join = cadence(function (async, request) {
     var envelope = request.body
+    console.log('JOINING', envelope.self)
     if (envelope.self != 'third') {
         return 200
     }
@@ -92,10 +93,11 @@ Application.prototype.join = cadence(function (async, request) {
             url: 'http://127.0.0.1:8386/'
         }, {
             token: this._token,
-            post: { a: 1 },
             url: '/record',
             parse: [ jsonify(), raiseify() ]
-        }, async())
+        },  envelope.replaying ? {
+            post: { a: 1 },
+        } : {}, async())
     }, function (body, response) {
         this._okay.call(null, body, { a: 1 }, 'record')
         return 200

@@ -11,7 +11,7 @@ var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
-function Conference (destructible, network, registration) {
+function Conference (destructible, network, registration, replaying) {
     this._destructible = destructible
     this._ua = new Vizsla().bind({
         url: registration.url,
@@ -23,6 +23,7 @@ function Conference (destructible, network, registration) {
     this._government = null
     this.outbox = new Procession
     this._network = network
+    this._replaying = !! replaying
     this._cookie = '0'
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
@@ -79,17 +80,20 @@ Conference.prototype.entry = cadence(function (async, entry) {
                         if (entry.body.promise == '1/0') {
                             this._postback([ 'bootstrap' ], {
                                 self: this._id,
+                                replaying: this._replaying,
                                 government: this._government
                             }, async())
                         } else if (arrival.id == this._id) {
                             this._postback([ 'join' ], {
                                 self: this._id,
+                                replaying: this._replaying,
                                 government: this._government
                             }, async())
                         }
                     }, function () {
                         this._postback([ 'arrive' ], {
                             self: this._id,
+                            replaying: this._replaying,
                             government: this._government,
                             arrived: arrival
                         }, async())
@@ -147,6 +151,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     async(function () {
                         this._postback([ 'depart' ], {
                             self: this._id,
+                            replaying: this._replaying,
                             government: this._government,
                             departed: entry.body.departed
                         }, async())
@@ -168,12 +173,14 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 if (entry.body.acclimate != null) {
                     this._postback([ 'acclimated' ], {
                         self: this._id,
+                        replaying: this._replaying,
                         government: this._government
                     }, async())
                 }
             }, function () {
                 this._postback([ 'government' ], {
                     self: this._id,
+                    replaying: this._replaying,
                     government: this._government
                 }, async())
             }, function () {
@@ -199,6 +206,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 async(function () {
                     this._postback([ 'receive', envelope.body.method ], {
                         self: this._id,
+                        replaying: this._replaying,
                         government: this._government,
                         body: envelope.body.body
                     }, async())
@@ -246,6 +254,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
         }
         this._postback([ 'reduced', broadcast.method ], {
             self: this._id,
+            replaying: this._replaying,
             government: this._government,
             body: {
                 request: broadcast.request,
