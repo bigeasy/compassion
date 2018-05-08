@@ -10,8 +10,6 @@ var Procedure = require('conduit/procedure')
 var Kibitzer = require('kibitz')
 
 var crypto = require('crypto')
-var Procession = require('procession')
-var Throttle = require('procession/throttle')
 
 var Vizsla = require('vizsla')
 var jsonify = require('vizsla/jsonify')
@@ -25,7 +23,6 @@ function Replay (destructible, readable) {
     this._destructible = destructible
     this._readable = readable
     this._ua = new Vizsla
-    this._events = []
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
@@ -62,14 +59,13 @@ Replay.prototype.register = cadence(function (async, request) {
 Replay.prototype._advance = cadence(function (async, type) {
     var loop = async(function () {
         async(function () {
-            if (this._events.length == 0) {
-                return [ loop.break, null ]
-            }
-            this._events[0].dequeue(async())
+            this._readable.read(async())
         }, function (envelope) {
             if (envelope == null) {
-                this._events.shift()
-            } else if (envelope.id == this._colleague.initializer.id) {
+                return [ loop.break, null ]
+            }
+            envelope = JSON.parse(envelope.toString('utf8'))
+            if (envelope.id == this._colleague.initializer.id) {
                 switch (envelope.type) {
                 case 'kibitzer':
                     this._colleague.kibitzer.replay(envelope.body)
@@ -122,20 +118,6 @@ Replay.prototype._play = cadence(function (async) {
     })
 })
 
-Replay.prototype._pump = cadence(function (async, events) {
-    var loop = async(function () {
-        this._readable.read(async())
-    }, function (line) {
-        if (line == null) {
-           console.log('I TOO REACHED END')
-           events.push(null)
-           return [ loop.break ]
-        } else {
-           events.enqueue(JSON.parse(line.toString()), async())
-        }
-    })()
-})
-
 Replay.prototype.registration = cadence(function (async, destructible, envelope) {
     async(function () {
         destructible.monitor('caller', Caller, async())
@@ -157,9 +139,6 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
         }, function (bytes) {
             var token = bytes.toString('hex')
             this._registration = {}
-            var log = new Throttle(3)
-            this._events.unshift(log.trailer)
-            this._pump(log, destructible.monitor('pump'))
             this._colleague = {
                 token: token,
                 initializer: envelope,
