@@ -353,9 +353,10 @@ Local.prototype.register = cadence(function (async, request) {
 })
 
 Local.prototype.record = cadence(function (async, request) {
+    var colleague = this._getColleague(request)
     this.events.push({
-        module: 'compassion',
-        method: 'record',
+        type: 'record',
+        id: colleague.initalizer.id,
         body: request.body
     })
     return 200
