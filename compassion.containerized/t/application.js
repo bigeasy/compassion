@@ -97,7 +97,7 @@ Application.prototype.join = cadence(function (async, request) {
             parse: [ jsonify(), raiseify() ]
         }, async())
     }, function (body, response) {
-        this._okay.call(null, true, 'record')
+        this._okay.call(null, body, { a: 1 }, 'record')
         return 200
     })
 })

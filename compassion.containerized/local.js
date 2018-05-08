@@ -359,7 +359,7 @@ Local.prototype.record = cadence(function (async, request) {
         id: colleague.initalizer.id,
         body: request.body
     })
-    return 200
+    return request.body
 })
 
 Local.prototype.broadcast = cadence(function (async, request) {
