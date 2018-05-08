@@ -59,7 +59,7 @@ Replay.prototype.register = cadence(function (async, request) {
 // TODO Note that you cannot assert that the broadcasts are in any particular
 // order. They are not necessarily triggered by response to a specific log
 // entry. We could set up a way to associate a broadcast with an entry.
-Replay.prototype._advance = cadence(function (async, colleague, type) {
+Replay.prototype._advance = cadence(function (async, type) {
     var loop = async(function () {
         async(function () {
             if (this._events.length == 0) {
@@ -69,16 +69,16 @@ Replay.prototype._advance = cadence(function (async, colleague, type) {
         }, function (envelope) {
             if (envelope == null) {
                 this._events.shift()
-            } else if (envelope.id == colleague.initializer.id) {
+            } else if (envelope.id == this._colleague.initializer.id) {
                 switch (envelope.type) {
                 case 'kibitzer':
-                    colleague.kibitzer.replay(envelope.body)
+                    this._colleague.kibitzer.replay(envelope.body)
                     break
                 case 'paxos':
-                    departure.raise(colleague.paxos.shift(), envelope.body)
+                    departure.raise(this._colleague.paxos.shift(), envelope.body)
                     break
                 case 'islander':
-                    departure.raise(colleague.islander.shift(), envelope.body)
+                    departure.raise(this._colleague.islander.shift(), envelope.body)
                     break
                 default:
                     departure.raise(envelope.type, type)
@@ -90,34 +90,34 @@ Replay.prototype._advance = cadence(function (async, colleague, type) {
     })()
 })
 
-Replay.prototype._play = cadence(function (async, colleague) {
+Replay.prototype._play = cadence(function (async) {
     async(function () {
         setTimeout(async(), 250)
     }, function () {
         // TODO Crash if there is an error.
         this._ua.fetch({
-            url: colleague.initializer.url,
-            token: colleague.initializer.token,
+            url: this._colleague.initializer.url,
+            token: this._colleague.initializer.token,
             timeout: 1000,
             gateways: [ jsonify(), raiseify() ]
         }, {
             url: './register',
             post: {
-                token: colleague.token
+                token: this._colleague.token
             }
         }, async())
     }, function () {
         var count = 0
         var loop = async(function () {
-            this._advance(colleague, 'entry', async())
+            this._advance('entry', async())
         }, function (envelope) {
             if (envelope == null) {
                 console.log('DID REACH END!!!!')
                 return [ loop.break ]
             }
-            var entry = colleague.log.shift()
+            var entry = this._colleague.log.shift()
             departure.raise(entry, envelope.body)
-            colleague.conference.entry(entry, async())
+            this._colleague.conference.entry(entry, async())
         })()
     })
 })
@@ -160,8 +160,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
             var log = new Throttle(3)
             this._events.unshift(log.trailer)
             this._pump(log, destructible.monitor('pump'))
-            var colleague
-            this._play(colleague = {
+            this._colleague = {
                 token: token,
                 initializer: envelope,
                 kibitzer: kibitzer,
@@ -170,7 +169,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                     publish: function () {},
                     broadcasts: cadence(function (async, promise) {
                         async(function () {
-                            this._advance(colleague, 'broadcasts', async())
+                            this._advance('broadcasts', async())
                         }, function (envelope) {
                             return [ envelope.body ]
                         })
@@ -179,7 +178,8 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                 paxos: kibitzer.paxos.outbox.shifter(),
                 islander: kibitzer.islander.outbox.shifter(),
                 log: kibitzer.paxos.log.shifter()
-            }, destructible.monitor('play'))
+            }
+            this._play(destructible.monitor('play'))
         }, function () {
             console.log('I am here')
             return []
