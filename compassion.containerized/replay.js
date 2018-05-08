@@ -59,20 +59,31 @@ Replay.prototype.register = cadence(function (async, request) {
 // TODO Note that you cannot assert that the broadcasts are in any particular
 // order. They are not necessarily triggered by response to a specific log
 // entry. We could set up a way to associate a broadcast with an entry.
-Replay.prototype._advance = cadence(function (async, id) {
+Replay.prototype._advance = cadence(function (async, colleague, type) {
     var loop = async(function () {
         async(function () {
             if (this._events.length == 0) {
                 return [ loop.break, null ]
             }
             this._events[0].dequeue(async())
-        }, function (entry) {
-            console.log(entry)
-            if (entry == null) {
+        }, function (envelope) {
+            if (envelope == null) {
                 this._events.shift()
-            } else {
-                if (entry.id == id) {
-                    return [ loop.break, entry ]
+            } else if (envelope.id == colleague.initializer.id) {
+                switch (envelope.type) {
+                case 'kibitzer':
+                    colleague.kibitzer.replay(envelope.body)
+                    break
+                case 'paxos':
+                    departure.raise(colleague.paxos.shift(), envelope.body)
+                    break
+                case 'islander':
+                    departure.raise(colleague.islander.shift(), envelope.body)
+                    break
+                default:
+                    departure.raise(envelope.type, type)
+                    return [ loop.break, envelope ]
+                    break
                 }
             }
         })
@@ -80,11 +91,6 @@ Replay.prototype._advance = cadence(function (async, id) {
 })
 
 Replay.prototype._play = cadence(function (async, colleague) {
-    var outboxes = {
-        paxos: colleague.kibitzer.paxos.outbox.shifter(),
-        islander: colleague.kibitzer.islander.outbox.shifter(),
-        log: colleague.kibitzer.paxos.log.shifter()
-    }
     async(function () {
         setTimeout(async(), 250)
     }, function () {
@@ -103,28 +109,15 @@ Replay.prototype._play = cadence(function (async, colleague) {
     }, function () {
         var count = 0
         var loop = async(function () {
-            this._advance(colleague.initializer.id, async())
+            this._advance(colleague, 'entry', async())
         }, function (envelope) {
             if (envelope == null) {
                 console.log('DID REACH END!!!!')
                 return [ loop.break ]
             }
-            switch (envelope.type) {
-            case 'kibitzer':
-                colleague.kibitzer.replay(envelope.body)
-                break
-            case 'entry':
-                var entry = outboxes.log.shift()
-                departure.raise(entry, envelope.body)
-                colleague.conference.entry(entry, async())
-                break
-            case 'paxos':
-                departure.raise(outboxes.paxos.shift(), envelope.body)
-                break
-            case 'islander':
-                departure.raise(outboxes.islander.shift(), envelope.body)
-                break
-            }
+            var entry = colleague.log.shift()
+            departure.raise(entry, envelope.body)
+            colleague.conference.entry(entry, async())
         })()
     })
 })
@@ -181,7 +174,10 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                             return [ envelope.body ]
                         })
                     }).bind(this)
-                }, envelope, kibitzer)
+                }, envelope, kibitzer),
+                paxos: kibitzer.paxos.outbox.shifter(),
+                islander: kibitzer.islander.outbox.shifter(),
+                log: kibitzer.paxos.log.shifter()
             }, destructible.monitor('play'))
         }, function () {
             console.log('I am here')
