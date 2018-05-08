@@ -160,7 +160,8 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
             var log = new Throttle(3)
             this._events.unshift(log.trailer)
             this._pump(log, destructible.monitor('pump'))
-            this._play({
+            var colleague
+            this._play(colleague = {
                 token: token,
                 initializer: envelope,
                 kibitzer: kibitzer,
@@ -169,7 +170,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                     publish: function () {},
                     broadcasts: cadence(function (async, promise) {
                         async(function () {
-                            this._advance(envelope.id, 'broadcasts', async())
+                            this._advance(colleague, 'broadcasts', async())
                         }, function (envelope) {
                             return [ envelope.body ]
                         })
