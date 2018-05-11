@@ -6,7 +6,6 @@ module.exports = cadence(function (async, advance) {
     }, function (envelope) {
         switch (envelope.body) {
         case 'application/json':
-            console.log('advance')
             async(function () {
                 advance('body', async())
             }, function (body) {
