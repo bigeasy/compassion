@@ -19,6 +19,9 @@ var departure = require('departure')
 
 var Conference = require('./conference')
 
+var backplayer = require('./backplayer')
+var Operation = require('operation/variadic')
+
 function Replay (destructible, readable) {
     this._destructible = destructible
     this._readable = readable
@@ -175,34 +178,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
 Replay.prototype.backlog = cadence(function (async, request) {
     // TODO To unit test entirely, break out advance and seek as members of a
     // reader class, then create a backlog replayer that takes that class.
-    async(function () {
-        this._advance('backlog', async())
-    }, function (envelope) {
-        console.log(envelope.body)
-        switch (envelope.body) {
-        case 'application/json':
-            console.log('advance')
-            async(function () {
-                this._advance('body', async())
-            }, function (body) {
-                return body.body
-            })
-            break
-        case 'application/json-stream':
-            return cadence(function (async, response) {
-                var loop = async(function () {
-                    this._seek('body', async())
-                }, function (body) {
-                    if (body.body == null) {
-                        response.end()
-                        return [ loop.break ]
-                    } else {
-                        response.write(JSON.stringify(body.body) + '\n', async())
-                    }
-                })()
-            })
-        }
-    })
+    backplayer(Operation([ this, '_advance']), async())
 })
 
 Replay.prototype.record = cadence(function (async, request) {
