@@ -332,12 +332,12 @@ Local.prototype.backlog = cadence(function (async, request) {
             },
             gateways: [ null, raiseify() ]
         }, async())
-    }, function (stream, response) {
+    }, function (body, response) {
         return [ 200, response.headers, Backlogger({
             events: this.events,
             id: colleague.initalizer.id,
-            headers: response.headers,
-            stream: stream
+            contentType: response.headers['content-type'],
+            input: body
         }) ]
     })
 })
