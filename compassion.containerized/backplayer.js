@@ -25,6 +25,19 @@ module.exports = cadence(function (async, advance) {
                     }
                 })()
             })
+        default:
+            return cadence(function (async, response) {
+                var loop = async(function () {
+                    advance('body', async())
+                }, function (body) {
+                    if (body.body == null) {
+                        response.end()
+                        return [ loop.break ]
+                    } else {
+                        response.write(Buffer.from(body.body, 'base64'), async())
+                    }
+                })()
+            })
         }
     })
 })
