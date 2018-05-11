@@ -127,24 +127,6 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     })
                 })
             }, envelope, kibitzer)
-            conference.outbox.pump(this, function (envelope) {
-                if (envelope != null) {
-                    this.events.push({
-                        type: 'conference',
-                        id: envelope.id,
-                        body: envelope
-                    })
-                    switch (envelope.method) {
-                    case 'acclimate':
-                        kibitzer.acclimate()
-                        break
-                    case 'broadcast':
-                    case 'reduce':
-                        kibitzer.publish(envelope)
-                        break
-                    }
-                }
-            }, destructible.monitor('conference'))
             conference.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('log'))
             destructible.destruct.wait(function () { conference.log.push(null) })
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
