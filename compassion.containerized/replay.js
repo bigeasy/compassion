@@ -83,7 +83,6 @@ Replay.prototype._advance = cadence(function (async, type) {
                 default:
                     departure.raise(envelope.type, type)
                     return [ loop.break, envelope ]
-                    break
                 }
             }
         })
