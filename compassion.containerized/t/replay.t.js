@@ -1,4 +1,4 @@
-require('proof')(4, require('cadence')(prove))
+require('proof')(5, require('cadence')(prove))
 
 function prove (async, okay) {
     var Staccato = require('staccato')
@@ -26,6 +26,7 @@ function prove (async, okay) {
         throw error
     }])
 
+    var ua = new Vizsla
     async([function () {
         destructible.destroy()
     }], function () {
@@ -41,7 +42,6 @@ function prove (async, okay) {
             }
         }, async())
     }, function () {
-        var ua = new Vizsla
         ua.fetch({
             url:  'http://127.0.0.1:8386/',
             parse: [ stringify() ]
@@ -60,6 +60,12 @@ function prove (async, okay) {
         }, function () {
             application.register('http://127.0.0.1:8088/', async())
         }, function () {
+            ua.fetch({
+                url:  'http://127.0.0.1:8386/register',
+                post: {}
+            }, async())
+        }, function (body, response) {
+            okay(response.statusCode, 401, 'already registered')
             destructible.destruct.wait(application.arrived, 'unlatch')
             application.arrived.wait(async())
         })
