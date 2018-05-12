@@ -1,7 +1,8 @@
-require('proof')(4, prove)
+require('proof')(5, prove)
 
 function prove (okay) {
     var recoverable = require('../recoverable')
+    okay(recoverable('x', []), { action: 'retry' }, 'empty')
     okay(recoverable('x', [{
         id: 'a'
     }]), { action: 'retry' }, 'not found')
