@@ -1,0 +1,47 @@
+{
+    "private":              true,
+    "name":                 "conference",
+    "version":              "9.9.9",
+    "description":
+
+      "Framework communicating using a Compassion atomic log.",
+
+    "keywords":
+    [
+                            "consensus", "paxos"
+    ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/compassion",
+    "bugs":                 "https://github.com/bigeasy/compassion/issues",
+    "license":              "MIT",
+    "repository":
+    {
+                            "type": "git",
+                            "url": "bigeasy/compassion"
+    },
+    "dependencies":
+    {
+                            "cadence":                      "1.0.x",
+                            "cubbyhole":                    "1.0.x",
+                            "extant":                       "1.0.x",
+                            "interrupt":                    "6.2.x",
+                            "monotonic":                    "3.0.x",
+                            "procession":                   "0.19.x",
+                            "prolific.logger":              "6.0.x",
+                            "rescue":                       "3.2.x",
+                            "vizsla":                       "12.2.x"
+    },
+    "devDependencies":
+    {
+                            "proof":                        "3.0.x"
+    },
+    "main":                 "colleague.bin",
+    "bin":
+    {
+                            "compassion-colleague":         "colleague.bin.js"
+    },
+    "scripts":
+    {
+                            "test": "proof test t/*.t.js"
+    }
+}

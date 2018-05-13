@@ -17,12 +17,11 @@ var raiseify = require('vizsla/raiseify')
 
 var departure = require('departure')
 
-var Conference = require('../compassion.colleague/conference')
-
 var backplayer = require('./backplayer')
 var Operation = require('operation/variadic')
 
-function Replay (destructible, readable) {
+function Replay (destructible, readable, Conference) {
+    this._Conference = Conference
     this._destructible = destructible
     this._readable = readable
     this._ua = new Vizsla
@@ -151,7 +150,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
                 token: token,
                 initializer: envelope,
                 kibitzer: kibitzer,
-                conference: new Conference(destructible, {
+                conference: new this._Conference(destructible, {
                     acclimate: function () {},
                     publish: function () {},
                     broadcasts: cadence(function (async, promise) {
@@ -189,7 +188,7 @@ Replay.prototype.record = cadence(function (async, request) {
 })
 
 module.exports = cadence(function (async, destructible, options) {
-    var replay = new Replay(destructible, options.readable)
+    var replay = new Replay(destructible, options.readable, options.Conference)
     var server = http.createServer(replay.reactor.middleware)
     destroyer(server)
     destructible.destruct.wait(server, 'destroy')

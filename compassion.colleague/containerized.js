@@ -9,7 +9,8 @@ module.exports = cadence(function (async, destructible, options) {
     var colleagues = { island: {}, token: {} }, local, networked
     async(function () {
         local = new Local(destructible, options.population, colleagues,
-            'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/')
+            'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/',
+            options.Conference)
         var server = http.createServer(local.reactor.middleware)
         destroyer(server)
         destructible.destruct.wait(server, 'destroy')

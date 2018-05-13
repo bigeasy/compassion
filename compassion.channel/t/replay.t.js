@@ -1,6 +1,7 @@
 require('proof')(5, require('cadence')(prove))
 
 function prove (async, okay) {
+    var Conference = require('../../compassion.conference/conference')
     var Staccato = require('staccato')
     var fs = require('fs')
     var path = require('path')
@@ -33,6 +34,7 @@ function prove (async, okay) {
         var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
         var readable = new Staccato.Readable(byline(input))
         destructible.monitor('replay', Replay, {
+            Conference: Conference,
             readable: readable,
             id: 'third',
             bind: {

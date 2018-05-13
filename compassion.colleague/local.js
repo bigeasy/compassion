@@ -15,8 +15,6 @@ var Monotonic = require('monotonic').asString
 // Sencha Connect middleware builder.
 var Reactor = require('reactor')
 
-var Conference = require('./conference')
-
 var url = require('url')
 
 var Procession = require('procession')
@@ -32,12 +30,13 @@ var Recorder = require('./recorder')
 
 var Backlogger = require('./backlogger')
 
-function Local (destructible, population, colleagues, networkedUrl) {
+function Local (destructible, population, colleagues, networkedUrl, Conference) {
     var scheduler = new Scheduler
     var timer = new Timer(scheduler)
     destructible.destruct.wait(scheduler, 'clear')
     destructible.destruct.wait(timer.events.pump(this, '_scheduled', destructible.monitor('timer')), 'destroy')
     destructible.destruct.wait(scheduler.events.pump(timer, 'enqueue', destructible.monitor('scheduler')), 'destroy')
+    this._Conference = Conference
     this._destructible = destructible
     this.colleagues = colleagues
     this._ping = 1000
@@ -103,7 +102,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 this.colleagues.island[envelope.island] = {}
             }
             var events = this.events
-            var conference = new Conference(destructible, {
+            var conference = new this._Conference(destructible, {
                 acclimate: function () { kibitzer.acclimate() },
                 publish: function (record, envelope) { kibitzer.publish(envelope) },
                 broadcasts: cadence(function (async, promise) {

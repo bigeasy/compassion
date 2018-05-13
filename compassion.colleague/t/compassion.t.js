@@ -1,6 +1,7 @@
 require('proof')(15, require('cadence')(prove))
 
 function prove (async, okay) {
+    var Conference = require('../../compassion.conference/conference')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
@@ -36,6 +37,7 @@ function prove (async, okay) {
         destructible.destroy()
     }], function () {
         destructible.monitor('containerized', Containerized, {
+            Conference: Conference,
             population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             bind: {
                 local: {
