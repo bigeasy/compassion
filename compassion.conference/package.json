@@ -1,7 +1,7 @@
 {
     "private":              true,
     "name":                 "conference",
-    "version":              "9.9.9",
+    "version":              "0.20.0",
     "description":
 
       "Framework communicating using a Compassion atomic log.",
