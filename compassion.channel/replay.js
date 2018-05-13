@@ -17,7 +17,7 @@ var raiseify = require('vizsla/raiseify')
 
 var departure = require('departure')
 
-var Conference = require('./conference')
+var Conference = require('../compassion.colleague/conference')
 
 var backplayer = require('./backplayer')
 var Operation = require('operation/variadic')

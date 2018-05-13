@@ -9,7 +9,7 @@ function prove (async, okay) {
     var stringify = require('vizsla/stringify')
     var raiseify = require('vizsla/raiseify')
     var Destructible = require('destructible')
-    var Application = require('./application')
+    var Application = require('../../compassion.colleague/t/application')
 
     var destructible = new Destructible('t/replay.t.js')
     var applications = []
@@ -30,7 +30,7 @@ function prove (async, okay) {
     async([function () {
         destructible.destroy()
     }], function () {
-        var input = fs.createReadStream(path.join(__dirname, 'entries.jsons'))
+        var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
         var readable = new Staccato.Readable(byline(input))
         destructible.monitor('replay', Replay, {
             readable: readable,
