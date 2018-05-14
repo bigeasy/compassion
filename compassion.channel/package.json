@@ -21,18 +21,11 @@
     },
     "dependencies":
     {
-                            "byline":                       "5.0.x",
                             "cadence":                      "1.0.x",
                             "conduit":                      "2.9.x",
-                            "cubbyhole":                    "1.0.x",
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.28.x",
-                            "extant":                       "1.0.x",
-                            "happenstance":                 "10.2.x",
-                            "interlocutor":                 "0.5.x",
-                            "interrupt":                    "6.2.x",
-                            "keyify":                       "0.0.x",
                             "kibitz":                       "0.22.x",
                             "monotonic":                    "3.0.x",
                             "operation":                    "1.6.x",
@@ -47,7 +40,7 @@
     },
     "devDependencies":
     {
-                            "interlocutor":                 "0.5.x",
+                            "byline":                       "5.0.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "colleague.bin",
