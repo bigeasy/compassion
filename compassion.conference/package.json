@@ -33,11 +33,7 @@
     {
                             "proof":                        "3.0.x"
     },
-    "main":                 "colleague.bin",
-    "bin":
-    {
-                            "compassion-colleague":         "colleague.bin.js"
-    },
+    "main":                 "conference",
     "scripts":
     {
                             "test": "proof test t/*.t.js"
