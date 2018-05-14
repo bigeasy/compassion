@@ -1,7 +1,7 @@
 {
     "private":              true,
-    "name":                 "compassion.containerized",
-    "version":              "9.9.9",
+    "name":                 "compassion.colleague",
+    "version":              "0.28.0",
     "description":
 
       "Instance of a compassion island participant.",
