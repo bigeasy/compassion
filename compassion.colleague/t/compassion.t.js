@@ -29,10 +29,6 @@ function prove (async, okay) {
         throw error
     }])
 
-    destructible.destruct.wait(function () {
-        console.log('is destructing!!!!')
-    })
-
     async([function () {
         destructible.destroy()
     }], function () {
