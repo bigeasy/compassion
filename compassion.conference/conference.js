@@ -18,6 +18,7 @@ function Conference (destructible, network, registration, replaying) {
         gateways: [ nullify([ 0 ]), raiseify() ]
     })
     this.log = new Procession
+    this.consumed = new Procession
     this._id = registration.id
     this._url = registration.url
     this._government = null
@@ -69,166 +70,170 @@ Conference.prototype.entry = cadence(function (async, entry) {
             return []
         }
         this.log.push(entry)
-        if (entry.method == 'government') {
-            this._government = entry.government
-            this.isLeader = this._government.majority[0] == this._id
-            var properties = entry.properties
-            async(function () {
-                if (entry.body.arrive) {
-                    var arrival = entry.body.arrive
-                    async(function () {
-                        if (entry.body.promise == '1/0') {
-                            this._postback([ 'bootstrap' ], {
-                                self: this._id,
-                                replaying: this._replaying,
-                                government: this._government
-                            }, async())
-                        } else if (arrival.id == this._id) {
-                            this._postback([ 'join' ], {
-                                self: this._id,
-                                replaying: this._replaying,
-                                government: this._government
-                            }, async())
-                        }
-                    }, function () {
-                        this._postback([ 'arrive' ], {
-                            self: this._id,
-                            replaying: this._replaying,
-                            government: this._government,
-                            arrived: arrival
-                        }, async())
-                    }, function () {
-                        if (arrival.id != this._id) {
-                            var broadcasts = []
-                            for (var key in this._broadcasts) {
-                                broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
+        async(function () {
+            if (entry.method == 'government') {
+                this._government = entry.government
+                this.isLeader = this._government.majority[0] == this._id
+                var properties = entry.properties
+                async(function () {
+                    if (entry.body.arrive) {
+                        var arrival = entry.body.arrive
+                        async(function () {
+                            if (entry.body.promise == '1/0') {
+                                this._postback([ 'bootstrap' ], {
+                                    self: this._id,
+                                    replaying: this._replaying,
+                                    government: this._government
+                                }, async())
+                            } else if (arrival.id == this._id) {
+                                this._postback([ 'join' ], {
+                                    self: this._id,
+                                    replaying: this._replaying,
+                                    government: this._government
+                                }, async())
                             }
-                            this._snapshots.set(this._government.promise, null, broadcasts)
-                        } else if (this._government.promise != '1/0') {
-                            async(function () {
-                                this._network.broadcasts(this._government.promise, async())
-                            }, function (body) {
-                                async.forEach(function (broadcast) {
-                                    async(function () {
-                                        this.entry({
-                                            // paxos
-                                            body: {
-                                                // islander
-                                                body: {
-                                                    module: 'conference',
-                                                    method: 'broadcast',
-                                                    internal: broadcast.internal,
-                                                    key: broadcast.key,
-                                                    body: {
-                                                        method: broadcast.method,
-                                                        body: broadcast.request
-                                                    }
-                                                }
-                                            }
-                                        }, async())
-                                    }, function () {
-                                        async.forEach(function (promise) {
+                        }, function () {
+                            this._postback([ 'arrive' ], {
+                                self: this._id,
+                                replaying: this._replaying,
+                                government: this._government,
+                                arrived: arrival
+                            }, async())
+                        }, function () {
+                            if (arrival.id != this._id) {
+                                var broadcasts = []
+                                for (var key in this._broadcasts) {
+                                    broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
+                                }
+                                this._snapshots.set(this._government.promise, null, broadcasts)
+                            } else if (this._government.promise != '1/0') {
+                                async(function () {
+                                    this._network.broadcasts(this._government.promise, async())
+                                }, function (body) {
+                                    async.forEach(function (broadcast) {
+                                        async(function () {
                                             this.entry({
                                                 // paxos
                                                 body: {
                                                     // islander
                                                     body: {
                                                         module: 'conference',
-                                                        method: 'reduce',
-                                                        from: promise,
+                                                        method: 'broadcast',
+                                                        internal: broadcast.internal,
                                                         key: broadcast.key,
-                                                        body: broadcast.responses[promise]
+                                                        body: {
+                                                            method: broadcast.method,
+                                                            body: broadcast.request
+                                                        }
                                                     }
                                                 }
                                             }, async())
-                                        })(Object.keys(broadcast.responses))
-                                    })
-                                })(body)
-                            })
-                        }
-                    })
-                } else if (entry.body.departed) {
-                    async(function () {
-                        this._postback([ 'depart' ], {
+                                        }, function () {
+                                            async.forEach(function (promise) {
+                                                this.entry({
+                                                    // paxos
+                                                    body: {
+                                                        // islander
+                                                        body: {
+                                                            module: 'conference',
+                                                            method: 'reduce',
+                                                            from: promise,
+                                                            key: broadcast.key,
+                                                            body: broadcast.responses[promise]
+                                                        }
+                                                    }
+                                                }, async())
+                                            })(Object.keys(broadcast.responses))
+                                        })
+                                    })(body)
+                                })
+                            }
+                        })
+                    } else if (entry.body.departed) {
+                        async(function () {
+                            this._postback([ 'depart' ], {
+                                self: this._id,
+                                replaying: this._replaying,
+                                government: this._government,
+                                departed: entry.body.departed
+                            }, async())
+                        }, function () {
+                            var depart = entry.body.departed
+                            var promise = depart.promise
+                            var broadcasts = []
+                            for (var key in this._broadcasts) {
+                                delete this._broadcasts[key].responses[promise]
+                                broadcasts.push(this._broadcasts[key])
+                            }
+                            this._snapshots.remove(promise)
+                            async.forEach(function (broadcast) {
+                                this._checkReduced(broadcast, async())
+                            })(broadcasts)
+                        })
+                    }
+                }, function () {
+                    if (entry.body.acclimate != null) {
+                        this._postback([ 'acclimated' ], {
                             self: this._id,
                             replaying: this._replaying,
-                            government: this._government,
-                            departed: entry.body.departed
+                            government: this._government
                         }, async())
-                    }, function () {
-                        var depart = entry.body.departed
-                        var promise = depart.promise
-                        var broadcasts = []
-                        for (var key in this._broadcasts) {
-                            delete this._broadcasts[key].responses[promise]
-                            broadcasts.push(this._broadcasts[key])
-                        }
-                        this._snapshots.remove(promise)
-                        async.forEach(function (broadcast) {
-                            this._checkReduced(broadcast, async())
-                        })(broadcasts)
-                    })
-                }
-            }, function () {
-                if (entry.body.acclimate != null) {
-                    this._postback([ 'acclimated' ], {
+                    }
+                }, function () {
+                    this._postback([ 'government' ], {
                         self: this._id,
                         replaying: this._replaying,
                         government: this._government
                     }, async())
-                }
-            }, function () {
-                this._postback([ 'government' ], {
-                    self: this._id,
-                    replaying: this._replaying,
-                    government: this._government
-                }, async())
-            }, function () {
-                this._network.acclimate()
-            })
-        } else {
-            assert(entry.body.body)
-            // Reminder that if you ever want to do queued instead async then the
-            // queue should be external and a property of the object the conference
-            // operates.
-
-            //
-            var envelope = entry.body.body
-            switch (envelope.method) {
-            case 'broadcast':
-                this._broadcasts[envelope.key] = {
-                    key: envelope.key,
-                    internal: coalesce(envelope.internal, false),
-                    method: envelope.body.method,
-                    request: envelope.body.body,
-                    responses: {}
-                }
-                async(function () {
-                    this._postback([ 'receive', envelope.body.method ], {
-                        self: this._id,
-                        replaying: this._replaying,
-                        government: this._government,
-                        body: envelope.body.body
-                    }, async())
-                }, function (response) {
-                    this._network.publish(true, {
-                        module: 'compassion',
-                        method: 'reduce',
-                        key: envelope.key,
-                        from: this._government.arrived.promise[this._id],
-                        body: coalesce(response)
-                    })
+                }, function () {
+                    this._network.acclimate()
                 })
-                break
-            // Tally our responses and if they match the number of participants,
-            // then invoke the reduction method.
-            case 'reduce':
-                var broadcast = this._broadcasts[envelope.key]
-                broadcast.responses[envelope.from] = envelope.body
-                this._checkReduced(broadcast, async())
-                break
+            } else {
+                assert(entry.body.body)
+                // Reminder that if you ever want to do queued instead async then the
+                // queue should be external and a property of the object the conference
+                // operates.
+
+                //
+                var envelope = entry.body.body
+                switch (envelope.method) {
+                case 'broadcast':
+                    this._broadcasts[envelope.key] = {
+                        key: envelope.key,
+                        internal: coalesce(envelope.internal, false),
+                        method: envelope.body.method,
+                        request: envelope.body.body,
+                        responses: {}
+                    }
+                    async(function () {
+                        this._postback([ 'receive', envelope.body.method ], {
+                            self: this._id,
+                            replaying: this._replaying,
+                            government: this._government,
+                            body: envelope.body.body
+                        }, async())
+                    }, function (response) {
+                        this._network.publish(true, {
+                            module: 'compassion',
+                            method: 'reduce',
+                            key: envelope.key,
+                            from: this._government.arrived.promise[this._id],
+                            body: coalesce(response)
+                        })
+                    })
+                    break
+                // Tally our responses and if they match the number of participants,
+                // then invoke the reduction method.
+                case 'reduce':
+                    var broadcast = this._broadcasts[envelope.key]
+                    broadcast.responses[envelope.from] = envelope.body
+                    this._checkReduced(broadcast, async())
+                    break
+                }
             }
-        }
+        }, function () {
+            this.consumed.push(entry)
+        })
     }, rescue(/^qualified:compassion.conference#postback$/, function () {
         this._destructible.destroy()
     })])
