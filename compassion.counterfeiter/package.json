@@ -1,0 +1,37 @@
+{
+    "name":                 "compassion.counterfeiter",
+    "version":              "0.13.1",
+    "description":
+
+      "Instance of a compassion island participant.",
+
+    "keywords":
+    [
+                            "consensus", "paxos"
+    ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/compassion",
+    "bugs":                 "https://github.com/bigeasy/compassion/issues",
+    "license":              "MIT",
+    "repository":
+    {
+                            "type": "git",
+                            "url": "bigeasy/compassion"
+    },
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                            "proof":                        "3.0.x"
+    },
+    "main":                 "colleague.bin",
+    "bin":
+    {
+                            "compassion-colleague":         "colleague.bin.js"
+    },
+    "scripts":
+    {
+                            "test": "proof test t/*.t.js"
+    }
+}
