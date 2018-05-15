@@ -27,7 +27,8 @@
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.19.x",
                             "prolific.logger":              "6.0.x",
-                            "rescue":                       "3.2.x"
+                            "rescue":                       "3.2.x",
+                            "vizsla":                       "12.2.x"
     },
     "devDependencies":
     {
