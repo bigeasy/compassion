@@ -68,7 +68,6 @@ Replay.prototype._advance = cadence(function (async, type) {
             }
             envelope = JSON.parse(envelope.toString('utf8'))
             if (envelope.id == this._colleague.initializer.id) {
-                    console.log(type, envelope)
                 switch (envelope.type) {
                 case 'kibitzer':
                     this._colleague.kibitzer.replay(envelope.body)
@@ -78,6 +77,8 @@ Replay.prototype._advance = cadence(function (async, type) {
                     break
                 case 'islander':
                     departure.raise(this._colleague.islander.shift(), envelope.body)
+                    break
+                case 'consumed':
                     break
                 default:
                     departure.raise(envelope.type, type)
@@ -110,7 +111,6 @@ Replay.prototype._play = cadence(function (async) {
             this._advance('entry', async())
         }, function (envelope) {
             if (envelope == null) {
-                console.log('DID REACH END!!!!')
                 return [ loop.break ]
             }
             var entry = this._colleague.log.shift()
