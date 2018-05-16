@@ -22,7 +22,8 @@
     {
                             "cadence":                      "1.0.x",
                             "compassion.colleague":         "0.30.1",
-                            "conference":                   "0.26.1"
+                            "conference":                   "0.26.1",
+                            "extant":                       "1.0.x"
     },
     "devDependencies":
     {
