@@ -26,6 +26,7 @@
                             "delta":                        "1.2.x",
                             "destructible":                 "0.28.x",
                             "extant":                       "1.0.x",
+                            "happenstance":                 "10.2.x",
                             "keyify":                       "0.0.x",
                             "kibitz":                       "0.22.x",
                             "monotonic":                    "3.0.x",
