@@ -1,10 +1,8 @@
 var Containerized = require('compassion.colleague/containerized')
 var Conference = require('conference')
 var cadence = require('cadence')
-var coalesce = require('extant')
 var Population = require('compassion.colleague/population')
 var Resolver = { Static: require('compassion.colleague/resolver/static') }
-var Vizsla = require('vizsla')
 
 module.exports = cadence(function (async, destructible, options) {
     var port = {
