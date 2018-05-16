@@ -20,16 +20,14 @@
     },
     "dependencies":
     {
+                            "compassion.colleague":         "0.30.x",
+                            "conference":                   "0.26.x"
     },
     "devDependencies":
     {
                             "proof":                        "3.0.x"
     },
-    "main":                 "colleague.bin",
-    "bin":
-    {
-                            "compassion-colleague":         "colleague.bin.js"
-    },
+    "main":                 "counterfeiter",
     "scripts":
     {
                             "test": "proof test t/*.t.js"
