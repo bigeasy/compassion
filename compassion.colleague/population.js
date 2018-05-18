@@ -17,10 +17,11 @@ Population.prototype.census = cadence(function (async, island) {
                     this._ua.fetch({
                         url: location
                     }, {
-                        url: [ '.', 'island', island, 'islanders' ].join('/')
+                        url: [ '.', 'island', island, 'islanders' ].join('/'),
+                        parse: 'json'
                     }, async())
                 }, function (body, response) {
-                    if (!body) {
+                    if (body == null) {
                         return null
                     }
                     return [ body.map(function (member) {

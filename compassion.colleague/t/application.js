@@ -1,8 +1,6 @@
 var cadence = require('cadence')
 var Reactor = require('reactor')
 var Vizsla = require('vizsla')
-var jsonify = require('vizsla/jsonify')
-var raiseify = require('vizsla/raiseify')
 var Signal = require('signal')
 
 function Application (id, okay) {
@@ -10,7 +8,7 @@ function Application (id, okay) {
     this._okay = okay
     this.arrived = new Signal
     this.blocker = new Signal
-    this._ua = new Vizsla().bind({ gateways: [ jsonify() ] })
+    this._ua = new Vizsla()
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('POST /register', '_register')
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
@@ -45,7 +43,8 @@ Application.prototype.register = cadence(function (async, url) {
                 receive: [ 'message' ],
                 reduced: [ 'message' ]
             },
-            gateways: [ jsonify(), raiseify(), null ]
+            raise: true,
+            parse: 'json'
         }, async())
         console.log('DOING')
     }, function () {
@@ -85,7 +84,8 @@ Application.prototype.join = cadence(function (async, request) {
         }, {
             token: this._token,
             url: '/backlog',
-            parse: [ jsonify(), raiseify() ]
+            parse: 'json',
+            raise: true
         }, async())
     }, function (body) {
         this._okay.call(null, body, { a: 1 }, 'backlog')
@@ -94,7 +94,8 @@ Application.prototype.join = cadence(function (async, request) {
         }, {
             token: this._token,
             url: '/record',
-            parse: [ jsonify(), raiseify() ]
+            parse: 'json',
+            raise: true
         },  envelope.replaying ? {
             post: { a: 1 },
         } : {}, async())
@@ -177,7 +178,8 @@ Application.prototype.broadcast = cadence(function (async, value) {
             token: this._token,
             post: { method: 'message', message: { value: value } },
             url: '/broadcast',
-            parse: [ jsonify(), raiseify() ]
+            parse: 'json',
+            raise: true
         }, async())
     }, function (body) {
         return []

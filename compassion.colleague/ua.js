@@ -2,10 +2,6 @@ var url = require('url')
 var cadence = require('cadence')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
-var nullify = require('vizsla/nullify')
-var jsonify = require('vizsla/jsonify')
-var unify = require('vizsla/unify')
-
 function UserAgent (ua, timeout, island, id) {
     this._ua = ua
     this._timeout = timeout
@@ -22,9 +18,10 @@ UserAgent.prototype.request = cadence(function (async, envelope) {
             url: './kibitz',
             post: envelope,
             timeout: 30000, //  this._timeout,
-            parse: [ jsonify(), nullify() ]
+            parse: 'json',
+            nullify: true
         }, async())
-    }, function (body, response) {
+    }, function (body) {
         return [ body ]
     })
 })

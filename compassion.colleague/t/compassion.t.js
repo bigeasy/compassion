@@ -53,10 +53,10 @@ function prove (async, okay) {
     }, function (containerized) {
         events = containerized.events.shifter()
         async(function () {
-            ua.fetch({ url: 'http://127.0.0.1:8386' }, async())
+            ua.fetch({ url: 'http://127.0.0.1:8386', parse: 'text' }, async())
         }, function (body) {
             okay(body, 'Compassion Local API\n', 'local index')
-            ua.fetch({ url: 'http://127.0.0.1:8486' }, async())
+            ua.fetch({ url: 'http://127.0.0.1:8486', parse: 'text' }, async())
         }, function (body) {
             okay(body, 'Compassion Networked API\n', 'networked index')
         }, function () {

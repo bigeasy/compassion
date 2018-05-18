@@ -6,8 +6,6 @@ function prove (async, okay) {
     var UserAgent = require('vizsla')
     var Population = require('../population')
     var cadence = require('cadence')
-    var nullify = require('vizsla/nullify')
-    var jsonify = require('vizsla/jsonify')
     var Resolver = { Static: require('../resolver/static') }
 
     var resolver = new Resolver.Static([ 'http://127.0.0.1:8080/', 'http://127.0.0.1:8080/' ])
@@ -34,7 +32,8 @@ function prove (async, okay) {
     var service = new Service
     var ua = new UserAgent().bind({
         http: new Interlocutor(service.reactor.middleware),
-        gateways: [ nullify(), jsonify(), nullify() ]
+        nullify: true,
+        parse: 'json'
     })
 
     var resolver = new Resolver.Static([ 'http://127.0.0.1:8080/', 'http://127.0.0.1:8080/' ])

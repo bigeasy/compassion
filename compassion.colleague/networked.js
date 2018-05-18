@@ -5,8 +5,6 @@ var logger = require('prolific.logger').createLogger('compassion.networked')
 
 var coalesce = require('extant')
 
-var raiseify = require('vizsla/raiseify')
-
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
@@ -56,7 +54,8 @@ Networked.prototype.backlog = cadence(function (async, request, island, id) {
         colleague.ua.fetch({
             url: './backlog',
             post: request.body,
-            gateways: [ null, raiseify() ]
+            parse: 'stream',
+            raise: true
         }, async())
     }, function (stream, response) {
         return [ 200, response.headers, function (response) { stream.pipe(response) } ]

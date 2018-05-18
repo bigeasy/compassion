@@ -1,7 +1,5 @@
 var cadence = require('cadence')
 var Vizsla = require('vizsla')
-var raiseify = require('vizsla/raiseify')
-var jsonify = require('vizsla/jsonify')
 
 var Caller = require('conduit/caller')
 var Procedure = require('conduit/procedure')
@@ -114,7 +112,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                         }, {
                             url: './broadcasts',
                             post: { promise: promise },
-                            parse: [ jsonify(), raiseify() ]
+                            raise: true,
+                            parse: 'json'
                         }, async())
                     }, function (body) {
                         events.push({
@@ -154,7 +153,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 createdAt: Date.now(),
                 ua: new Vizsla().bind({
                     url: envelope.url,
-                    gateways: [ jsonify(), raiseify() ]
+                    raise: true,
+                    parse: 'json'
                 })
             }
             this.colleagues.token[token] = colleague
@@ -208,7 +208,8 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
                 url: colleague.initalizer.url,
                 token: colleague.initalizer.token,
                 timeout: 1000,
-                gateways: [ jsonify(), raiseify() ]
+                raise: true,
+                parse: 'json'
             }, {
                 url: './register',
                 post: {
@@ -260,7 +261,8 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         this._ua.fetch({
             url: action.url,
             timeout: 1000,
-            gateways: [ jsonify(), raiseify() ]
+            raise: true,
+            parse: 'json'
         }, {
             url: './arrive',
             post: {
@@ -313,7 +315,8 @@ Local.prototype.backlog = cadence(function (async, request) {
             post: {
                 promise: government.arrived.promise[colleague.initalizer.id]
             },
-            gateways: [ null, raiseify() ]
+            parse: 'stream',
+            raise: true
         }, async())
     }, function (body, response) {
         return [ 200, response.headers, Backlogger({
