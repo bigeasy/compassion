@@ -21,8 +21,10 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
+                            "extant":                       "1.0.x",
                             "compassion.colleague":         "0.30.1",
-                            "conference":                   "0.26.1"
+                            "compassion.conference":        "0.0.x",
+                            "vizsla":                       "12.2.x"
     },
     "devDependencies":
     {
