@@ -4,19 +4,13 @@ var Procession = require('procession')
 var Monotonic = require('monotonic').asString
 var assert = require('assert')
 var Vizsla = require('vizsla')
-var raiseify = require('vizsla/raiseify')
-var nullify = require('vizsla/nullify')
-var jsonify = require('vizsla/jsonify')
 var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
 function Conference (destructible, network, registration, replaying) {
     this._destructible = destructible
-    this._ua = new Vizsla().bind({
-        url: registration.url,
-        gateways: [ nullify([ 0 ]), raiseify() ]
-    })
+    this._ua = new Vizsla().bind({ url: registration.url })
     this.log = new Procession
     this.consumed = new Procession
     this._id = registration.id
@@ -50,7 +44,8 @@ Conference.prototype._postback = cadence(function (async, path, envelope) {
             this._ua.fetch({
                 url: path.join('/'),
                 post: envelope,
-                parse: [ jsonify(), raiseify() ]
+                parse: 'json',
+                raise: true
             }, async())
         }, function (error) {
             throw interrupt('postback', error)
