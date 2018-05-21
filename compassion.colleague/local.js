@@ -65,7 +65,7 @@ Local.prototype.index = cadence(function (async) {
 Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
     destructible.destruct.wait(kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record', destructible.monitor('played')), 'destroy')
     destructible.destruct.wait(kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record', destructible.monitor('paxos')), 'destroy')
-    destructible.destruct.wait(kibitzer._islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander')), 'destroy')
+    destructible.destruct.wait(kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander')), 'destroy')
     return kibitzer
 })
 
