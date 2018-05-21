@@ -1,5 +1,6 @@
 var cadence = require('cadence')
 var Vizsla = require('vizsla')
+var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 var Caller = require('conduit/caller')
 var Procedure = require('conduit/procedure')
@@ -62,13 +63,9 @@ Local.prototype.index = cadence(function (async) {
 })
 
 Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
-    destructible.destruct.wait(function () { kibitzer.paxos.log.push(null) })
-    destructible.destruct.wait(function () { kibitzer.played.push(null) })
-    destructible.destruct.wait(function () { kibitzer.paxos.outbox.push(null) })
-    destructible.destruct.wait(function () { kibitzer.islander.outbox.push(null) })
-    kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record', destructible.monitor('played'))
-    kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record', destructible.monitor('paxos'))
-    kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander'))
+    destructible.destruct.wait(kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record', destructible.monitor('played')), 'destroy')
+    destructible.destruct.wait(kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record', destructible.monitor('paxos')), 'destroy')
+    destructible.destruct.wait(kibitzer._islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record', destructible.monitor('islander')), 'destroy')
     return kibitzer
 })
 
@@ -83,11 +80,26 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
         procedure.outbox.pump(caller.inbox)
         destructible.destruct.wait(function () { procedure.inbox.push(null) })
 //        destructible.destruct.wait(this, function() { this.events.push(null) })
+        var ua = new Vizsla
         kibitzer = new Kibitzer({
             caller: caller,
             id: envelope.id,
             ping: this._ping,
-            timeout: this._timeout
+            timeout: this._timeout,
+            ua: {
+                send: cadence(function (async, envelope) {
+                    logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
+                    ua.fetch({
+                        url: envelope.to.url
+                    }, {
+                        url: './kibitz',
+                        post: envelope,
+                        timeout: 30000, //  this._timeout,
+                        parse: 'json',
+                        nullify: true
+                    }, async())
+                })
+            }
         })
         destructible.monitor('kibitzer', kibitzer, 'listen', async())
     }, function () {
