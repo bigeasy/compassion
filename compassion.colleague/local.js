@@ -145,7 +145,9 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(this, function () {
+                var colleague = this.colleagues.island[envelope.island][envelope.id]
                 delete this.colleagues.island[envelope.island][envelope.id]
+                delete this.colleagues.token[colleague.token]
             })
             destructible.destruct.wait(function () {
                 conference.outbox.push(null)
@@ -159,6 +161,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             var token = bytes.toString('hex')
             var colleague = this.colleagues.island[envelope.island][envelope.id] = {
                 token: token,
+                destructible: destructible,
                 initalizer: envelope,
                 kibitzer: kibitzer,
                 conference: conference,
@@ -185,6 +188,16 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
 
 var discover = require('./discover')
 var embark = require('./embark')
+
+Local.prototype.terminate = function (island, id) {
+    var island = this.colleagues.island[island]
+    if (island != null) {
+        var colleague = island[id]
+        if (colleague != null) {
+            colleague.destructible.destroy()
+        }
+    }
+}
 
 Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
     var island = this.colleagues.island[envelope.island]

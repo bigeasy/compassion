@@ -201,6 +201,10 @@ function prove (async, okay) {
                 applications[2].blocker.notify()
             })
         }, function () {
+            containerized.terminate('x')
+            containerized.terminate('island', 'eighth')
+            containerized.terminate('island', 'third')
+        }, function () {
             setTimeout(async(), 1000)
         }, function () {
             destructible.destroy()
@@ -222,8 +226,6 @@ function prove (async, okay) {
                     }
                 })
             })()
-        }, function () {
-            console.log('written')
         })
     })
 }
