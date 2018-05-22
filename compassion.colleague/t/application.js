@@ -126,9 +126,8 @@ Application.prototype.acclimated = cadence(function (async, request) {
 })
 
 Application.prototype.depart = cadence(function (async, request) {
-    console.log(request.body)
-    if (request.body.self == 'second') {
-        this._okay.call(null, request.body.departed.id, 'fourth', 'departed')
+    if (request.body.self == 'fifth') {
+        this._okay.call(null, request.body.departed.id, 'first', 'departed')
     }
     return 200
 })

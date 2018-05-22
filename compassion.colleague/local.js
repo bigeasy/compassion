@@ -133,6 +133,16 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
+            destructible.destruct.wait(kibitzer.paxos.pinged.pump(this, function () {
+                this.scheduler.schedule(Date.now() + 7000, Keyify.stringify({
+                    island: envelope.island,
+                    id: envelope.id
+                }), {
+                    name: 'recoverable',
+                    island: envelope.island,
+                    id: envelope.id
+                })
+            }, destructible.monitor('pinged')), 'destroy')
             destructible.destruct.wait(this, function () {
                 var colleague = this.colleagues.island[envelope.island][envelope.id]
                 delete this.colleagues.island[envelope.island][envelope.id]
@@ -212,6 +222,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         action = embark(members, 0)
         break
     case 'recoverable':
+        throw new Error
         break
     }
     switch (action.action) {
@@ -260,7 +271,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         })
         break
     case 'embark':
-        this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
+        this.scheduler.schedule(Date.now() + 7000, Keyify.stringify({
             island: envelope.island,
             id: envelope.id
         }), {
@@ -288,7 +299,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         }, async())
         break
     case 'retry':
-        console.log(envelope, action, members)
+        console.log(envelope, action, members, members[0].government)
         process.exit()
         this.scheduler.schedule(now, event.id, { type: 'discover'  })
         break

@@ -29,7 +29,7 @@
                             "extant":                       "1.0.x",
                             "happenstance":                 "10.2.x",
                             "keyify":                       "0.0.x",
-                            "kibitz":                       "0.24.x",
+                            "kibitz":                       "0.25.x",
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.19.x",
                             "prolific.logger":              "6.0.x",

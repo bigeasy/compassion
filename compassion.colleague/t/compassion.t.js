@@ -201,9 +201,23 @@ function prove (async, okay) {
                 applications[2].blocker.notify()
             })
         }, function () {
-            containerized.terminate('x')
+            // Let's make sure we're done embarking and whatnot.
+            setTimeout(async(), 5500)
+        }, function () {
+            containerized.terminate('missing')
             containerized.terminate('island', 'eighth')
-            containerized.terminate('island', 'third')
+            containerized.terminate('island', 'first')
+        }, function () {
+            containerized.events.shifter().join(function (event) {
+                if (
+                    event.type == 'entry' &&
+                    event.id == 'fifth' &&
+                    event.body.promise == '10/0'
+                ) {
+                    return true
+                }
+                return false
+            }, async())
         }, function () {
             setTimeout(async(), 1000)
         }, function () {
