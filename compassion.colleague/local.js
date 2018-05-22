@@ -2,8 +2,6 @@ var cadence = require('cadence')
 var Vizsla = require('vizsla')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
-var Caller = require('conduit/caller')
-var Procedure = require('conduit/procedure')
 var Kibitzer = require('kibitz')
 var UserAgent = require('./ua')
 
@@ -72,17 +70,8 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
     var kibitzer
     async(function () {
-        destructible.monitor('caller', Caller, async())
-        destructible.monitor('procedure', Procedure, new UserAgent(new Vizsla, this._httpTimeout, envelope.island, envelope.id), 'request', async())
-    }, function (caller, procedure) {
-        caller.outbox.pump(procedure.inbox)
-        destructible.destruct.wait(function () { caller.inbox.push(null) })
-        procedure.outbox.pump(caller.inbox)
-        destructible.destruct.wait(function () { procedure.inbox.push(null) })
-//        destructible.destruct.wait(this, function() { this.events.push(null) })
         var ua = new Vizsla
         kibitzer = new Kibitzer({
-            caller: caller,
             id: envelope.id,
             ping: this._ping,
             timeout: this._timeout,
