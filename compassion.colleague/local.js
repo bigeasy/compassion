@@ -35,6 +35,19 @@ function Local (destructible, colleagues, options) {
     this._population = options.population
     this._networkedUrl = 'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/'
 
+    var ping = coalesce(options.ping, {})
+    var timeout = coalesce(options.timeout, {})
+
+    this._ping = {
+        paxos: coalesce(ping.paxos, 1000),
+        chaperon: coalesce(timeout.paxos, 1000)
+    }
+    this._timeout = {
+        chaperon: coalesce(timeout.paxos, 5000),
+        paxos: coalesce(timeout.paxos, 5000),
+        http: coalesce(timeout.http, 5000)
+    }
+
     var scheduler = new Scheduler
     var timer = new Timer(scheduler)
 
@@ -43,10 +56,6 @@ function Local (destructible, colleagues, options) {
     destructible.destruct.wait(scheduler.events.pump(timer, 'enqueue', destructible.monitor('scheduler')), 'destroy')
 
     this.scheduler = scheduler
-
-    this._ping = 1000
-    this._timeout = 5000
-    this._httpTimeout = 5000
 
     this._instance = 0
     this._ua = new Vizsla
@@ -78,11 +87,11 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
     var kibitzer
     async(function () {
-        var ua = new Vizsla().bind({ timeout: this._timeout })
+        var ua = new Vizsla().bind({ timeout: this._timeout.http })
         kibitzer = new Kibitzer({
             id: envelope.id,
-            ping: this._ping,
-            timeout: this._timeout,
+            ping: this._ping.paxos,
+            timeout: this._timeout.paxos,
             ua: {
                 send: cadence(function (async, envelope) {
                     logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
@@ -141,7 +150,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(kibitzer.paxos.pinged.pump(this, function () {
-                this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
+                this.scheduler.schedule(Date.now() + this._timeout.chaperon, Keyify.stringify({
                     island: envelope.island,
                     id: envelope.id
                 }), {
@@ -237,7 +246,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
             this._ua.fetch({
                 url: colleague.initalizer.url,
                 token: colleague.initalizer.token,
-                timeout: 1000,
+                timeout: this._timeout.http,
                 raise: true,
                 parse: 'json'
             }, {
@@ -279,7 +288,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         // Schedule a subsequent embarkation. Once our Paxos object starts
         // receiving message, the embarkation is cleared and replaced with a
         // recoverable check.
-        this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
+        this.scheduler.schedule(Date.now() + this._ping.chaperon, Keyify.stringify({
             island: envelope.body.island,
             id: envelope.body.id
         }), {
@@ -298,7 +307,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         properties.url = envelope.body.url
         this._ua.fetch({
             url: action.url,
-            timeout: 1000,
+            timeout: this._timeout.http,
             nullify: true,
             parse: 'json'
         }, {
@@ -312,7 +321,7 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         }, async())
         break
     case 'retry':
-        this.scheduler.schedule(Date.now() + 1000, envelope.key, envelope.body)
+        this.scheduler.schedule(Date.now() + this._ping.chaperon, envelope.key, envelope.body)
         break
     case 'unrecoverable':
         colleague.destructible.destroy()
