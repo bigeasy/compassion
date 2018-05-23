@@ -3,7 +3,6 @@ var Vizsla = require('vizsla')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 var Kibitzer = require('kibitz')
-var UserAgent = require('./ua')
 
 var crypto = require('crypto')
 
