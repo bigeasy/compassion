@@ -214,9 +214,6 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
     case 'discover':
         action = discover(envelope.id, members, complete)
         break
-    case 'discover':
-        action = discover(envelope.id, members, complete)
-        break
     case 'embark':
         action = embark(members, 0)
         break
