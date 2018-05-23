@@ -26,24 +26,33 @@ var Recorder = require('./recorder')
 
 var Backlogger = require('./backlogger')
 
-function Local (destructible, population, colleagues, networkedUrl, Conference) {
+function Local (destructible, colleagues, options) {
+    this._destructible = destructible
+
+    this.colleagues = colleagues
+
+    this._Conference = options.Conference
+    this._population = options.population
+    this._networkedUrl = 'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/'
+
     var scheduler = new Scheduler
     var timer = new Timer(scheduler)
+
     destructible.destruct.wait(scheduler, 'clear')
     destructible.destruct.wait(timer.events.pump(this, '_scheduled', destructible.monitor('timer')), 'destroy')
     destructible.destruct.wait(scheduler.events.pump(timer, 'enqueue', destructible.monitor('scheduler')), 'destroy')
-    this._Conference = Conference
-    this._destructible = destructible
-    this.colleagues = colleagues
+
+    this.scheduler = scheduler
+
     this._ping = 1000
-    this._ua = new Vizsla
     this._timeout = 5000
     this._httpTimeout = 5000
+
     this._instance = 0
-    this._networkedUrl = networkedUrl
-    this._population = population
+    this._ua = new Vizsla
+
     this.events = new Procession
-    this.scheduler = scheduler
+
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
