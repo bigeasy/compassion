@@ -45,5 +45,5 @@ module.exports =  function (id, members) {
         return { action: 'unrecoverable', definitive: false }
     }
 
-    return { action: 'recoverable', definitive: true }
+    return { action: 'retry' }
 }

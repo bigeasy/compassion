@@ -9,7 +9,7 @@ function prove (okay) {
             republic: 1
         }
     }], 1), {
-        action: 'terminate'
+        action: 'unrecoverable'
     }, 'no members')
     okay(embark([{
         id: 'x',
@@ -26,7 +26,7 @@ function prove (okay) {
             minority: [ 'c' ]
         }
     }], 1), {
-        action: 'terminate'
+        action: 'unrecoverable'
     }, 'collapsed')
     okay(embark([{
         id: 'x',

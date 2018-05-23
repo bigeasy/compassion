@@ -46,5 +46,5 @@ function prove (okay) {
             republic: 1,
             promise: '2/0'
         }
-    }]), { action: 'recoverable', definitive: true }, 'recoverable')
+    }]), { action: 'retry' }, 'recoverable')
 }

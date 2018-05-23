@@ -133,7 +133,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             destructible.destruct.wait(log, 'destroy')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(kibitzer.paxos.pinged.pump(this, function () {
-                this.scheduler.schedule(Date.now() + 7000, Keyify.stringify({
+                this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
                     island: envelope.island,
                     id: envelope.id
                 }), {
@@ -186,6 +186,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
 
 var discover = require('./discover')
 var embark = require('./embark')
+var recoverable = require('./recoverable')
 
 Local.prototype.terminate = function (island, id) {
     var island = this.colleagues.island[island]
@@ -198,27 +199,27 @@ Local.prototype.terminate = function (island, id) {
 }
 
 Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
-    var island = this.colleagues.island[envelope.island]
+    var island = this.colleagues.island[envelope.body.island]
     if (island == null) {
         return
     }
-    var colleague = island[envelope.id]
+    var colleague = island[envelope.body.id]
     if (colleague == null) {
         return null
     }
     var action
-    switch (envelope.name) {
+    switch (envelope.body.name) {
     case 'register':
         action = { action: 'register' }
         break
     case 'discover':
-        action = discover(envelope.id, members, complete)
+        action = discover(envelope.body.id, members, complete)
         break
     case 'embark':
         action = embark(members, 0)
         break
     case 'recoverable':
-        throw new Error
+        action = recoverable(envelope.body.id, members)
         break
     }
     switch (action.action) {
@@ -239,12 +240,12 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
             }, async())
         }, function () {
             this.scheduler.schedule(Date.now(), Keyify.stringify({
-                island: envelope.island,
-                id: envelope.id
+                island: envelope.body.island,
+                id: envelope.body.id
             }), {
                 name: 'discover',
-                island: envelope.island,
-                id: envelope.id
+                island: envelope.body.island,
+                id: envelope.body.id
             })
         })
         break
@@ -256,38 +257,46 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
     case 'join':
         colleague.kibitzer.join(0)
         this.scheduler.schedule(Date.now(), Keyify.stringify({
-            island: envelope.island,
-            id: envelope.id
+            island: envelope.body.island,
+            id: envelope.body.id
         }), {
             name: 'embark',
-            island: envelope.island,
-            id: envelope.id,
+            island: envelope.body.island,
+            id: envelope.body.id,
             url: action.url,
             republic: action.republic
         })
         break
     case 'embark':
-        this.scheduler.schedule(Date.now() + 7000, Keyify.stringify({
-            island: envelope.island,
-            id: envelope.id
+        // Schedule a subsequent embarkation. Once our Paxos object starts
+        // receiving message, the embarkation is cleared and replaced with a
+        // recoverable check.
+        this.scheduler.schedule(Date.now() + 5000, Keyify.stringify({
+            island: envelope.body.island,
+            id: envelope.body.id
         }), {
             name: 'embark',
-            island: envelope.island,
-            id: envelope.id,
-            url: envelope.url,
-            republic: envelope.republic
+            island: envelope.body.island,
+            id: envelope.body.id,
+            url: envelope.body.url,
+            republic: envelope.body.republic
         })
+        // If this fails, we don't care. Embarkation is designed to be
+        // asynchronous in the macro. You send a message. Maybe it gets there,
+        // maybe it doesn't. You'll know when the Paxos object starts working.
+        // Until then, keep sending embarkation requests. The leader knows how
+        // to deal with duplicate or in-process requests.
         var properties = JSON.parse(JSON.stringify(coalesce(colleague.initalizer.properties, {})))
-        properties.url = envelope.url
+        properties.url = envelope.body.url
         this._ua.fetch({
             url: action.url,
             timeout: 1000,
-            raise: true,
+            nullify: true,
             parse: 'json'
         }, {
             url: './arrive',
             post: {
-                republic: envelope.republic,
+                republic: envelope.body.republic,
                 id: colleague.kibitzer.paxos.id,
                 cookie: colleague.kibitzer.paxos.cookie,
                 properties: properties
@@ -295,13 +304,25 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
         }, async())
         break
     case 'retry':
-        console.log(envelope, action, members, members[0].government)
-        process.exit()
-        this.scheduler.schedule(now, event.id, { type: 'discover'  })
+        this.scheduler.schedule(Date.now() + 1000, envelope.key, envelope.body)
+        break
+    case 'unrecoverable':
+        colleague.destructible.destroy()
         break
     }
 })
 
+// Race conditions to consider &mdash; events are not going to fire for a
+// destroyed colleague because we clear their schedule on destruct. However, we
+// the colleague might get destroyed while we are gathering the census. That is
+// why we check that the colleague still exists in `_overwatch`.
+//
+// In overwatch, we schedule our next action, an synchronous operation, before
+// we do anything asynchronous, so we know that we have a good colleague. Our
+// asynchronous operation is a tail operation. If something particularly bad
+// happens.
+
+//
 Local.prototype._scheduled = cadence(function (async, envelope) {
     if (!(envelope != null && envelope.module == 'happenstance' && envelope.method == 'event')) {
         return
@@ -309,7 +330,7 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
     async(function () {
         this._population.census(envelope.body.island, async())
     }, function (members, complete) {
-        this._overwatch(envelope.body, members, complete, async())
+        this._overwatch(envelope, members, complete, async())
     })
 })
 

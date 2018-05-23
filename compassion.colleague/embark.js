@@ -7,7 +7,7 @@ module.exports = function (members, republic) {
 
     // The entire island has disappeared.
     if (unsplit.length == 0) {
-        return { action: 'terminate' }
+        return { action: 'unrecoverable' }
     }
 
     unsplit.sort(function (a, b) {
@@ -22,7 +22,7 @@ module.exports = function (members, republic) {
     if (government.majority.concat(government.minority).filter(function (id) {
         return ~ids.indexOf(id)
     }).length < government.majority.length) {
-        return { action: 'terminate' }
+        return { action: 'unrecoverable' }
     }
 
     if (government.majority.filter(function (id) {
