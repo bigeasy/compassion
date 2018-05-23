@@ -78,7 +78,7 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
 Local.prototype.colleague = cadence(function (async, destructible, envelope) {
     var kibitzer
     async(function () {
-        var ua = new Vizsla
+        var ua = new Vizsla().bind({ timeout: this._timeout })
         kibitzer = new Kibitzer({
             id: envelope.id,
             ping: this._ping,
@@ -91,7 +91,6 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     }, {
                         url: './kibitz',
                         post: envelope,
-                        timeout: 30000, //  this._timeout,
                         parse: 'json',
                         nullify: true
                     }, async())
