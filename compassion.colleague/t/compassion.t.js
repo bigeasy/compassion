@@ -1,4 +1,4 @@
-require('proof')(15, require('cadence')(prove))
+require('proof')(16, require('cadence')(prove))
 
 function prove (async, okay) {
     var Conference = require('../../compassion.conference/conference')
@@ -68,7 +68,9 @@ function prove (async, okay) {
             ua.fetch({ url: 'http://127.0.0.1:8486', parse: 'text' }, async())
         }, function (body) {
             okay(body, 'Compassion Networked API\n', 'networked index')
-        }, function () {
+            ua.fetch({ url: 'http://127.0.0.1:8486/island/island/islanders', parse: 'json' }, async())
+        }, function (body) {
+            okay(body, [], 'empty island')
             ua.fetch({
                 url: 'http://127.0.0.1:8386/',
             }, {
