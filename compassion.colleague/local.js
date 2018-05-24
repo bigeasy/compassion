@@ -251,7 +251,6 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
     }
     switch (action.action) {
     case 'register':
-        // TODO Handle 404.
         async(function () {
             this._ua.fetch({
                 url: colleague.initalizer.url,
