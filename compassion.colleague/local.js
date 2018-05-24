@@ -119,6 +119,11 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 this.colleagues.island[envelope.island] = {}
             }
             var events = this.events
+            // Notice that conference here references the colleague ua. All of
+            // this is rather slapdash, but that's how these last little bits of
+            // assembly tend to be. We've deferred the circular references to
+            // the final assembly, the upper most abstractions, but we can't
+            // chase them out of existence for they exist.
             var conference = new this._Conference(destructible, this._postbacker, {
                 acclimate: function () { kibitzer.acclimate() },
                 publish: function (record, envelope) { kibitzer.publish(envelope) },
