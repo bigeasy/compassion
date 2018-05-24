@@ -26,10 +26,8 @@ var Recorder = require('./recorder')
 
 var Backlogger = require('./backlogger')
 
-function Local (destructible, postbacker, colleagues, options) {
+function Local (destructible, colleagues, options) {
     this._destructible = destructible
-
-    this._postbacker = postbacker
 
     this.colleagues = colleagues
 
@@ -124,7 +122,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             // assembly tend to be. We've deferred the circular references to
             // the final assembly, the upper most abstractions, but we can't
             // chase them out of existence for they exist.
-            var conference = new this._Conference(destructible, this._postbacker, {
+            var conference = new this._Conference(destructible, {
                 acclimate: function () { kibitzer.acclimate() },
                 publish: function (record, envelope) { kibitzer.publish(envelope) },
                 broadcasts: cadence(function (async, promise) {

@@ -8,9 +8,9 @@ var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
-function Conference (destructible, postbacker, network, registration, replaying) {
+function Conference (destructible, network, registration, replaying) {
     this._destructible = destructible
-    this._postbacker = postbacker
+    this._ua = new Vizsla().bind({ url: registration.url })
     this.log = new Procession
     this.consumed = new Procession
     this._id = registration.id
@@ -34,9 +34,26 @@ function Conference (destructible, postbacker, network, registration, replaying)
     }, this)
 }
 
-Conference.prototype._postback = function (path, envelope, callback) {
-    this._postbacker.postback(path, this._postbacks, this._url, envelope, callback)
-}
+Conference.prototype._postback = cadence(function (async, path, envelope) {
+    var search = path.slice(), postbacks = this._postbacks
+    while (search.length != 0) {
+        postbacks = postbacks[search.shift()]
+    }
+    if (postbacks) {
+        async([function () {
+            this._ua.fetch({
+                url: path.join('/'),
+                post: envelope,
+                parse: 'json',
+                raise: true
+            }, async())
+        }, function (error) {
+            throw interrupt('postback', error)
+        }])
+    } else {
+        return null
+    }
+})
 
 Conference.prototype.getSnapshot = cadence(function (async, promise) {
     this._snapshots.wait(promise, async())

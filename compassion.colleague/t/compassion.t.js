@@ -2,7 +2,6 @@ require('proof')(16, require('cadence')(prove))
 
 function prove (async, okay) {
     var Conference = require('../../compassion.conference/conference')
-    var Postbacker = require('../../compassion.conference/postbacker')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
@@ -35,7 +34,6 @@ function prove (async, okay) {
     }], function () {
         destructible.monitor('containerized', Containerized, {
             Conference: Conference,
-            Postbacker: Postbacker,
             population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             ping: {
                 chaperon: 150,
