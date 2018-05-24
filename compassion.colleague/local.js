@@ -26,8 +26,10 @@ var Recorder = require('./recorder')
 
 var Backlogger = require('./backlogger')
 
-function Local (destructible, colleagues, options) {
+function Local (destructible, pinger, colleagues, options) {
     this._destructible = destructible
+
+    this._pinger = pinger
 
     this.colleagues = colleagues
 
@@ -178,6 +180,10 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                     id: envelope.id
                 }))
             })
+            destructible.destruct.wait(this, function () {
+                this._pinger.clear(envelope.url)
+            })
+            this._pinger.keepAlive(envelope.url, envelope.token)
             var token = bytes.toString('hex')
             var colleague = this.colleagues.island[envelope.island][envelope.id] = {
                 token: token,

@@ -10,6 +10,7 @@ function Application (id, okay) {
     this.blocker = new Signal
     this._ua = new Vizsla()
     this.reactor = new Reactor(this, function (dispatcher) {
+        dispatcher.dispatch('GET /ping', 'ping')
         dispatcher.dispatch('POST /register', '_register')
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /join', 'join')
@@ -51,6 +52,10 @@ Application.prototype.register = cadence(function (async, url) {
         console.log('DONE')
         return []
     })
+})
+
+Application.prototype.ping = cadence(function (async, request) {
+    return 200
 })
 
 Application.prototype._register = cadence(function (async, request) {

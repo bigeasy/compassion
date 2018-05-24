@@ -23,6 +23,7 @@
                             "cadence":                      "1.0.x",
                             "cubbyhole":                    "1.0.x",
                             "extant":                       "1.0.x",
+                            "happenstance":                 "10.2.x",
                             "interrupt":                    "6.2.x",
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.19.x",
