@@ -26,8 +26,10 @@ var Recorder = require('./recorder')
 
 var Backlogger = require('./backlogger')
 
-function Local (destructible, colleagues, options) {
+function Local (destructible, postbacker, colleagues, options) {
     this._destructible = destructible
+
+    this._postbacker = postbacker
 
     this.colleagues = colleagues
 
@@ -117,7 +119,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 this.colleagues.island[envelope.island] = {}
             }
             var events = this.events
-            var conference = new this._Conference(destructible, {
+            var conference = new this._Conference(destructible, this._postbacker, {
                 acclimate: function () { kibitzer.acclimate() },
                 publish: function (record, envelope) { kibitzer.publish(envelope) },
                 broadcasts: cadence(function (async, promise) {

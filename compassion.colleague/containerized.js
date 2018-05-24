@@ -8,7 +8,9 @@ var destroyer = require('server-destroy')
 module.exports = cadence(function (async, destructible, options) {
     var colleagues = { island: {}, token: {} }, local, networked
     async(function () {
-        local = new Local(destructible, colleagues, options)
+        destructible.monitor('postback', options.Postbacker, async())
+    }, function (postbacker) {
+        local = new Local(destructible, postbacker, colleagues, options)
         var server = http.createServer(local.reactor.middleware)
         destroyer(server)
         destructible.destruct.wait(server, 'destroy')
