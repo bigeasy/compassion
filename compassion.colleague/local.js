@@ -181,12 +181,14 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
                 kibitzer: kibitzer,
                 conference: conference,
                 createdAt: Date.now(),
+                destroyed: false,
                 ua: new Vizsla().bind({
                     url: envelope.url,
                     raise: true,
                     parse: 'json'
                 })
             }
+            destructible.markDestroyed(colleague)
             this.colleagues.token[token] = colleague
             this.scheduler.schedule(Date.now(), Keyify.stringify({
                 island: colleague.initalizer.island,
@@ -223,10 +225,9 @@ Local.prototype.terminate = function (island, id) {
     }
 }
 
-Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
-    var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
-    if (colleague == null) {
-        return null
+Local.prototype._overwatch = cadence(function (async, colleague, envelope, members, complete) {
+    if (colleague.destroyed) {
+        return
     }
     var action
     switch (envelope.body.name) {
@@ -251,23 +252,26 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
                 url: colleague.initalizer.url,
                 token: colleague.initalizer.token,
                 timeout: this._timeout.http,
-                raise: true,
-                parse: 'json'
+                parse: 'dump'
             }, {
                 url: './register',
                 post: {
                     token: colleague.token
                 }
             }, async())
-        }, function () {
-            this.scheduler.schedule(Date.now(), Keyify.stringify({
-                island: envelope.body.island,
-                id: envelope.body.id
-            }), {
-                name: 'discover',
-                island: envelope.body.island,
-                id: envelope.body.id
-            })
+        }, function (body, response) {
+            if (response.okay) {
+                this.scheduler.schedule(Date.now(), Keyify.stringify({
+                    island: envelope.body.island,
+                    id: envelope.body.id
+                }), {
+                    name: 'discover',
+                    island: envelope.body.island,
+                    id: envelope.body.id
+                })
+            } else {
+                colleague.destructible.destroy()
+            }
         })
         break
     case 'bootstrap':
@@ -345,10 +349,13 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
 
 //
 Local.prototype._scheduled = cadence(function (async, envelope) {
+    var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
     async(function () {
         this._population.census(envelope.body.island, async())
     }, function (members, complete) {
-        this._overwatch(envelope, members, complete, async())
+        if (!colleague.destroyed) {
+            this._overwatch(colleague, envelope, members, complete, async())
+        }
     })
 })
 
