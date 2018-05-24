@@ -341,9 +341,6 @@ Local.prototype._overwatch = cadence(function (async, envelope, members, complet
 
 //
 Local.prototype._scheduled = cadence(function (async, envelope) {
-    if (!(envelope != null && envelope.module == 'happenstance' && envelope.method == 'event')) {
-        return
-    }
     async(function () {
         this._population.census(envelope.body.island, async())
     }, function (members, complete) {
