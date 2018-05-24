@@ -205,22 +205,26 @@ var discover = require('./discover')
 var embark = require('./embark')
 var recoverable = require('./recoverable')
 
-Local.prototype.terminate = function (island, id) {
+Local.prototype._getColleagueByIslandAndId = function (island, id) {
     var island = this.colleagues.island[island]
     if (island != null) {
         var colleague = island[id]
         if (colleague != null) {
-            colleague.destructible.destroy()
+            return colleague
         }
+    }
+    return null
+}
+
+Local.prototype.terminate = function (island, id) {
+    var colleague = this._getColleagueByIslandAndId(island, id)
+    if (colleague != null) {
+        colleague.destructible.destroy()
     }
 }
 
 Local.prototype._overwatch = cadence(function (async, envelope, members, complete) {
-    var island = this.colleagues.island[envelope.body.island]
-    if (island == null) {
-        return
-    }
-    var colleague = island[envelope.body.id]
+    var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
     if (colleague == null) {
         return null
     }
@@ -348,7 +352,7 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
     })
 })
 
-Local.prototype._getColleague = function (request) {
+Local.prototype._getColleagueByToken = function (request) {
     if (request.authorization.scheme != 'Bearer') {
         throw 401
     }
@@ -361,7 +365,7 @@ Local.prototype._getColleague = function (request) {
 
 // TODO Abend if the colleague is not waiting on a `join` notification.
 Local.prototype.backlog = cadence(function (async, request) {
-    var colleague = this._getColleague(request)
+    var colleague = this._getColleagueByToken(request)
     var government = colleague.kibitzer.paxos.government
     async(function () {
         colleague.ua.fetch({
@@ -395,7 +399,7 @@ Local.prototype.register = cadence(function (async, request) {
 })
 
 Local.prototype.record = cadence(function (async, request) {
-    var colleague = this._getColleague(request)
+    var colleague = this._getColleagueByToken(request)
     this.events.push({
         type: 'record',
         id: colleague.initalizer.id,
@@ -405,7 +409,7 @@ Local.prototype.record = cadence(function (async, request) {
 })
 
 Local.prototype.broadcast = cadence(function (async, request) {
-    var colleague = this._getColleague(request)
+    var colleague = this._getColleagueByToken(request)
     colleague.conference.broadcast(request.body.method, request.body.message)
     return 200
 })
