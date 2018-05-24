@@ -1,5 +1,6 @@
 var Containerized = require('compassion.colleague/containerized')
-var Conference = require('compassion.conference')
+var Conference = require('compassion.conference/conference')
+var Pinger = require('compassion.conference/pinger')
 var cadence = require('cadence')
 var Population = require('compassion.colleague/population')
 var Resolver = { Static: require('compassion.colleague/resolver/static') }
@@ -13,6 +14,7 @@ module.exports = cadence(function (async, destructible, options) {
     }
     destructible.monitor('containerized', Containerized, {
         Conference: Conference,
+        Pinger: Pinger,
         population: new Population(new Resolver.Static([ 'http://127.0.0.1:' + port.networked + '/' ]), new UserAgent),
         bind: {
             local: {

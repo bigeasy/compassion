@@ -23,7 +23,7 @@
                             "cadence":                      "1.0.x",
                             "extant":                       "1.0.x",
                             "compassion.colleague":         "0.32.x",
-                            "compassion.conference":        "0.0.x",
+                            "compassion.conference":        "0.2.x",
                             "vizsla":                       "12.8.x"
     },
     "devDependencies":
