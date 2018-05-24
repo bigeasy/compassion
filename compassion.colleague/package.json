@@ -22,7 +22,6 @@
     {
                             "byline":                       "5.0.x",
                             "cadence":                      "1.0.x",
-                            "compassion.conference":        "0.0.x",
                             "conduit":                      "2.9.x",
                             "delta":                        "1.2.x",
                             "destructible":                 "0.28.x",
