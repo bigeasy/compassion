@@ -35,6 +35,15 @@ function prove (async, okay) {
         destructible.monitor('containerized', Containerized, {
             Conference: Conference,
             population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
+            ping: {
+                chaperon: 150,
+                paxos: 150
+            },
+            timeout: {
+                chaperon: 450,
+                paxos: 450,
+                http: 500
+            },
             bind: {
                 local: {
                     listen: function (server, callback) {
@@ -200,9 +209,6 @@ function prove (async, okay) {
                 }, async())
                 applications[2].blocker.notify()
             })
-        }, function () {
-            // Let's make sure we're done embarking and whatnot.
-            setTimeout(async(), 5500)
         }, function () {
             containerized.terminate('missing')
             containerized.terminate('island', 'eighth')

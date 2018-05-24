@@ -59,7 +59,7 @@ Application.prototype._register = cadence(function (async, request) {
 })
 
 Application.prototype.backlog = cadence(function (async, request) {
-    this._okay.call(null, request.body, { promise: '3/0' }, 'backlog promise')
+    this._okay.call(null, request.body, { promise: '4/0' }, 'backlog promise')
     return { a: 1 }
 })
 
@@ -153,14 +153,14 @@ Application.prototype.reducedMessage = cadence(function (async, request) {
             this._okay.call(null, request.body.body.mapped, {
                 '1/0': { from: 'first' },
                 '2/0': { from: 'second' },
-                '3/0': { from: 'third' }
+                '4/0': { from: 'third' }
             }, 'message reduced during departure')
             break
         case 2:
             this._okay.call(null, request.body.body.mapped, {
                 '1/0': { from: 'first' },
                 '2/0': { from: 'second' },
-                '3/0': { from: 'third' },
+                '4/0': { from: 'third' },
                 '9/0': { from: 'fifth' }
             }, 'message reduced after backlog')
             break
