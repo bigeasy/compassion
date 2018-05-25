@@ -39,7 +39,8 @@ function prove (async, okay) {
             population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             ping: {
                 chaperon: 150,
-                paxos: 150
+                paxos: 150,
+                application: 150
             },
             timeout: {
                 chaperon: 450,
