@@ -3,14 +3,14 @@ var interrupt = require('interrupt').createInterrupter('compassion.conference')
 var Procession = require('procession')
 var Monotonic = require('monotonic').asString
 var assert = require('assert')
-var Vizsla = require('vizsla')
+var UserAgent = require('vizsla')
 var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue')
 
 function Conference (destructible, network, registration, replaying) {
     this._destructible = destructible
-    this._ua = new Vizsla().bind({ url: registration.url })
+    this._ua = new UserAgent().bind({ url: registration.url })
     this.log = new Procession
     this.consumed = new Procession
     this._id = registration.id
