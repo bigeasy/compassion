@@ -32,7 +32,7 @@
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.19.x",
                             "prolific.logger":              "6.0.x",
-                            "reactor":                      "10.2.x",
+                            "reactor":                      "10.3.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.1.x",
                             "vizsla":                       "12.9.x"
