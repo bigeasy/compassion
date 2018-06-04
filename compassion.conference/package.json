@@ -26,7 +26,7 @@
                             "happenstance":                 "10.3.x",
                             "interrupt":                    "6.2.x",
                             "monotonic":                    "3.0.x",
-                            "procession":                   "0.19.x",
+                            "procession":                   "0.20.x",
                             "prolific.logger":              "6.0.x",
                             "rescue":                       "3.2.x",
                             "vizsla":                       "12.9.x"
