@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.conference",
-    "version":              "0.2.2",
+    "version":              "0.3.0",
     "description":
 
       "Framework communicating using a Compassion atomic log.",
