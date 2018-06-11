@@ -183,7 +183,7 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             destructible.destruct.wait(this, function () {
                 this._pinger.clear(envelope.url)
             })
-            this._pinger.keepAlive(envelope.url, envelope.token)
+            this._pinger.keepAlive(envelope.url, envelope.token, destructible)
             var token = bytes.toString('hex')
             var colleague = this.colleagues.island[envelope.island][envelope.id] = {
                 token: token,

@@ -76,20 +76,20 @@ Conference.prototype.entry = cadence(function (async, entry) {
                         async(function () {
                             if (entry.body.promise == '1/0') {
                                 this._postback([ 'bootstrap' ], {
-                                    self: this._id,
+                                    self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                                     replaying: this._replaying,
                                     government: this._government
                                 }, async())
                             } else if (arrival.id == this._id) {
                                 this._postback([ 'join' ], {
-                                    self: this._id,
+                                    self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                                     replaying: this._replaying,
                                     government: this._government
                                 }, async())
                             }
                         }, function () {
                             this._postback([ 'arrive' ], {
-                                self: this._id,
+                                self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                                 replaying: this._replaying,
                                 government: this._government,
                                 arrived: arrival
@@ -147,7 +147,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     } else if (entry.body.departed) {
                         async(function () {
                             this._postback([ 'depart' ], {
-                                self: this._id,
+                                self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                                 replaying: this._replaying,
                                 government: this._government,
                                 departed: entry.body.departed
@@ -169,14 +169,14 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 }, function () {
                     if (entry.body.acclimate != null) {
                         this._postback([ 'acclimated' ], {
-                            self: this._id,
+                            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                             replaying: this._replaying,
                             government: this._government
                         }, async())
                     }
                 }, function () {
                     this._postback([ 'government' ], {
-                        self: this._id,
+                        self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                         replaying: this._replaying,
                         government: this._government
                     }, async())
@@ -202,7 +202,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     }
                     async(function () {
                         this._postback([ 'receive', envelope.body.method ], {
-                            self: this._id,
+                            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                             replaying: this._replaying,
                             government: this._government,
                             body: envelope.body.body
@@ -253,7 +253,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
             })
         }
         this._postback([ 'reduced', broadcast.method ], {
-            self: this._id,
+            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
             replaying: this._replaying,
             government: this._government,
             body: {

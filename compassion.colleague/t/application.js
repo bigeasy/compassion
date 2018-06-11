@@ -76,7 +76,7 @@ Application.prototype.bootstrap = cadence(function (async, request) {
 Application.prototype.join = cadence(function (async, request) {
     var envelope = request.body
     console.log('JOINING', envelope.self)
-    if (envelope.self != 'third') {
+    if (envelope.self.id != 'third') {
         return 200
     }
     this._okay.call(null, envelope.government.properties.third, {
@@ -116,14 +116,14 @@ Application.prototype.arrive = cadence(function (async, request) {
     }
     if (request.body.arrived.id == 'second') {
         this._okay.call(null, true, 'arrived')
-    } else if (request.body.self == 'fourth') {
+    } else if (request.body.self.id == 'fourth') {
         return 500
     }
     return 200
 })
 
 Application.prototype.acclimated = cadence(function (async, request) {
-    if (request.body.self == 'fourth') {
+    if (request.body.self.id == 'fourth') {
         this._okay.call(null, true, 'acclimated')
         return 500
     }
@@ -131,7 +131,7 @@ Application.prototype.acclimated = cadence(function (async, request) {
 })
 
 Application.prototype.depart = cadence(function (async, request) {
-    if (request.body.self == 'fifth') {
+    if (request.body.self.id == 'fifth') {
         this._okay.call(null, request.body.departed.id, 'first', 'departed')
     }
     return 200
@@ -140,19 +140,19 @@ Application.prototype.depart = cadence(function (async, request) {
 var receiveNumber = 0
 Application.prototype.receiveMessage = cadence(function (async, request) {
     async(function () {
-        if (request.body.self == 'first' && ++receiveNumber == 1) {
+        if (request.body.self.id == 'first' && ++receiveNumber == 1) {
             this._okay.call(null, request.body.body, { value: 1 }, 'message received')
-        } else if (request.body.self == 'third' && request.body.body.value == 1) {
+        } else if (request.body.self.id == 'third' && request.body.body.value == 1) {
             this.blocker.wait(async())
         }
     }, function () {
-        return { from: request.body.self }
+        return { from: request.body.self.id }
     })
 })
 
 var reducedNumber = 0
 Application.prototype.reducedMessage = cadence(function (async, request) {
-    if (request.body.self == 'first') {
+    if (request.body.self.id == 'first') {
         switch (++reducedNumber) {
         case 1:
             this._okay.call(null, request.body.body.mapped, {
