@@ -41,7 +41,7 @@
     {
                             "interlocutor":                 "0.5.x",
                             "proof":                        "3.0.x",
-                            "signal":                       "3.4.x"
+                            "signal":                       "4.0.x"
     },
     "main":                 "colleague.bin",
     "bin":
