@@ -12,8 +12,6 @@ var Kibitzer = require('kibitz')
 var crypto = require('crypto')
 
 var Vizsla = require('vizsla')
-var jsonify = require('vizsla/jsonify')
-var raiseify = require('vizsla/raiseify')
 
 var departure = require('departure')
 
@@ -98,7 +96,8 @@ Replay.prototype._play = cadence(function (async) {
             url: this._colleague.initializer.url,
             token: this._colleague.initializer.token,
             timeout: 1000,
-            gateways: [ jsonify(), raiseify() ]
+            raise: true,
+            parse: 'json'
         }, {
             url: './register',
             post: {
@@ -135,7 +134,7 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
             ping: this._ping,
             timeout: this._timeout
         })
-        kibitzer.paxos.log.pump(kibitzer.islander, 'enqueue', destructible.monitor('islander'))
+        kibitzer.paxos.log.pump(kibitzer.islander, 'push', destructible.monitor('islander'))
         // TODO Wonky. Should destroy out of Kibitzer.
         destructible.destruct.wait(function () {
             console.log('GOING TO NULL')

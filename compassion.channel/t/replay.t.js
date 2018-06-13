@@ -7,8 +7,6 @@ function prove (async, okay) {
     var path = require('path')
     var Replay = require('../replay')
     var Vizsla = require('vizsla')
-    var stringify = require('vizsla/stringify')
-    var raiseify = require('vizsla/raiseify')
     var Destructible = require('destructible')
     var Application = require('../../compassion.colleague/t/application')
 
@@ -46,7 +44,8 @@ function prove (async, okay) {
     }, function () {
         ua.fetch({
             url:  'http://127.0.0.1:8386/',
-            parse: [ stringify() ]
+            raise: true,
+            parse: 'text'
         }, async())
     }, function (body) {
         okay(body, 'Compassion Replay API\n', 'index')
