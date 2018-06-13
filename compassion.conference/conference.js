@@ -116,8 +116,8 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                                         method: 'broadcast',
                                                         internal: broadcast.internal,
                                                         key: broadcast.key,
+                                                        name: broadcast.name,
                                                         body: {
-                                                            method: broadcast.method,
                                                             body: broadcast.request
                                                         }
                                                     }
@@ -184,6 +184,9 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     this._network.acclimate()
                 })
             } else {
+                if (!entry.body.body) {
+                    console.log(entry)
+                }
                 assert(entry.body.body)
                 // Reminder that if you ever want to do queued instead async then the
                 // queue should be external and a property of the object the conference
@@ -196,12 +199,12 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     this._broadcasts[envelope.key] = {
                         key: envelope.key,
                         internal: coalesce(envelope.internal, false),
-                        method: envelope.body.method,
+                        name: envelope.name,
                         request: envelope.body.body,
                         responses: {}
                     }
                     async(function () {
-                        this._postback([ 'receive', envelope.body.method ], {
+                        this._postback([ 'receive', envelope.name ], {
                             self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
                             replaying: this._replaying,
                             government: this._government,
@@ -252,7 +255,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
                 value: broadcast.responses[promise]
             })
         }
-        this._postback([ 'reduced', broadcast.method ], {
+        this._postback([ 'reduced', broadcast.name ], {
             self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
             replaying: this._replaying,
             government: this._government,
@@ -273,10 +276,10 @@ Conference.prototype.broadcast = function (method, message) {
     this._network.publish(false, {
         module: 'conference',
         method: 'broadcast',
+        name: method,
         key: key,
         body: {
             module: 'conference',
-            method: method,
             body: message
         }
     })
