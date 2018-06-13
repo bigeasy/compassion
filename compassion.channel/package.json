@@ -26,7 +26,7 @@
                             "delta":                        "1.2.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.28.x",
-                            "kibitz":                       "0.22.x",
+                            "kibitz":                       "0.28.x",
                             "monotonic":                    "3.0.x",
                             "operation":                    "1.6.x",
                             "procession":                   "0.19.x",
