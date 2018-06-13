@@ -155,14 +155,15 @@ Application.prototype.reducedMessage = cadence(function (async, request) {
     if (request.body.self.id == 'first') {
         switch (++reducedNumber) {
         case 1:
-            this._okay.call(null, request.body.body.mapped, {
+            this._okay.call(null, request.body.mapped, {
                 '1/0': { from: 'first' },
                 '2/0': { from: 'second' },
                 '4/0': { from: 'third' }
             }, 'message reduced during departure')
             break
         case 2:
-            this._okay.call(null, request.body.body.mapped, {
+            this._okay.call(null, request.body.from, { id: 'third', arrived: '4/0' }, 'reduced from')
+            this._okay.call(null, request.body.mapped, {
                 '1/0': { from: 'first' },
                 '2/0': { from: 'second' },
                 '4/0': { from: 'third' },

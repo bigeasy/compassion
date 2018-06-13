@@ -106,6 +106,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                     this._network.broadcasts(this._government.promise, async())
                                 }, function (body) {
                                     async.forEach(function (broadcast) {
+                                        console.log(broadcast)
                                         async(function () {
                                             this.entry({
                                                 // paxos
@@ -115,10 +116,10 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                                         module: 'conference',
                                                         method: 'broadcast',
                                                         internal: broadcast.internal,
-                                                        key: broadcast.key,
-                                                        name: broadcast.name,
-                                                        body: {
-                                                            body: broadcast.request
+                                                        request: {
+                                                            key: broadcast.key,
+                                                            method: broadcast.method,
+                                                            body: broadcast.body
                                                         }
                                                     }
                                                 }
@@ -132,9 +133,11 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                                         body: {
                                                             module: 'conference',
                                                             method: 'reduce',
-                                                            from: promise,
-                                                            key: broadcast.key,
-                                                            body: broadcast.responses[promise]
+                                                            reduction: {
+                                                                from: promise,
+                                                                key: broadcast.key,
+                                                                body: broadcast.responses[promise]
+                                                            }
                                                         }
                                                     }
                                                 }, async())
@@ -187,6 +190,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 if (!entry.body.body) {
                     console.log(entry)
                 }
+                // Bombs on a flush!
                 assert(entry.body.body)
                 // Reminder that if you ever want to do queued instead async then the
                 // queue should be external and a property of the object the conference
@@ -196,35 +200,39 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 var envelope = entry.body.body
                 switch (envelope.method) {
                 case 'broadcast':
-                    this._broadcasts[envelope.key] = {
-                        key: envelope.key,
+                    this._broadcasts[envelope.request.key] = {
+                        key: envelope.request.key,
                         internal: coalesce(envelope.internal, false),
-                        name: envelope.name,
-                        request: envelope.body.body,
+                        from: envelope.request.from,
+                        method: envelope.request.method,
+                        body: envelope.request.body,
                         responses: {}
                     }
                     async(function () {
-                        this._postback([ 'receive', envelope.name ], {
+                        this._postback([ 'receive', envelope.request.method ], {
                             self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                            from: envelope.request.from,
                             replaying: this._replaying,
                             government: this._government,
-                            body: envelope.body.body
+                            body: envelope.request.body
                         }, async())
                     }, function (response) {
                         this._network.publish(true, {
                             module: 'compassion',
                             method: 'reduce',
-                            key: envelope.key,
-                            receiver: this._government.arrived.promise[this._id],
-                            body: coalesce(response)
+                            reduction: {
+                                key: envelope.request.key,
+                                from: this._government.arrived.promise[this._id],
+                                body: coalesce(response)
+                            }
                         })
                     })
                     break
                 // Tally our responses and if they match the number of participants,
                 // then invoke the reduction method.
                 case 'reduce':
-                    var broadcast = this._broadcasts[envelope.key]
-                    broadcast.responses[envelope.receiver] = envelope.body
+                    var broadcast = this._broadcasts[envelope.reduction.key]
+                    broadcast.responses[envelope.reduction.from] = envelope.reduction.body
                     this._checkReduced(broadcast, async())
                     break
                 }
@@ -255,15 +263,23 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
                 value: broadcast.responses[promise]
             })
         }
-        this._postback([ 'reduced', broadcast.name ], {
+        // We provide both the id and arrived promise of the member that
+        // initiated the request. We need to do this becaause the broadcast
+        // could have been initiated by a member that has since departed so we
+        // would not be able to derived id from arrived promise nor vice-versa.
+        //
+        // Unlike the request, the response does not need to provide the
+        // `reduced` postback with both the id and the arrived promise because
+        // the only responses provided are those that are still present in the
+        // government at the time of this postback.
+        this._postback([ 'reduced', broadcast.method ], {
             self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
             replaying: this._replaying,
             government: this._government,
-            body: {
-                request: broadcast.request,
-                arrayed: reduced,
-                mapped: broadcast.responses
-            }
+            from: broadcast.from,
+            request: broadcast.body,
+            arrayed: reduced,
+            mapped: broadcast.responses
         }, async())
         delete this._broadcasts[broadcast.key]
     }
@@ -276,10 +292,10 @@ Conference.prototype.broadcast = function (method, message) {
     this._network.publish(false, {
         module: 'conference',
         method: 'broadcast',
-        name: method,
-        key: key,
-        body: {
-            module: 'conference',
+        request: {
+            key: key,
+            from: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+            method: method,
             body: message
         }
     })
