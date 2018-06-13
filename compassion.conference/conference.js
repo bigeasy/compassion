@@ -212,7 +212,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                             module: 'compassion',
                             method: 'reduce',
                             key: envelope.key,
-                            from: this._government.arrived.promise[this._id],
+                            receiver: this._government.arrived.promise[this._id],
                             body: coalesce(response)
                         })
                     })
@@ -221,7 +221,7 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 // then invoke the reduction method.
                 case 'reduce':
                     var broadcast = this._broadcasts[envelope.key]
-                    broadcast.responses[envelope.from] = envelope.body
+                    broadcast.responses[envelope.receiver] = envelope.body
                     this._checkReduced(broadcast, async())
                     break
                 }
