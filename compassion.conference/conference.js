@@ -106,7 +106,6 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                     this._network.broadcasts(this._government.promise, async())
                                 }, function (body) {
                                     async.forEach(function (broadcast) {
-                                        console.log(broadcast)
                                         async(function () {
                                             this.entry({
                                                 // paxos
