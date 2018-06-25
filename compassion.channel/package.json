@@ -22,7 +22,7 @@
     {
                             "cadence":                      "1.0.x",
                             "conduit":                      "2.10.x",
-                            "delta":                        "1.2.x",
+                            "delta":                        "1.4.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.30.x",
                             "kibitz":                       "0.28.x",
