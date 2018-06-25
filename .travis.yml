@@ -13,7 +13,11 @@ branches:
     - travis-ci
 
 install:
+  - pip install --user awscli
   - for dir in compassion.*; do (cd $dir && npm install --no-package-lock --no-save); done
   - npm install --no-package-lock --no-save
   - npm install -g istanbul coveralls
   - git checkout .
+
+after_script:
+  - '[[ "$TRAVIS_PULL_REQUEST" = "false" ]] && aws s3 sync ./coverage s3://bigeasy/addendum/$TRAVIS_JOB_NUMBER/coverage'
