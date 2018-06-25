@@ -21,3 +21,4 @@ install:
 
 after_script:
   - '[[ "$TRAVIS_PULL_REQUEST" = "false" ]] && aws s3 sync ./coverage s3://bigeasy/addendum/$TRAVIS_JOB_NUMBER/coverage'
+  - '[[ "$TRAVIS_PULL_REQUEST" = "false" ]] && aws s3 sync ./compassion.colleague/t/entries.json s3://bigeasy/addendum/$TRAVIS_JOB_NUMBER/entries.json'
