@@ -27,7 +27,7 @@
                             "destructible":                 "0.30.x",
                             "kibitz":                       "0.28.x",
                             "monotonic":                    "3.0.x",
-                            "operation":                    "1.6.x",
+                            "operation":                    "2.0.x",
                             "procession":                   "0.20.x",
                             "prolific.logger":              "6.0.x",
                             "reactor":                      "10.4.x",

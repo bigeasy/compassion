@@ -16,7 +16,7 @@ var Vizsla = require('vizsla')
 var departure = require('departure')
 
 var backplayer = require('./backplayer')
-var Operation = require('operation/variadic')
+var Operation = require('operation')
 
 function Replay (destructible, readable, Conference) {
     this._Conference = Conference
