@@ -63,7 +63,16 @@ function prove (async, okay) {
             }
         }, async())
     }, function (containerized) {
+        var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
         events = containerized.events.shifter()
+        containerized.events.pump(function (envelope, callback) {
+            if (envelope == null) {
+                console.log('very much done')
+                writable.end(callback)
+            } else {
+                writable.write(JSON.stringify(envelope) + '\n', callback)
+            }
+        }, destructible.monitor('events'))
         async(function () {
             ua.fetch({ url: 'http://127.0.0.1:8386', parse: 'text' }, async())
         }, function (body) {
@@ -85,8 +94,7 @@ function prove (async, okay) {
                 url: 'http://127.0.0.1:8386/',
             }, {
                 token: 'x',
-                url: './backlog'
-            }, async())
+                url: './backlog' }, async())
         }, function (body, response) {
             okay(response.statusCode, 401, 'not found')
             var application = new Application('first', okay)
@@ -234,23 +242,11 @@ function prove (async, okay) {
         }, function () {
             destructible.destroy()
         }, function () {
-            setTimeout(async(), 1000)
+            setTimeout(async(), 250)
         }, function () {
             containerized.events.push(null)
-            var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
-            var shifter = events.shifter()
-            var loop = async(function () {
-                async(function () {
-                    shifter.dequeue(async())
-                }, function (envelope) {
-                    if (envelope == null) {
-                        writable.end()
-                        return [ loop.break ]
-                    } else {
-                        writable.write(JSON.stringify(envelope) + '\n', async())
-                    }
-                })
-            })()
+        }, function () {
+            setTimeout(async(), 1000)
         })
     })
 }
