@@ -21,6 +21,7 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
+                            "compassion.conference":        "0.4.x",
                             "conduit":                      "2.10.x",
                             "delta":                        "1.4.x",
                             "departure":                    "0.0.x",
@@ -42,10 +43,10 @@
                             "byline":                       "5.0.x",
                             "proof":                        "3.0.x"
     },
-    "main":                 "colleague.bin",
+    "main":                 "channel.bin",
     "bin":
     {
-                            "compassion-colleague":         "colleague.bin.js"
+                            "compassion-channel":         "channel.bin.js"
     },
     "scripts":
     {
