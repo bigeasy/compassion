@@ -2,19 +2,19 @@
 
 /*
     ___ usage ___ en_US ___
-    usage: mingle <protocol> <protocol args>
+    usage: compassion colleague <protocol args>
 
-            --help
-                display this message
+        --help
+            display this message
 
-            --local <string>
-                local interface and port
+        --local <string>
+            local interface and port
 
-            --network <string>
-                network interface and port
+        --network <string>
+            network interface and port
 
-            --discovery <string>
-                path to midle discovery or self discovery if missing
+        --discovery <string>
+            path to midle discovery or self discovery if missing
 
     ___ $ ___ en_US ___
     ___ . ___
