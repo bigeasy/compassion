@@ -38,6 +38,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async([function () {
         destructible.destroy()
     }], function () {
+        program.stdin.resume()
         var readable = new Staccato.Readable(byline(program.stdin))
         destructible.monitor('replay', Replay, {
             Conference: Conference,
