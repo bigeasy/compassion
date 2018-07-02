@@ -237,9 +237,6 @@ Local.prototype.terminate = function (island, id) {
 }
 
 Local.prototype._overwatch = cadence(function (async, colleague, envelope, members, complete) {
-    if (colleague.destroyed) {
-        return
-    }
     var action
     switch (envelope.body.name) {
     case 'register':
