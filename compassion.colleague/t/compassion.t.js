@@ -30,13 +30,24 @@ function prove (async, okay) {
         throw error
     }])
 
+    var population = new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla)
+    var containerized
+
     async([function () {
         destructible.destroy()
     }], function () {
         destructible.monitor('containerized', Containerized, {
             Conference: Conference,
+            population: {
+                census: function (island, id, callback) {
+                    if (id == 'racer') {
+                        console.log('will terminate')
+                        containerized.terminate('island', 'racer')
+                    }
+                    population.census(island, id, callback)
+                }
+            },
             Pinger: Pinger,
-            population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             ping: {
                 chaperon: 150,
                 paxos: 150,
@@ -62,7 +73,8 @@ function prove (async, okay) {
                 }
             }
         }, async())
-    }, function (containerized) {
+    }, function () {
+        containerized = arguments[0]
         var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
         events = containerized.events.shifter()
         containerized.events.pump(function (envelope, callback) {
@@ -94,9 +106,22 @@ function prove (async, okay) {
                 url: 'http://127.0.0.1:8386/',
             }, {
                 token: 'x',
-                url: './backlog' }, async())
+                url: './backlog'
+            }, async())
         }, function (body, response) {
             okay(response.statusCode, 401, 'not found')
+            ua.fetch({
+                url: 'http://127.0.0.1:8386/'
+            }, {
+                url: '/register',
+                post: {
+                    token: 'x',
+                    island: 'island',
+                    id: 'racer',
+                    url: 'http://127.0.0.1:8099',
+                }
+            }, async())
+        }, function () {
             var application = new Application('first', okay)
             applications.push(application)
             async(function () {

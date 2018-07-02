@@ -358,7 +358,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
 Local.prototype._scheduled = cadence(function (async, envelope) {
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
     async(function () {
-        this._population.census(envelope.body.island, async())
+        this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {
         if (!colleague.destroyed) {
             this._overwatch(colleague, envelope, members, complete, async())
