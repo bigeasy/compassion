@@ -1,4 +1,4 @@
-require('proof')(17, require('cadence')(prove))
+require('proof')(19, require('cadence')(prove))
 
 function prove (async, okay) {
     var Conference = require('../../compassion.conference/conference')
@@ -131,6 +131,18 @@ function prove (async, okay) {
                 delta(destructible.monitor('first')).ee(server).on('close')
                 server.listen(8088, '127.0.0.1', async())
             }, function () {
+                ua.fetch({
+                    url: 'http://127.0.0.1:8386/'
+                }, {
+                    url: '/register',
+                    post: {
+                        token: 'x',
+                        island: 'island',
+                        id: 'unregisterable',
+                        url: 'http://127.0.0.1:8088',
+                    }
+                }, async())
+            }, function () {
                 application.register('http://127.0.0.1:8088/', async())
             }, function () {
                 destructible.destruct.wait(application.arrived, 'unlatch')
@@ -262,6 +274,9 @@ function prove (async, okay) {
                 }
                 return false
             }, async())
+        }, function () {
+            okay(containerized.ids('x'), [], 'no colleagues')
+            okay(containerized.ids('island'), [ 'fifth', 'second', 'third' ], 'active colleagues')
         }, function () {
             setTimeout(async(), 1000)
         }, function () {
