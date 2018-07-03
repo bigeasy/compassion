@@ -278,7 +278,18 @@ function prove (async, okay) {
             okay(containerized.ids('x'), [], 'no colleagues')
             okay(containerized.ids('island'), [ 'fifth', 'second', 'third' ], 'active colleagues')
         }, function () {
-            setTimeout(async(), 1000)
+            containerized.terminate('island', 'second')
+            containerized.terminate('island', 'third')
+        }, function () {
+            var loop = async(function () {
+                async(function () {
+                    if (containerized.ids('island').length == 0) {
+                        return [ loop.break ]
+                    }
+                }, function () {
+                    setTimeout(async(), 1000)
+                })
+            })()
         }, function () {
             destructible.destroy()
         }, function () {
