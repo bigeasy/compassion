@@ -1,7 +1,7 @@
 FROM node:alpine
 MAINTAINER Alan Gutierrez <alan@prettyrobots.com>
 
-WORKDIR /home/bigeasy/addendum
+WORKDIR /app
 
 COPY package*.json .
 RUN npm install --no-package-lock --no-save --only=production
