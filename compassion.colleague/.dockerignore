@@ -1,7 +1,5 @@
 /.*
 /node_modules
 /coverage
-/docs
-/.wiseguy
 /minikube
 /t
