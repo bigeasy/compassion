@@ -1,8 +1,13 @@
 require('proof')(19, require('cadence')(prove))
 
 function prove (async, okay) {
-    var Conference = require('../../compassion.conference/conference')
-    var Pinger = require('../../compassion.conference/pinger')
+    try {
+        var Conference = require('../../compassion.conference/conference')
+        var Pinger = require('../../compassion.conference/pinger')
+    } catch (e) {
+        var Conference = require('compassion.conference/conference')
+        var Pinger = require('compassion.conference/pinger')
+    }
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
