@@ -236,10 +236,16 @@ Local.prototype.terminate = function (island, id) {
     }
 }
 
-Local.prototype._overwatch = cadence(function (async, colleague, envelope, members, complete) {
-    if (colleague.destroyed) {
-        return
+Local.prototype.ids = function (island) {
+    var ids = []
+    var island = this.colleagues.island[island]
+    if (island != null) {
+        ids = Object.keys(island).sort()
     }
+    return ids
+}
+
+Local.prototype._overwatch = cadence(function (async, colleague, envelope, members, complete) {
     var action
     switch (envelope.body.name) {
     case 'register':
@@ -266,11 +272,16 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
             }, {
                 url: './register',
                 post: {
-                    token: colleague.token
+                    token: colleague.token,
+                    island: envelope.body.island,
+                    id: envelope.body.id
                 }
             }, async())
         }, function (body, response) {
-            if (response.okay) {
+            if (!response.okay) {
+                colleague.destructible.destroy()
+            }
+            if (!colleague.destroyed) {
                 this.scheduler.schedule(Date.now(), Keyify.stringify({
                     island: envelope.body.island,
                     id: envelope.body.id
@@ -279,8 +290,6 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
                     island: envelope.body.island,
                     id: envelope.body.id
                 })
-            } else {
-                colleague.destructible.destroy()
             }
         })
         break
@@ -361,7 +370,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
 Local.prototype._scheduled = cadence(function (async, envelope) {
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
     async(function () {
-        this._population.census(envelope.body.island, async())
+        this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {
         if (!colleague.destroyed) {
             this._overwatch(colleague, envelope, members, complete, async())

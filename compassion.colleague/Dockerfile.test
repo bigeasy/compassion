@@ -1,0 +1,5 @@
+FROM bigeasy/compassion:base
+
+RUN npm install --no-package-lock --no-save --only=development && npm install --no-package-lock --no-save istanbul
+
+COPY ./ ./

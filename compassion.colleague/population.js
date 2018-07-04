@@ -6,7 +6,10 @@ function Population (resolver, ua) {
     this._ua = ua
 }
 
-Population.prototype.census = cadence(function (async, island) {
+// We don't use `id` here, but we added it so we can use it in testing to get
+// test coverage of the race conidtion where the colleague is destroyed while
+// we're fetching the population.
+Population.prototype.census = cadence(function (async, island, id) {
     async(function () {
         this._resolver.resolve(async())
     }, function (instances) {

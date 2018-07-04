@@ -4,7 +4,7 @@ function prove (async, okay) {
     var bin = require('..'), program
 
     var Destructible = require('destructible')
-    var destructible = new Destructible('t/mock')
+    var destructible = new Destructible('t/channel.bin')
 
     var UserAgent = require('vizsla')
     var ua = new UserAgent

@@ -59,6 +59,9 @@ Application.prototype.ping = cadence(function (async, request) {
 })
 
 Application.prototype._register = cadence(function (async, request) {
+    if (request.body.id == 'unregisterable') {
+        return 500
+    }
     this._token = request.body.token
     return 200
 })

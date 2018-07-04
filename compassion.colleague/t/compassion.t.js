@@ -1,8 +1,13 @@
-require('proof')(17, require('cadence')(prove))
+require('proof')(19, require('cadence')(prove))
 
 function prove (async, okay) {
-    var Conference = require('../../compassion.conference/conference')
-    var Pinger = require('../../compassion.conference/pinger')
+    try {
+        var Conference = require('../../compassion.conference/conference')
+        var Pinger = require('../../compassion.conference/pinger')
+    } catch (e) {
+        var Conference = require('compassion.conference/conference')
+        var Pinger = require('compassion.conference/pinger')
+    }
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
@@ -30,13 +35,24 @@ function prove (async, okay) {
         throw error
     }])
 
+    var population = new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla)
+    var containerized
+
     async([function () {
         destructible.destroy()
     }], function () {
         destructible.monitor('containerized', Containerized, {
             Conference: Conference,
+            population: {
+                census: function (island, id, callback) {
+                    if (id == 'racer') {
+                        console.log('will terminate')
+                        containerized.terminate('island', 'racer')
+                    }
+                    population.census(island, id, callback)
+                }
+            },
             Pinger: Pinger,
-            population: new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla),
             ping: {
                 chaperon: 150,
                 paxos: 150,
@@ -62,7 +78,8 @@ function prove (async, okay) {
                 }
             }
         }, async())
-    }, function (containerized) {
+    }, function () {
+        containerized = arguments[0]
         var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
         events = containerized.events.shifter()
         containerized.events.pump(function (envelope, callback) {
@@ -94,9 +111,22 @@ function prove (async, okay) {
                 url: 'http://127.0.0.1:8386/',
             }, {
                 token: 'x',
-                url: './backlog' }, async())
+                url: './backlog'
+            }, async())
         }, function (body, response) {
             okay(response.statusCode, 401, 'not found')
+            ua.fetch({
+                url: 'http://127.0.0.1:8386/'
+            }, {
+                url: '/register',
+                post: {
+                    token: 'x',
+                    island: 'island',
+                    id: 'racer',
+                    url: 'http://127.0.0.1:8099',
+                }
+            }, async())
+        }, function () {
             var application = new Application('first', okay)
             applications.push(application)
             async(function () {
@@ -105,6 +135,18 @@ function prove (async, okay) {
                 destructible.destruct.wait(server, 'destroy')
                 delta(destructible.monitor('first')).ee(server).on('close')
                 server.listen(8088, '127.0.0.1', async())
+            }, function () {
+                ua.fetch({
+                    url: 'http://127.0.0.1:8386/'
+                }, {
+                    url: '/register',
+                    post: {
+                        token: 'x',
+                        island: 'island',
+                        id: 'unregisterable',
+                        url: 'http://127.0.0.1:8088',
+                    }
+                }, async())
             }, function () {
                 application.register('http://127.0.0.1:8088/', async())
             }, function () {
@@ -238,7 +280,21 @@ function prove (async, okay) {
                 return false
             }, async())
         }, function () {
-            setTimeout(async(), 1000)
+            okay(containerized.ids('x'), [], 'no colleagues')
+            okay(containerized.ids('island'), [ 'fifth', 'second', 'third' ], 'active colleagues')
+        }, function () {
+            containerized.terminate('island', 'second')
+            containerized.terminate('island', 'third')
+        }, function () {
+            var loop = async(function () {
+                async(function () {
+                    if (containerized.ids('island').length == 0) {
+                        return [ loop.break ]
+                    }
+                }, function () {
+                    setTimeout(async(), 1000)
+                })
+            })()
         }, function () {
             destructible.destroy()
         }, function () {
