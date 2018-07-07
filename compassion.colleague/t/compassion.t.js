@@ -1,4 +1,4 @@
-require('proof')(19, require('cadence')(prove))
+require('proof')(20, require('cadence')(prove))
 
 function prove (async, okay) {
     try {
@@ -282,7 +282,9 @@ function prove (async, okay) {
         }, function () {
             okay(containerized.ids('x'), [], 'no colleagues')
             okay(containerized.ids('island'), [ 'fifth', 'second', 'third' ], 'active colleagues')
-        }, function () {
+            containerized.health(async())
+        }, function (health) {
+            okay(Object.keys(health.islands.island).sort(), [ 'fifth', 'second', 'third' ], 'health')
             containerized.terminate('island', 'second')
             containerized.terminate('island', 'third')
         }, function () {

@@ -440,4 +440,17 @@ Local.prototype.broadcast = cadence(function (async, request) {
     return 200
 })
 
+Local.prototype.health = cadence(function () {
+    var health = { islands: {} }
+    for (var island in this.colleagues.island) {
+        health.islands[island] = {}
+        for (var id in this.colleagues.island[island]) {
+            health.islands[island][id] = {
+                government: this.colleagues.island[island][id].kibitzer.paxos.government
+            }
+        }
+    }
+    return health
+})
+
 module.exports = Local
