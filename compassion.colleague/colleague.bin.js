@@ -45,6 +45,10 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
+    var logger = require('prolific.logger').createLogger('compassion.colleague')
+    var Shuttle = require('prolific.shuttle')
+    var shuttle = Shuttle.shuttle(program, logger)
+
     destructible.completed.wait(async())
 
     async([function () {
