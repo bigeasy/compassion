@@ -28,7 +28,7 @@
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.20.x",
                             "rescue":                       "3.2.x",
-                            "vizsla":                       "12.9.x"
+                            "vizsla":                       "12.10.x"
     },
     "devDependencies":
     {
