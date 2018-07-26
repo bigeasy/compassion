@@ -22,23 +22,23 @@
     {
                             "byline":                       "5.0.x",
                             "cadence":                      "1.0.x",
-                            "compassion.conference":        "0.4.x",
+                            "compassion.conference":        "0.6.x",
                             "conduit":                      "2.10.x",
                             "delta":                        "1.4.x",
                             "destructible":                 "0.30.x",
                             "extant":                       "1.0.x",
-                            "happenstance":                 "10.4.x",
+                            "happenstance":                 "10.5.x",
                             "keyify":                       "0.0.x",
                             "kibitz":                       "0.28.x",
                             "monotonic":                    "3.0.x",
-                            "olio":                         "0.10.x",
+                            "olio":                         "0.11.x",
                             "procession":                   "0.20.x",
-                            "prolific.logger":              "6.0.x",
-                            "prolific.shuttle":             "18.1.x",
+                            "prolific.logger":              "8.0.x",
+                            "prolific.shuttle":             "20.0.x",
                             "reactor":                      "10.4.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.1.x",
-                            "vizsla":                       "12.9.x"
+                            "vizsla":                       "12.10.x"
     },
     "devDependencies":
     {
