@@ -1,4 +1,6 @@
 /.*
 /*.md
+/Dockerfile
+/Dockerfile.*
 /coverage
 /t
