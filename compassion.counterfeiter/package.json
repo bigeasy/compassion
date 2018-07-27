@@ -28,7 +28,7 @@
     },
     "devDependencies":
     {
-                            "destructible":                 "0.31.x",
+                            "destructible":                 "0.32.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "counterfeiter",
