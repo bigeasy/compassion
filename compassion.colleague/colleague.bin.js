@@ -30,6 +30,8 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     var Olio = require('olio')
 
+    var Logger = require('./logger')
+
     var Containerized = require('./containerized')
 
     var Destructible = require('destructible')
@@ -74,7 +76,9 @@ require('arguable')(module, require('cadence')(function (async, program) {
                 networked: program.ultimate.network
             }
         }, async())
-    }, function () {
+    }, function (containerized) {
+        var shifter = containerized.events.pump(Logger(logger), destructible.monitor('events'))
+        destructible.destruct.wait(shifter, 'destroy')
         program.ready.unlatch()
         destructible.completed.wait(async())
     })
