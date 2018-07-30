@@ -261,6 +261,12 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         action = recoverable(envelope.body.id, members)
         break
     }
+    logger.notice('overwatch', {
+        $members: members,
+        $envelope: envelope,
+        $action: action,
+        complete: complete
+    })
     switch (action.action) {
     case 'register':
         async(function () {
