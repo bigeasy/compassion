@@ -17,13 +17,13 @@ function prove (async, okay) {
     async([function () {
         destructible.destroy()
     }], function () {
-        io = bin([ '--local', 8386, '--network', 8486, '--discovery', 'mingle/static' ], {}, async())
+        io = bin([ '--local', 8386, '--network', 8486, '--discovery', 'mingle' ], {}, async())
         var mock = new Mock(io)
         async(function () {
             mock.ready.wait(async())
         }, function () {
-            mock.initialize([ 'program', 'self' ], 0)
-            mock.sibling([ 'mingle', 'static' ], 1, function (destructible, index, count, callback) {
+            mock.initialize('colleague', 0)
+            mock.sibling('mingle', 1, function (destructible, index, count, callback) {
                 destructible.monitor('procedure', Procedure, function () {}, callback)
             })
         })
