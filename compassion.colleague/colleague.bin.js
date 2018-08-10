@@ -56,7 +56,7 @@ require('arguable')(module, require('cadence')(function (async, program) {
     async([function () {
         destructible.destroy()
     }], function () {
-        var locator = program.ultimate.discovery.split('/')
+        var locator = program.ultimate.discovery
         async(function () {
             destructible.monitor('olio', Olio, program, function (constructor) {
                 constructor.sender(locator, cadence(function (async, destructible) {
