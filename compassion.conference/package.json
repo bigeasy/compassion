@@ -24,7 +24,7 @@
                             "cubbyhole":                    "1.0.x",
                             "extant":                       "1.0.x",
                             "happenstance":                 "10.5.x",
-                            "interrupt":                    "6.2.x",
+                            "interrupt":                    "6.3.x",
                             "monotonic":                    "3.0.x",
                             "procession":                   "0.20.x",
                             "rescue":                       "3.2.x",
