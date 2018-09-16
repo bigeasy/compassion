@@ -1,5 +1,5 @@
 var cadence = require('cadence')
-var interrupt = require('interrupt').createInterrupter('compassion.conference')
+var Interrupt = require('interrupt').createInterrupter('compassion.conference')
 var Procession = require('procession')
 var Monotonic = require('monotonic').asString
 var assert = require('assert')
@@ -48,7 +48,7 @@ Conference.prototype._postback = cadence(function (async, path, envelope) {
                 raise: true
             }, async())
         }, function (error) {
-            throw interrupt('postback', error)
+            throw new Interrupt('postback', error)
         }])
     } else {
         return null
