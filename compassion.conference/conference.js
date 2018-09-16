@@ -6,7 +6,7 @@ var assert = require('assert')
 var UserAgent = require('vizsla')
 var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
-var rescue = require('rescue')
+var rescue = require('rescue/redux')
 
 function Conference (destructible, network, registration, replaying) {
     this._destructible = destructible
