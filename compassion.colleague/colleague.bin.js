@@ -58,13 +58,16 @@ require('arguable')(module, require('cadence')(function (async, program) {
     }], function () {
         var locator = program.ultimate.discovery
         async(function () {
-            destructible.monitor('olio', Olio, program, function (constructor) {
-                constructor.sender(locator, cadence(function (async, destructible) {
-                    destructible.monitor('caller', Caller, async())
-                }))
-            }, async())
-        }, function (olio) {
-            return new Resolver(olio.sender(locator, 0))
+            destructible.monitor('olio', Olio, program, async())
+        }, [function (olio) {
+            console.log(locator)
+            olio.sender(locator, cadence(function (async, destructible) {
+                destructible.monitor('caller', Caller, async())
+            }), async())
+        }, function  (error) {
+            console.log(error.stack)
+        }], function (sender) {
+            return new Resolver(sender.processes[0].sender)
         })
     }, function (resolver) {
         destructible.monitor('containerized', Containerized, {

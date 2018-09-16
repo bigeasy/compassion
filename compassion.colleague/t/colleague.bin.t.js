@@ -26,6 +26,7 @@ function prove (async, okay) {
             mock.sibling('mingle', 1, function (destructible, index, count, callback) {
                 destructible.monitor('procedure', Procedure, function () {}, callback)
             })
+            console.log('ready')
         })
         async(function () {
             io.ready.wait(async())
