@@ -31,7 +31,7 @@
                             "keyify":                       "0.0.x",
                             "kibitz":                       "0.30.x",
                             "monotonic":                    "3.0.x",
-                            "olio":                         "0.12.x",
+                            "olio":                         "0.14.x",
                             "procession":                   "0.22.x",
                             "prolific.logger":              "8.0.x",
                             "prolific.shuttle":             "20.2.x",
