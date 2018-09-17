@@ -23,7 +23,7 @@ function Conference (destructible, network, registration, replaying) {
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
     this._broadcasts = {}
-    ; ('bootstrap join arrive government acclimated depart'.split(' ')).forEach(function (postback) {
+    'bootstrap join arrive government acclimated depart'.split(' ').forEach(function (postback) {
         this._postbacks[postback] = !! registration[postback]
     }, this)
     coalesce(registration.reduced, []).forEach(function (method) {
