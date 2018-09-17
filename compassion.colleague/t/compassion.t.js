@@ -103,7 +103,7 @@ function prove (async, okay) {
             ua.fetch({
                 url: 'http://127.0.0.1:8386/',
             }, {
-                url: './backlog'
+                url: './snapshot'
             }, async())
         }, function (body, response) {
             okay(response.statusCode, 401, 'no authorization')
@@ -111,7 +111,7 @@ function prove (async, okay) {
                 url: 'http://127.0.0.1:8386/',
             }, {
                 token: 'x',
-                url: './backlog'
+                url: './snapshot'
             }, async())
         }, function (body, response) {
             okay(response.statusCode, 401, 'not found')

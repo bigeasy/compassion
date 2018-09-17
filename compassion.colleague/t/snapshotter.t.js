@@ -2,13 +2,13 @@ require('proof')(7, require('cadence')(prove))
 
 function prove (async, okay) {
     var Procession = require('procession')
-    var backlogger = require('../backlogger')
+    var snapshotter = require('../snapshotter')
     var stream = require('stream')
     async(function () {
         var events = new Procession
         var shifter = events.shifter()
         var input = new stream.PassThrough
-        var f = backlogger({
+        var f = snapshotter({
             events: events,
             id: 'first',
             contentType: 'application/json',
@@ -26,7 +26,7 @@ function prove (async, okay) {
                 shifter.shift()
             ], [
                 {
-                    type: 'backlog',
+                    type: 'snapshot',
                     id: 'first',
                     body: 'application/json'
                 }, {
@@ -41,7 +41,7 @@ function prove (async, okay) {
         var events = new Procession
         var shifter = events.shifter()
         var input = new stream.PassThrough
-        var f = backlogger({
+        var f = snapshotter({
             events: events,
             id: 'first',
             contentType: 'application/json-stream',
@@ -60,7 +60,7 @@ function prove (async, okay) {
                 shifter.shift()
             ], [
                 {
-                    type: 'backlog',
+                    type: 'snapshot',
                     id: 'first',
                     body: 'application/json-stream'
                 }, {
@@ -79,7 +79,7 @@ function prove (async, okay) {
         var events = new Procession
         var shifter = events.shifter()
         var input = new stream.PassThrough
-        var f = backlogger({
+        var f = snapshotter({
             events: events,
             id: 'first',
             chunkSize: 24,
@@ -106,7 +106,7 @@ function prove (async, okay) {
             okay(buffer.toString(), alphabet, 'streaming octet catenated')
             okay(shifty, [
                 {
-                    type: 'backlog',
+                    type: 'snapshot',
                     id: 'first',
                     body: 'application/octet-stream'
                 }, {

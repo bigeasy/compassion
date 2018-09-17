@@ -14,7 +14,7 @@ function Networked (destructible, colleagues) {
         dispatcher.dispatch('POST /island/:island/islander/:id/arrive', 'arrive')
         dispatcher.dispatch('POST /island/:island/islander/:id/kibitz', 'kibitz')
         dispatcher.dispatch('POST /island/:island/islander/:id/broadcasts', 'broadcasts')
-        dispatcher.dispatch('POST /island/:island/islander/:id/backlog', 'backlog')
+        dispatcher.dispatch('POST /island/:island/islander/:id/snapshot', 'snapshot')
     })
 }
 
@@ -48,11 +48,11 @@ Networked.prototype.broadcasts = cadence(function (async, request, island, id) {
     this._getColleague(island, id).conference.getSnapshot(request.body.promise, async())
 })
 
-Networked.prototype.backlog = cadence(function (async, request, island, id) {
+Networked.prototype.snapshot = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     async(function () {
         colleague.ua.fetch({
-            url: './backlog',
+            url: './snapshot',
             post: request.body,
             parse: 'stream',
             raise: true

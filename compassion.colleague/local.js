@@ -24,7 +24,7 @@ var Keyify = require('keyify')
 
 var Recorder = require('./recorder')
 
-var Backlogger = require('./backlogger')
+var Snapshotter = require('./snapshotter')
 
 function Local (destructible, pinger, colleagues, options) {
     this._destructible = destructible
@@ -67,7 +67,7 @@ function Local (destructible, pinger, colleagues, options) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
-        dispatcher.dispatch('GET /backlog', 'backlog')
+        dispatcher.dispatch('GET /snapshot', 'snapshot')
         dispatcher.dispatch('POST /broadcast', 'broadcast')
         dispatcher.dispatch('POST /record', 'record')
         dispatcher.dispatch('GET /ping', 'ping')
@@ -396,14 +396,14 @@ Local.prototype._getColleagueByToken = function (request) {
 }
 
 // TODO Abend if the colleague is not waiting on a `join` notification.
-Local.prototype.backlog = cadence(function (async, request) {
+Local.prototype.snapshot = cadence(function (async, request) {
     var colleague = this._getColleagueByToken(request)
     var government = colleague.kibitzer.paxos.government
     async(function () {
         colleague.ua.fetch({
             url: government.properties[government.majority[0]].url
         }, {
-            url: './backlog',
+            url: './snapshot',
             post: {
                 promise: government.arrived.promise[colleague.initalizer.id]
             },
@@ -411,7 +411,7 @@ Local.prototype.backlog = cadence(function (async, request) {
             raise: true
         }, async())
     }, function (body, response) {
-        return [ 200, response.headers, Backlogger({
+        return [ 200, response.headers, Snapshotter({
             events: this.events,
             id: colleague.initalizer.id,
             contentType: response.headers['content-type'],

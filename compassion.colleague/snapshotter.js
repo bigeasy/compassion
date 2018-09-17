@@ -6,7 +6,7 @@ var byline = require('byline')
 
 module.exports = function (options) {
     var contentType = coalesce(options.contentType, 'application/octet-stream')
-    options.events.push({ type: 'backlog', id: options.id, body: contentType })
+    options.events.push({ type: 'snapshot', id: options.id, body: contentType })
     switch (contentType) {
     case 'application/json':
         return cadence(function (async, output) {

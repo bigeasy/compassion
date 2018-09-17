@@ -15,7 +15,7 @@ function Application (id, okay) {
         dispatcher.dispatch('POST /bootstrap', 'bootstrap')
         dispatcher.dispatch('POST /join', 'join')
         dispatcher.dispatch('POST /arrive', 'arrive')
-        dispatcher.dispatch('POST /backlog', 'backlog')
+        dispatcher.dispatch('POST /snapshot', 'snapshot')
         dispatcher.dispatch('POST /acclimated', 'acclimated')
         dispatcher.dispatch('POST /receive/message', 'receiveMessage')
         dispatcher.dispatch('POST /reduced/message', 'reducedMessage')
@@ -66,8 +66,8 @@ Application.prototype._register = cadence(function (async, request) {
     return 200
 })
 
-Application.prototype.backlog = cadence(function (async, request) {
-    this._okay.call(null, request.body, { promise: '4/0' }, 'backlog promise')
+Application.prototype.snapshot = cadence(function (async, request) {
+    this._okay.call(null, request.body, { promise: '4/0' }, 'snapshot promise')
     return { a: 1 }
 })
 
@@ -91,12 +91,12 @@ Application.prototype.join = cadence(function (async, request) {
             url: 'http://127.0.0.1:8386/'
         }, {
             token: this._token,
-            url: '/backlog',
+            url: '/snapshot',
             parse: 'json',
             raise: true
         }, async())
     }, function (body) {
-        this._okay.call(null, body, { a: 1 }, 'backlog')
+        this._okay.call(null, body, { a: 1 }, 'snapshot')
         this._ua.fetch({
             url: 'http://127.0.0.1:8386/'
         }, {
@@ -171,7 +171,7 @@ Application.prototype.reducedMessage = cadence(function (async, request) {
                 '2/0': { from: 'second' },
                 '4/0': { from: 'third' },
                 '9/0': { from: 'fifth' }
-            }, 'message reduced after backlog')
+            }, 'message reduced after snapshot')
             break
         }
     }
