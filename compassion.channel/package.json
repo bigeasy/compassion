@@ -25,7 +25,7 @@
                             "conduit":                      "2.10.x",
                             "delta":                        "1.4.x",
                             "departure":                    "0.0.x",
-                            "destructible":                 "0.30.x",
+                            "destructible":                 "0.33.x",
                             "kibitz":                       "0.28.x",
                             "monotonic":                    "3.0.x",
                             "operation":                    "2.0.x",
