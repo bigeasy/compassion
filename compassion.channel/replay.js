@@ -26,7 +26,7 @@ function Replay (destructible, readable, Conference) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('POST /register', 'register')
-        dispatcher.dispatch('GET /backlog', 'backlog')
+        dispatcher.dispatch('GET /snapshot', 'snapshot')
         dispatcher.dispatch('POST /record', 'record')
         /*
             dispatcher.dispatch('POST /broadcast', 'broadcast')
@@ -172,9 +172,9 @@ Replay.prototype.registration = cadence(function (async, destructible, envelope)
     })
 })
 
-Replay.prototype.backlog = cadence(function (async, request) {
+Replay.prototype.snapshot = cadence(function (async, request) {
     // TODO To unit test entirely, break out advance and seek as members of a
-    // reader class, then create a backlog replayer that takes that class.
+    // reader class, then create a snapshot replayer that takes that class.
     backplayer(Operation([ this, '_advance']), async())
 })
 

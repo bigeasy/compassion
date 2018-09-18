@@ -13,7 +13,7 @@ function prove (async, okay) {
     }
     async(function () {
         backplayer(advance([{
-            type: 'backlog',
+            type: 'snapshot',
             id: 'first',
             body: 'application/json'
         }, {
@@ -24,7 +24,7 @@ function prove (async, okay) {
     }, function (body) {
         okay(body, { a: 1 }, 'json')
         backplayer(advance([{
-            type: 'backlog',
+            type: 'snapshot',
             id: 'first',
             body: 'application/json-stream'
         }, {
@@ -45,7 +45,7 @@ function prove (async, okay) {
         })
     }, function () {
         backplayer(advance([{
-            type: 'backlog',
+            type: 'snapshot',
             id: 'first',
             body: 'application/octet-stream'
         }, {

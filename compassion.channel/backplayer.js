@@ -2,7 +2,7 @@ var cadence = require('cadence')
 
 module.exports = cadence(function (async, advance) {
     async(function () {
-        advance('backlog', async())
+        advance('snapshot', async())
     }, function (envelope) {
         switch (envelope.body) {
         case 'application/json':
