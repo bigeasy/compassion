@@ -30,7 +30,7 @@
                             "monotonic":                    "3.0.x",
                             "operation":                    "2.0.x",
                             "procession":                   "0.20.x",
-                            "prolific.logger":              "6.0.x",
+                            "prolific.logger":              "8.1.x",
                             "reactor":                      "10.4.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "4.0.x",
