@@ -61,9 +61,7 @@ Conference.prototype.getSnapshot = cadence(function (async, promise) {
 
 Conference.prototype.entry = cadence(function (async, entry) {
     async([function () {
-        if (entry == null) {
-            return []
-        }
+        assert(entry != null)
         this.log.push(entry)
         async(function () {
             if (entry.method == 'government') {
