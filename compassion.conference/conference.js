@@ -186,9 +186,6 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     this._network.acclimate()
                 })
             } else {
-                if (!entry.body.body) {
-                    console.log(entry)
-                }
                 // Bombs on a flush!
                 assert(entry.body.body)
                 // Reminder that if you ever want to do queued instead async then the
