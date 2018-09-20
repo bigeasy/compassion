@@ -153,8 +153,8 @@ Local.prototype.colleague = cadence(function (async, destructible, envelope) {
             destructible.destruct.wait(function () { conference.log.push(null) })
             conference.consumed.pump(new Recorder(this.events, envelope.id, 'consumed'), 'record', destructible.monitor('consumed'))
             destructible.destruct.wait(function () { conference.consumed.push(null) })
-            var log = kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
-            destructible.destruct.wait(log, 'destroy')
+            kibitzer.paxos.log.pump(conference, 'entry', destructible.monitor('entries'))
+            destructible.destruct.wait(kibitzer.paxos.log, 'end')
             // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
             destructible.destruct.wait(kibitzer.paxos.pinged.pump(this, function () {
                 this.scheduler.schedule(Date.now() + this._timeout.chaperon, Keyify.stringify({
