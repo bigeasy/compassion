@@ -60,14 +60,11 @@ require('arguable')(module, require('cadence')(function (async, program) {
         var locator = program.ultimate.discovery
         async(function () {
             destructible.monitor('olio', Olio, program, async())
-        }, [function (olio) {
-            console.log(locator)
+        }, function (olio) {
             olio.sender(locator, cadence(function (async, destructible) {
                 destructible.monitor('caller', Caller, async())
             }), async())
-        }, function  (error) {
-            console.log(error.stack)
-        }], function (sender) {
+        }, function (sender) {
             return new Resolver(sender.processes[0].sender)
         })
     }, function (resolver) {
