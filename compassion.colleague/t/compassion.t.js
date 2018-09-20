@@ -267,7 +267,7 @@ function prove (async, okay) {
         }, function () {
             containerized.terminate('missing')
             containerized.terminate('island', 'eighth')
-            containerized.terminate('island', 'first')
+            applications[0].pingStatusCode = 503
         }, function () {
             containerized.events.shifter().join(function (event) {
                 if (
