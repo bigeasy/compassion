@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.canary",
-    "version":              "9.9.9",
+    "version":              "0.0.0",
     "description":
 
       "Canary utility to trigger shutdown of Compassion-adjacent application.",
