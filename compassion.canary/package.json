@@ -1,0 +1,33 @@
+{
+    "name":                 "compassion.canary",
+    "version":              "9.9.9",
+    "description":
+
+      "Canary utility to trigger shutdown of Compassion-adjacent application.",
+
+    "keywords":
+    [
+                            "consensus", "paxos"
+    ],
+    "author":               "Alan Gutierrez <alan@prettyrobots.com>",
+    "homepage":             "https://github.com/bigeasy/compassion",
+    "bugs":                 "https://github.com/bigeasy/compassion/issues",
+    "license":              "MIT",
+    "repository":
+    {
+                            "type": "git",
+                            "url": "bigeasy/compassion"
+    },
+    "dependencies":
+    {
+    },
+    "devDependencies":
+    {
+                            "proof":                        "3.0.x"
+    },
+    "main":                 "canary",
+    "scripts":
+    {
+                            "test": "proof test t/*.t.js"
+    }
+}
