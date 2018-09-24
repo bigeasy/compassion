@@ -344,7 +344,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
             nullify: true,
             parse: 'json'
         }, {
-            url: './arrive',
+            url: './embark',
             post: {
                 republic: envelope.body.republic,
                 id: colleague.kibitzer.paxos.id,

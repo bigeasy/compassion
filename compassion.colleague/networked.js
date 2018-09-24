@@ -11,7 +11,7 @@ function Networked (destructible, colleagues) {
     this.reactor = new Reactor(this, function (dispatcher) {
         dispatcher.dispatch('GET /', 'index')
         dispatcher.dispatch('GET /island/:island/islanders', 'islanders')
-        dispatcher.dispatch('POST /island/:island/islander/:id/arrive', 'arrive')
+        dispatcher.dispatch('POST /island/:island/islander/:id/embark', 'embark')
         dispatcher.dispatch('POST /island/:island/islander/:id/kibitz', 'kibitz')
         dispatcher.dispatch('POST /island/:island/islander/:id/broadcasts', 'broadcasts')
         dispatcher.dispatch('POST /island/:island/islander/:id/snapshot', 'snapshot')
@@ -29,7 +29,7 @@ Networked.prototype._getColleague = function (island, id) {
     return this._colleagues.island[island][id]
 }
 
-Networked.prototype.arrive = cadence(function (async, request, island, id) {
+Networked.prototype.embark = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
     return colleague.kibitzer.embark(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
 })
