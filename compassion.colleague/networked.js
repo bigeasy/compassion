@@ -31,7 +31,7 @@ Networked.prototype._getColleague = function (island, id) {
 
 Networked.prototype.arrive = cadence(function (async, request, island, id) {
     var colleague = this._getColleague(island, id)
-    return colleague.kibitzer.arrive(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
+    return colleague.kibitzer.embark(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
 })
 
 Networked.prototype.kibitz = cadence(function (async, request, island, id) {
