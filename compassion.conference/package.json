@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "cubbyhole":                    "1.0.x",
+                            "cubbyhole":                    "1.2.x",
                             "extant":                       "1.0.x",
                             "happenstance":                 "10.6.x",
                             "interrupt":                    "6.3.x",
