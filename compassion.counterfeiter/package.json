@@ -24,7 +24,7 @@
                             "extant":                       "1.0.x",
                             "compassion.colleague":         "0.43.x",
                             "compassion.conference":        "0.8.x",
-                            "vizsla":                       "12.12.x"
+                            "vizsla":                       "12.13.x"
     },
     "devDependencies":
     {
