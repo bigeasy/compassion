@@ -22,7 +22,7 @@
     {
                             "cadence":                      "1.0.x",
                             "extant":                       "1.0.x",
-                            "compassion.colleague":         "0.44.x",
+                            "compassion.colleague":         "0.46.x",
                             "compassion.conference":        "0.8.x",
                             "vizsla":                       "12.13.x"
     },
