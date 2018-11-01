@@ -35,7 +35,7 @@
                             "olio":                         "0.19.x",
                             "procession":                   "0.22.x",
                             "prolific.logger":              "8.2.x",
-                            "prolific.shuttle":             "20.10.x",
+                            "prolific.shuttle":             "20.12.x",
                             "reactor":                      "10.6.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.3.x",
