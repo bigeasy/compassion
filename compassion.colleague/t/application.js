@@ -9,72 +9,40 @@ function Application (id, okay) {
     this.arrived = new Signal
     this.blocker = new Signal
     this._ua = new Vizsla()
-    this.pingStatusCode = 200
-    this.reactor = new Reactor(this, function (dispatcher) {
-        dispatcher.dispatch('GET /ping', 'ping')
-        dispatcher.dispatch('POST /register', '_register')
-        dispatcher.dispatch('POST /bootstrap', 'bootstrap')
-        dispatcher.dispatch('POST /join', 'join')
-        dispatcher.dispatch('POST /arrive', 'arrive')
-        dispatcher.dispatch('POST /snapshot', 'snapshot')
-        dispatcher.dispatch('POST /acclimated', 'acclimated')
-        dispatcher.dispatch('POST /receive/message', 'receiveMessage')
-        dispatcher.dispatch('POST /reduced/message', 'reducedMessage')
-        dispatcher.dispatch('POST /depart', 'depart')
-    })
+    this.envelopes = []
 }
 
-Application.prototype.register = cadence(function (async, url) {
-    async(function () {
-        this._ua.fetch({
-            url: 'http://127.0.0.1:8386/'
-        }, {
-            url: '/register',
-            post: {
-                token: 'x',
-                island: 'island',
-                id: this._id,
-                url: url,
-                properties: { key: this._id },
-                bootstrap: true,
-                join: true,
-                arrive: true,
-                depart: true,
-                acclimated: true,
-                government: false,
-                receive: [ 'message' ],
-                reduced: [ 'message' ]
-            },
-            raise: true,
-            parse: 'json'
-        }, async())
-        console.log('DOING')
-    }, function () {
-        console.log('DONE')
-        return []
-    })
-})
-
-Application.prototype.ping = cadence(function (async, request) {
-    return this.pingStatusCode
-})
-
-Application.prototype._register = cadence(function (async, request) {
-    if (request.body.id == 'unregisterable') {
-        return 500
+Application.prototype.dispatch = cadence(function (async, envelope) {
+    this.envelopes.push(envelope)
+    switch (envelope.method) {
+    case 'bootstrap':
+        console.log('BOOTSTRAPPED!')
+        break
+    case 'join':
+        console.log('MANY JOIN!!!!', envelope)
+        async(function () {
+            envelope.snapshot.dequeue(async())
+        }, function (value) {
+            console.log('snapshot', value)
+        })
+        break
+    case 'arrive':
+        console.log('>>>>', envelope.entry)
+        if (envelope.entry.arrive.id == this._id) {
+            setTimeout(function () { this.arrived.unlatch() }.bind(this), 250)
+        }
+        break
+        if (request.body.arrived.id == 'second') {
+            this._okay.call(null, true, 'arrived')
+        } else if (request.body.self.id == 'fourth') {
+            return 500
+        }
+        return 200
     }
-    this._token = request.body.token
-    return 200
 })
 
-Application.prototype.snapshot = cadence(function (async, request) {
-    this._okay.call(null, request.body, { promise: '4/0' }, 'snapshot promise')
-    return { a: 1 }
-})
-
-Application.prototype.bootstrap = cadence(function (async, request) {
-    this._okay.call(null, request.body.government.properties.first.url, 'http://127.0.0.1:8486/island/island/islander/first/', 'url')
-    return 200
+Application.prototype.snapshot = cadence(function (async, outbox) {
+    outbox.push(null)
 })
 
 Application.prototype.join = cadence(function (async, request) {

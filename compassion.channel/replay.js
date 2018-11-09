@@ -18,39 +18,54 @@ var departure = require('departure')
 var backplayer = require('./backplayer')
 var Operation = require('operation')
 
-function Replay (destructible, readable, Conference) {
-    this._Conference = Conference
+var Conduit = require('conduit/conduit')
+
+function Replay (destructible, options, callback) {
     this._destructible = destructible
-    this._readable = readable
-    this._ua = new Vizsla
-    this.reactor = new Reactor(this, function (dispatcher) {
-        dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('POST /register', 'register')
-        dispatcher.dispatch('GET /snapshot', 'snapshot')
-        dispatcher.dispatch('POST /record', 'record')
-        /*
-            dispatcher.dispatch('POST /broadcast', 'broadcast')
-            dispatcher.dispatch('GET /ping', 'ping')
-            dispatcher.dispatch('GET /health', 'health')
-        */
-    })
+    this._readable = options.readable
+    this._destructible = destructible
+    this._options = options
+    this._initialize(destructible, options.inbox, options.outbox, callback)
 }
 
-Replay.prototype.index = cadence(function (async) {
-    return [ 200, { 'content-type': 'text/plain' }, 'Compassion Replay API\n' ]
+Replay.prototype._initialize = cadence(function (async, destructible, inbox, outbox) {
+    async(function () {
+        destructible.monitor('conduit', Conduit, inbox, outbox, this, '_connect', async())
+    }, function (conduit) {
+        this._conduit = conduit
+        return this
+    })
 })
 
-Replay.prototype.register = cadence(function (async, request) {
-    if (this._registration != null) {
-        throw 401
+Replay.prototype._connect = cadence(function (async, envelope, inbox, outbox) {
+    switch (envelope.method) {
+    case 'ready':
+        outbox.push({ method: 'ready' })
+        this._destructible.monitor('play', this, '_play', inbox, outbox, null)
+        break
+    case 'broadcasts':
+        async(function () {
+            this._advance('broadcasts', async())
+        }, function (envelope) {
+            return [ envelope.body ]
+        })
+        break
+    case 'snapshot':
+        this._snapshot(outbox, this._destructible.monitor('snapshot', true))
+        break
     }
-    // If we already have one and it doesn't match, then we destroy this one.
-    // Create a new instance.
-    async(function () {
-        this._destructible.monitor('registration', true, this, 'registration', request.body, async())
-    }, function () {
-        return 200
-    })
+})
+
+Replay.prototype._snapshot = cadence(function (async, outbox) {
+    var loop = async(function () {
+        this._advance('snapshot', async())
+    }, function (envelope) {
+        console.log('!', envelope)
+        outbox.push(envelope.body)
+        if (envelope.body == null) {
+            return [ loop.break ]
+        }
+    })()
 })
 
 // TODO Note that you cannot assert that the broadcasts are in any particular
@@ -65,10 +80,11 @@ Replay.prototype._advance = cadence(function (async, type) {
                 return [ loop.break, null ]
             }
             envelope = JSON.parse(envelope.toString('utf8'))
-            if (envelope.id == this._colleague.initializer.id) {
+            console.log(envelope)
+            if (envelope.id == this._options.id) {
                 switch (envelope.type) {
                 case 'kibitzer':
-                    this._colleague.kibitzer.replay(envelope.body)
+                    this._kibitzer.replay(envelope.body)
                     break
                 case 'paxos':
                     departure.raise(this._colleague.paxos.shift(), envelope.body)
@@ -87,88 +103,52 @@ Replay.prototype._advance = cadence(function (async, type) {
     })()
 })
 
-Replay.prototype._play = cadence(function (async) {
-    async(function () {
-        setTimeout(async(), 250)
-    }, function () {
-        // TODO Crash if there is an error.
-        this._ua.fetch({
-            url: this._colleague.initializer.url,
-            token: this._colleague.initializer.token,
-            timeout: 1000,
-            raise: true,
-            parse: 'json'
-        }, {
-            url: './register',
-            post: {
-                token: this._colleague.token
-            }
-        }, async())
-    }, function () {
-        var count = 0
-        var loop = async(function () {
-            this._advance('entry', async())
-        }, function (envelope) {
-            if (envelope == null) {
-                return [ loop.break ]
-            }
-            var entry = this._colleague.log.shift()
-            departure.raise(entry, envelope.body)
-            async(function () {
-                this._colleague.conference.entry(entry, async())
-            }, function () {
-                console.log('DONE SENDING')
-            })
-        })()
-    })
+Replay.prototype._consumed = cadence(function (async, inbox, entry) {
+    var loop = async(function () {
+        inbox.dequeue(async())
+    }, function (envelope) {
+        if (envelope == null) {
+            return [ loop.break, true ]
+        } else if (envelope.type == 'consumed') {
+            departure.raise(envelope.promise, envelope.promise)
+            return [ loop.break, false ]
+        }
+    })()
 })
 
-Replay.prototype.registration = cadence(function (async, destructible, envelope) {
+Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
     async(function () {
         destructible.monitor('caller', Caller, async())
     }, function (caller) {
         destructible.destruct.wait(function () { caller.inbox.push(null) })
-        var kibitzer = new Kibitzer({
-            id: envelope.id,
+        var kibitzer = this._kibitzer = new Kibitzer({
+            id: this._options.id,
             caller: caller,
             ping: this._ping,
             timeout: this._timeout
         })
-        kibitzer.paxos.log.pump(kibitzer.islander, 'push', destructible.monitor('islander'))
-        // TODO Wonky. Should destroy out of Kibitzer.
-        destructible.destruct.wait(function () {
-            console.log('GOING TO NULL')
-            kibitzer.paxos.log.push(null)
-        })
-        async(function () {
-            crypto.randomBytes(32, async())
-        }, function (bytes) {
-            var token = bytes.toString('hex')
-            this._registration = {}
-            this._colleague = {
-                token: token,
-                initializer: envelope,
-                kibitzer: kibitzer,
-                conference: new this._Conference(destructible, {
-                    acclimate: function () {},
-                    publish: function () {},
-                    broadcasts: cadence(function (async, promise) {
-                        async(function () {
-                            this._advance('broadcasts', async())
-                        }, function (envelope) {
-                            return [ envelope.body ]
-                        })
-                    }).bind(this)
-                }, envelope, kibitzer, true),
-                paxos: kibitzer.paxos.outbox.shifter(),
-                islander: kibitzer.islander.outbox.shifter(),
-                log: kibitzer.paxos.log.shifter()
+        destructible.monitor('islander', kibitzer.paxos.log.pump(kibitzer.islander, 'push'), 'destructible', null)
+        this._paxos = kibitzer.paxos.outbox.shifter()
+        this._islander = kibitzer.islander.outbox.shifter()
+        this._log = kibitzer.paxos.log.shifter()
+        var loop = async(function () {
+            this._advance('entry', async())
+        }, function (envelope) {
+            console.log('advanced', envelope)
+            if (envelope == null) {
+                return [ loop.break ]
             }
-            this._play(destructible.monitor('play'))
-        }, function () {
-            console.log('I am here')
-            return []
-        })
+            // TODO While `entry` is null.
+            var entry = this._log.shift()
+            departure.raise(entry, envelope.body)
+            async(function () {
+                console.log('entry >>>', entry)
+                outbox.push({ method: 'entry', body: entry })
+                this._consumed(inbox, entry, async())
+            }, function (eos) {
+                console.log('DONE SENDING', eos)
+            })
+        })()
     })
 })
 
@@ -187,11 +167,5 @@ Replay.prototype.record = cadence(function (async, request) {
 })
 
 module.exports = cadence(function (async, destructible, options) {
-    var replay = new Replay(destructible, options.readable, options.Conference)
-    var server = http.createServer(replay.reactor.middleware)
-    destroyer(server)
-    destructible.destruct.wait(server, 'destroy')
-    delta(destructible.monitor('http')).ee(server).on('close')
-    options.bind.listen(server, async())
-    return replay
+    new Replay(destructible, options, async())
 })

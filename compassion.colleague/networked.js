@@ -5,6 +5,8 @@ var logger = require('prolific.logger').createLogger('compassion.networked')
 
 var coalesce = require('extant')
 
+var Serialize = require('procession/serialize')
+
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
@@ -45,21 +47,22 @@ Networked.prototype.kibitz = cadence(function (async, request, island, id) {
 })
 
 Networked.prototype.broadcasts = cadence(function (async, request, island, id) {
-    this._getColleague(island, id).conference.getSnapshot(request.body.promise, async())
+    this._getColleague(island, id).conduit.connect({
+        method: 'broadcasts',
+        promise: request.body.promise
+    }).inbox.dequeue(async())
 })
 
 Networked.prototype.snapshot = cadence(function (async, request, island, id) {
-    var colleague = this._getColleague(island, id)
-    async(function () {
-        colleague.ua.fetch({
-            url: './snapshot',
-            post: request.body,
-            parse: 'stream',
-            raise: true
-        }, async())
-    }, function (stream, response) {
-        return [ 200, response.headers, function (response) { stream.pipe(response) } ]
+    console.log('snapshotted', request.body)
+    var request = this._getColleague(island, id).conduit.connect({
+        method: 'snapshot',
+        promise: request.body.promise,
+        inbox: true
     })
+    return [ 200, { 'content-type': 'application/octet-stream' }, function (response, callback) {
+        Serialize(request.inbox, response, callback)
+    } ]
 })
 
 Networked.prototype.islanders = cadence(function (async, request, island) {

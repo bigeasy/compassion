@@ -21,21 +21,21 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "compassion.conference":        "0.7.x",
-                            "conduit":                      "2.13.x",
+                            "compassion.conference":        "0.9.x",
+                            "conduit":                      "2.22.x",
                             "delta":                        "1.4.x",
                             "departure":                    "0.0.x",
-                            "destructible":                 "0.33.x",
-                            "kibitz":                       "0.31.x",
+                            "destructible":                 "0.35.x",
+                            "kibitz":                       "0.35.x",
                             "monotonic":                    "3.0.x",
                             "operation":                    "2.0.x",
-                            "procession":                   "0.22.x",
-                            "prolific.logger":              "8.1.x",
-                            "reactor":                      "10.5.x",
+                            "procession":                   "2.1.x",
+                            "prolific.logger":              "8.4.x",
+                            "reactor":                      "10.8.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "4.0.x",
                             "staccato":                     "6.3.x",
-                            "vizsla":                       "12.12.x"
+                            "vizsla":                       "12.14.x"
     },
     "devDependencies":
     {

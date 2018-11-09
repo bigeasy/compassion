@@ -1,20 +1,17 @@
-require('proof')(20, require('cadence')(prove))
+require('proof')(2, prove)
 
-function prove (async, okay) {
-    try {
+function prove (okay, callback) {
+   // try {
         var Conference = require('../../compassion.conference/conference')
-        var Pinger = require('../../compassion.conference/pinger')
-    } catch (e) {
-        var Conference = require('compassion.conference/conference')
-        var Pinger = require('compassion.conference/pinger')
-    }
+    //} catch (e) {
+     //   var Conference = require('compassion.conference/conference')
+      //  var Pinger = require('compassion.conference/pinger')
+  //  }
+    var Procession = require('procession')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
     var destructible = new Destructible('t/compassion.t.js')
     var Application = require('./application')
-    var destroyer = require('server-destroy')
-    var http = require('http')
-    var delta = require('delta')
     var cadence = require('cadence')
     var Vizsla = require('vizsla')
     var ua = new Vizsla
@@ -28,56 +25,118 @@ function prove (async, okay) {
 
     var events = null
 
-    async([function () {
-        destructible.completed.wait(async())
-    }, function (error) {
-        console.log(error.stack)
-        throw error
-    }])
+    destructible.completed.wait(callback)
 
     var population = new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla)
+
+    var cadence = require('cadence')
+
+    cadence(function (async) {
+        async(function () {
+            destructible.monitor('containerized', Containerized, {
+                Conference: Conference,
+                population: {
+                    census: function (island, id, callback) {
+                        if (id == 'racer') {
+                            console.log('will terminate')
+                            containerized.terminate('island', 'racer')
+                        }
+                        population.census(island, id, callback)
+                    }
+                },
+                ping: {
+                    chaperon: 150,
+                    paxos: 150,
+                    application: 150
+                },
+                timeout: {
+                    chaperon: 450,
+                    paxos: 450,
+                    http: 500
+                },
+                bind: {
+                    local: {
+                        listen: function (server, callback) {
+                            server.listen(8386, '127.0.0.1', callback)
+                        }
+                    },
+                    networked: {
+                        listen: function (server, callback) {
+                            server.listen(8486, '127.0.0.1', callback)
+                        },
+                        address: '127.0.0.1',
+                        port: 8486
+                    }
+                }
+            }, async())
+        }, function (containerized) {
+            var merged = new Procession
+            var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
+            destructible.monitor('events', containerized.events.pump(merged, 'enqueue'), 'destructible', null)
+            destructible.monitor('merged', merged.pump(function (envelope, callback) {
+                if (envelope == null) {
+                    console.log('very much done')
+                    writable.end(callback)
+                } else {
+                    writable.write(JSON.stringify(envelope) + '\n', callback)
+                }
+            }), 'destructible', null)
+            var applications = {}
+            var createApplication = cadence(function (async, destructible, id) {
+                var application = new Application(id, okay)
+                var inbox = new Procession, outbox = new Procession
+                destructible.destruct.wait(inbox, 'end')
+                destructible.destruct.wait(outbox, 'end')
+                async(function () {
+                    containerized.register(inbox, outbox, { island: 'island', id: id, snapshot: true }, async())
+                    destructible.monitor('conference', Conference, outbox, inbox, application, {}, async())
+                }, function (colleague, conference) {
+                    destructible.monitor('events', conference.events.pump(merged, 'enqueue'), 'destructible', null)
+                    applications[id] = {
+                        application: application,
+                        colleague: colleague,
+                        conference: conference
+                    }
+                    return [ conference ]
+                })
+            })
+            async(function () {
+                ua.fetch({ url: 'http://127.0.0.1:8486', parse: 'text' }, async())
+            }, function (body) {
+                okay(body, 'Compassion Networked API\n', 'networked index')
+                ua.fetch({ url: 'http://127.0.0.1:8486/island/island/islanders', parse: 'json' }, async())
+            }, function (body) {
+                okay(body, [], 'empty island')
+                async(function () {
+                    destructible.monitor('first', createApplication, 'first', async())
+                }, function () {
+                    applications.first.conference.ready(async())
+                }, function () {
+                    applications.first.application.arrived.wait(async())
+                }, function () {
+                    console.log('--- arrival -----------')
+                })
+            }, function () {
+                async(function () {
+                    destructible.monitor('second', createApplication, 'second', async())
+                }, function () {
+                    applications.second.conference.ready(async())
+                }, function () {
+                    applications.second.application.arrived.wait(async())
+                }, function () {
+                    console.log('--- arrival -----------')
+                })
+            })
+        })
+    })(destructible.monitor('test'))
+
+    return
+
     var containerized
 
     async([function () {
         destructible.destroy()
     }], function () {
-        destructible.monitor('containerized', Containerized, {
-            Conference: Conference,
-            population: {
-                census: function (island, id, callback) {
-                    if (id == 'racer') {
-                        console.log('will terminate')
-                        containerized.terminate('island', 'racer')
-                    }
-                    population.census(island, id, callback)
-                }
-            },
-            Pinger: Pinger,
-            ping: {
-                chaperon: 150,
-                paxos: 150,
-                application: 150
-            },
-            timeout: {
-                chaperon: 450,
-                paxos: 450,
-                http: 500
-            },
-            bind: {
-                local: {
-                    listen: function (server, callback) {
-                        server.listen(8386, '127.0.0.1', callback)
-                    }
-                },
-                networked: {
-                    listen: function (server, callback) {
-                        server.listen(8486, '127.0.0.1', callback)
-                    },
-                    address: '127.0.0.1',
-                    port: 8486
-                }
-            }
-        }, async())
     }, function () {
         containerized = arguments[0]
         var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))

@@ -7,19 +7,15 @@
         --help
             display this message
 
-        --local <string>
-            local interface and port
-
         --id <string>
             local interface and port
     ___ $ ___ en_US ___
     ___ . ___
 */
-require('arguable')(module, require('cadence')(function (async, program) {
+require('arguable')(module, function (program, callback) {
     program.helpIf(program.ultimate.help)
 
-    program.required('local', 'id')
-    program.validate(require('arguable/bindable'), 'local')
+    program.required('id')
 
     var Staccato = require('staccato')
     var byline = require('byline')
@@ -31,23 +27,26 @@ require('arguable')(module, require('cadence')(function (async, program) {
 
     program.on('shutdown', destructible.destroy.bind(destructible))
 
-    destructible.completed.wait(async())
+    destructible.completed.wait(callback)
+
+    var cadence = require('cadence')
 
     var Replay = require('./replay')
 
-    async([function () {
-        destructible.destroy()
-    }], function () {
-        program.stdin.resume()
-        var readable = new Staccato.Readable(byline(program.stdin))
-        destructible.monitor('replay', Replay, {
-            Conference: Conference,
-            readable: readable,
-            id: program.ultimate.id,
-            bind: program.ultimate.local
-        }, async())
-    }, function () {
-        program.ready.unlatch()
-        destructible.completed.wait(async())
-    })
-}))
+    cadence(function (async) {
+        async(function () {
+            program.stdin.resume()
+            var readable = new Staccato.Readable(byline(program.stdin))
+            /*
+            destructible.monitor('replay', Replay, {
+                Conference: Conference,
+                readable: readable,
+                id: program.ultimate.id,
+                bind: program.ultimate.local
+            }, async())
+                */
+        }, function () {
+            program.ready.unlatch()
+        })
+    })(destructible.monitor('test'))
+})

@@ -8,89 +8,157 @@ var coalesce = require('extant')
 var Cubbyhole = require('cubbyhole')
 var rescue = require('rescue/redux')
 
-function Conference (destructible, network, registration, replaying) {
+var Multiplexer = require('conduit/multiplexer')
+var Conduit = require('conduit/conduit')
+
+var Turnstile = require('turnstile')
+Turnstile.Queue = require('turnstile/queue')
+
+function Conference (destructible, inbox, outbox, application, replaying, callback) {
+    this._application = application
     this._destructible = destructible
-    this._ua = new UserAgent().bind({ url: registration.url })
     this.log = new Procession
+    this.events = new Procession
     this.consumed = new Procession
-    this._id = registration.id
-    this._url = registration.url
     this._government = null
     this.outbox = new Procession
-    this._network = network
     this._replaying = !! replaying
     this._cookie = '0'
     this._snapshots = new Cubbyhole
     this._postbacks = { reduced: {}, receive: {} }
     this._broadcasts = {}
-    'bootstrap join arrive government acclimated depart'.split(' ').forEach(function (postback) {
-        this._postbacks[postback] = !! registration[postback]
-    }, this)
-    coalesce(registration.reduced, []).forEach(function (method) {
-        this._postbacks.reduced[method] = true
-    }, this)
-    coalesce(registration.receive, []).forEach(function (method) {
-        this._postbacks.receive[method] = true
-    }, this)
+    this._snapshot = new Procession
+    this._backlog = new Procession
+    this._turnstile = new Turnstile
+    this._entries = new Turnstile.Queue(this, '_entry', this._turnstile)
+    this._destructible = destructible
+    this._initialize(destructible, inbox, outbox, callback)
 }
 
-Conference.prototype._postback = cadence(function (async, path, envelope) {
-    var search = path.slice(), postbacks = this._postbacks
-    while (search.length != 0) {
-        postbacks = postbacks[search.shift()]
-    }
-    if (postbacks) {
-        async([function () {
-            this._ua.fetch({
-                url: path.join('/'),
-                post: envelope,
-                parse: 'json',
-                raise: true
-            }, async())
-        }, function (error) {
-            throw new Interrupt('postback', error)
-        }])
-    } else {
-        return null
+Conference.prototype._initialize = cadence(function (async, destructible, inbox, outbox) {
+    async(function () {
+        destructible.monitor('conduit', Conduit, inbox, outbox, this, 'connect', async())
+    }, function (conduit) {
+        this._conduit = conduit
+        return this
+    })
+})
+
+Conference.prototype.ready = cadence(function (async) {
+    var request = this._conduit.connect({ method: 'ready', inbox: true, outbox: true })
+    this._outbox = request.outbox
+    async(function () {
+        request.inbox.dequeue(async())
+    }, function (envelope) {
+        assert(envelope.method == 'ready')
+        console.log('did get ready ------------------------------------------------------')
+        this._destructible.monitor('inbox', request.inbox.pump(this, 'receive'), 'destructible', null)
+    })
+})
+
+Conference.prototype.server = cadence(function (async, header) {
+    var receiver = { outbox: new Procession, inbox: new Procession }
+    switch (header.method) {
+    case 'snapshot':
+        // TODO Major problem here. Want to start sending messages now, assume
+        // we have a socket open somewhere, but now have to wait for an
+        // additional notification to know that our outbox has been connected to
+        // the socket, we really out to build with inbox and outbox given to us
+        // or else the server needs to hold onto shifters and do something with
+        // them. This is why we don't use Server everywhere and as the basis of
+        // Caller and Procedure, or in leiu of Multiplexer.
+        //
+        // TODO Although, it multiplexes naturally. The header is the procedure
+        // body, and perhaps the header can indicate an upward stream, so it
+        // includes it as a property, or `null`. Then you respond with either a
+        // body to send back, or else respond with a shifter.
+        break
     }
 })
 
-Conference.prototype.getSnapshot = cadence(function (async, promise) {
-    this._snapshots.wait(promise, async())
+Conference.prototype.connect = cadence(function (async, request, inbox, outbox) {
+    switch (request.method) {
+    case 'broadcasts':
+        this._snapshots.wait(request.promise, async())
+        break
+    case 'snapshot':
+        this._application.snapshot(outbox, async())
+        break
+    }
 })
 
-Conference.prototype.entry = cadence(function (async, entry) {
+Conference.prototype.receive = cadence(function (async, envelope) {
+    if (envelope == null) {
+        return
+    }
+    switch (envelope.method) {
+    case 'entry':
+        this._entries.push(envelope.body)
+        break
+    case 'backlog':
+        this._backlog.push(envelope.body)
+        break
+    case 'snapshot':
+        this._snapshot.push(envelope.body)
+        break
+    }
+})
+
+Conference.prototype._entry = cadence(function (async, envelope) {
+    var entry = envelope.body
+    if (entry == null) {
+        return
+    }
+    // TODO Move stuff up.
+    if (this._id == null) {
+        this._id = entry.body.arrive.id
+    }
+    this.events.push({ type: 'entry', id: this._id, body: envelope.body })
     async([function () {
         assert(entry != null)
         this.log.push(entry)
         async(function () {
             if (entry.method == 'government') {
                 this._government = entry.government
-                this.isLeader = this._government.majority[0] == this._id
                 var properties = entry.properties
                 async(function () {
                     if (entry.body.arrive) {
                         var arrival = entry.body.arrive
                         async(function () {
                             if (entry.body.promise == '1/0') {
-                                this._postback([ 'bootstrap' ], {
+                                this._application.dispatch({
+                                    method: 'bootstrap',
                                     self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                    entry: entry.body,
                                     replaying: this._replaying,
                                     government: this._government
                                 }, async())
                             } else if (arrival.id == this._id) {
-                                this._postback([ 'join' ], {
+                                console.log('snapshotting')
+                                var request = this._conduit.connect({
+                                    method: 'snapshot',
+                                    promise: this._government.promise,
+                                    inbox: true
+                                })
+                                this._destructible.monitor('snapshot', true, request.inbox.pump(this, function (envelope) {
+                                    this.events.push({ type: 'snapshot', id: this._id, body: envelope })
+                                }), 'destructible', null)
+                                this._application.dispatch({
+                                    method: 'join',
                                     self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                    entry: entry.body,
                                     replaying: this._replaying,
-                                    government: this._government
+                                    government: this._government,
+                                    snapshot: request.inbox
                                 }, async())
                             }
                         }, function () {
-                            this._postback([ 'arrive' ], {
+                            this._application.dispatch({
+                                method: 'arrive',
                                 self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                entry: entry.body,
                                 replaying: this._replaying,
-                                government: this._government,
-                                arrived: arrival
+                                government: this._government
                             }, async())
                         }, function () {
                             if (arrival.id != this._id) {
@@ -101,8 +169,24 @@ Conference.prototype.entry = cadence(function (async, entry) {
                                 this._snapshots.set(this._government.promise, null, broadcasts)
                             } else if (this._government.promise != '1/0') {
                                 async(function () {
-                                    this._network.broadcasts(this._government.promise, async())
+                                    this._conduit.connect({
+                                        method: 'broadcasts',
+                                        promise: this._government.promise
+                                    }).inbox.dequeue(async())
+                                    // Uncomment to trigger the assertion below.
+                                    // this._destructible.destroy()
                                 }, function (body) {
+                                    // TODO Would be nice to throw a particular
+                                    // type of message and have it logged as a
+                                    // warning and not an error, so use `Rescue`
+                                    // to filter out anything that is just a
+                                    // warning or caused by some expected event,
+                                    // then spare ourselves the stack trace or
+                                    // have it programatically marked as a
+                                    // warning and not a fatal exception.
+                                    Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
+                                    this.events.push({ type: 'broadcasts', id: this._id, body: body })
+                                    console.log('-- will for each --', body)
                                     async.forEach(function (broadcast) {
                                         async(function () {
                                             this.entry({
@@ -168,20 +252,35 @@ Conference.prototype.entry = cadence(function (async, entry) {
                     }
                 }, function () {
                     if (entry.body.acclimate != null) {
-                        this._postback([ 'acclimated' ], {
-                            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                        this._application.dispatch({
+                            self: {
+                                id: this._id,
+                                arrived: this._government.arrived.promise[this._id]
+                            },
+                            method: 'acclimated',
+                            body: entry.body,
                             replaying: this._replaying,
                             government: this._government
                         }, async())
                     }
                 }, function () {
-                    this._postback([ 'government' ], {
-                        self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                    this._application.dispatch({
+                        self: {
+                            id: this._id,
+                            arrived: this._government.arrived.promise[this._id]
+                        },
+                        method: 'government',
+                        body: entry.body,
                         replaying: this._replaying,
                         government: this._government
                     }, async())
                 }, function () {
-                    this._network.acclimate()
+                    console.log('pushing accilimate')
+                    this.outbox.push({
+                        module: 'compassion',
+                        method: 'acclimate',
+                        body: null
+                    })
                 })
             } else {
                 // Bombs on a flush!
@@ -232,7 +331,14 @@ Conference.prototype.entry = cadence(function (async, entry) {
                 }
             }
         }, function () {
-            this.consumed.push(entry)
+            if (this._replaying) {
+                this.outbox.push({
+                    module: 'compassion',
+                    method: 'consumed',
+                    promise: entry.promise,
+                    body: null
+                })
+            }
         })
     }, rescue(/^qualified:compassion.conference#postback$/, function () {
         this._destructible.destroy()
@@ -299,4 +405,6 @@ Conference.prototype._nextCookie = function () {
     return this._cookie = Monotonic.increment(this._cookie, 0)
 }
 
-module.exports = Conference
+module.exports = cadence(function (async, destructible, inbox, outbox, application, replaying) {
+    new Conference(destructible, inbox, outbox, application, replaying, async())
+})
