@@ -3,13 +3,6 @@ var UserAgent = require('vizsla')
 var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 var Kibitzer = require('kibitz')
-
-var crypto = require('crypto')
-
-var Monotonic = require('monotonic').asString
-
-var url = require('url')
-
 var Procession = require('procession')
 
 var coalesce = require('extant')
@@ -20,8 +13,6 @@ var Scheduler = require('happenstance/scheduler')
 var Keyify = require('keyify')
 
 var Recorder = require('./recorder')
-
-var Snapshotter = require('./snapshotter')
 
 var Conduit = require('conduit/conduit')
 
@@ -64,10 +55,6 @@ function Local (destructible, colleagues, options) {
     this.events = new Procession
 }
 
-Local.prototype.index = cadence(function (async) {
-    return [ 200, { 'content-type': 'text/plain' }, 'Compassion Local API\n' ]
-})
-
 Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
     destructible.monitor('played', kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record'), 'destructible', null)
     destructible.monitor('paxos', kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record'), 'destructible', null)
@@ -101,94 +88,90 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
     }, function () {
         destructible.monitor('record', this, '_record', kibitzer, envelope.id, async())
     }, function (kibitzer) {
-        async(function () {
-            crypto.randomBytes(32, async())
-        }, function (bytes) {
-            if (this.colleagues.island[envelope.island] == null) {
-                this.colleagues.island[envelope.island] = {}
-            }
-            // TODO Move `Conduit` to `Procession` and call these `conduits`.
-            var events = this.events
-            /*
-            // Notice that conference here references the colleague ua. All of
-            // this is rather slapdash, but that's how these last little bits of
-            // assembly tend to be. We've deferred the circular references to
-            // the final assembly, the upper most abstractions, but we can't
-            // chase them out of existence for they exist.
-            var conference = new this._Conference(destructible, {
-                acclimate: function () { kibitzer.acclimate() },
-                publish: function (record, envelope) { kibitzer.publish(envelope) },
-                broadcasts: cadence(function (async, promise) {
-                    async(function () {
-                        var government = kibitzer.paxos.government
-                        var leaderUrl = government.properties[government.majority[0]].url
-                        colleague.ua.fetch({
-                            url: leaderUrl
-                        }, {
-                            url: './broadcasts',
-                            post: { promise: promise },
-                            raise: true,
-                            parse: 'json'
-                        }, async())
-                    }, function (body) {
-                        events.push({
-                            type: 'broadcasts',
-                            id: colleague.initalizer.id,
-                            body: body
-                        })
-                        return [ body ]
+        if (this.colleagues.island[envelope.island] == null) {
+            this.colleagues.island[envelope.island] = {}
+        }
+        // TODO Move `Conduit` to `Procession` and call these `conduits`.
+        var events = this.events
+        /*
+        // Notice that conference here references the colleague ua. All of
+        // this is rather slapdash, but that's how these last little bits of
+        // assembly tend to be. We've deferred the circular references to
+        // the final assembly, the upper most abstractions, but we can't
+        // chase them out of existence for they exist.
+        var conference = new this._Conference(destructible, {
+            acclimate: function () { kibitzer.acclimate() },
+            publish: function (record, envelope) { kibitzer.publish(envelope) },
+            broadcasts: cadence(function (async, promise) {
+                async(function () {
+                    var government = kibitzer.paxos.government
+                    var leaderUrl = government.properties[government.majority[0]].url
+                    colleague.ua.fetch({
+                        url: leaderUrl
+                    }, {
+                        url: './broadcasts',
+                        post: { promise: promise },
+                        raise: true,
+                        parse: 'json'
+                    }, async())
+                }, function (body) {
+                    events.push({
+                        type: 'broadcasts',
+                        id: colleague.initalizer.id,
+                        body: body
                     })
+                    return [ body ]
                 })
-            }, envelope, kibitzer)
-            */
-            // TODO Restore below.
-            /*
-            conference.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('log'))
-            destructible.destruct.wait(function () { conference.log.push(null) })
-            conference.consumed.pump(new Recorder(this.events, envelope.id, 'consumed'), 'record', destructible.monitor('consumed'))
-            destructible.destruct.wait(function () { conference.consumed.push(null) })
-            */
-            // TODO Restore above.
-            // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
-            destructible.monitor('pinged', kibitzer.paxos.pinged.pump(this, function () {
-                this.scheduler.schedule(Date.now() + this._timeout.chaperon, Keyify.stringify({
-                    island: envelope.island,
-                    id: envelope.id
-                }), {
-                    name: 'recoverable',
-                    island: envelope.island,
-                    id: envelope.id
-                })
-            }), 'destructible', null)
-            destructible.destruct.wait(this, function () {
-                this.scheduler.unschedule(Keyify.stringify({
-                    island: envelope.island,
-                    id: envelope.id
-                }))
             })
-            var colleague = this.colleagues.island[envelope.island][envelope.id] = {
-                destructible: destructible,
-                initalizer: envelope,
-                kibitzer: kibitzer,
-                createdAt: Date.now(),
-                destroyed: false
-            }
-            var connection = new Connection(this._ua, colleague, this.scheduler)
-            destructible.monitor('entries', kibitzer.paxos.log.pump(connection, 'entry'), 'destructible', null)
-            destructible.monitor('entries2', kibitzer.paxos.log.pump(function (envelope) {
-                console.log(envelope)
-            }), 'destructible', null)
-            destructible.destruct.wait(this, function () {
-                var colleague = this.colleagues.island[envelope.island][envelope.id]
-                delete this.colleagues.island[envelope.island][envelope.id]
+        }, envelope, kibitzer)
+        */
+        // TODO Restore below.
+        /*
+        conference.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('log'))
+        destructible.destruct.wait(function () { conference.log.push(null) })
+        conference.consumed.pump(new Recorder(this.events, envelope.id, 'consumed'), 'record', destructible.monitor('consumed'))
+        destructible.destruct.wait(function () { conference.consumed.push(null) })
+        */
+        // TODO Restore above.
+        // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
+        destructible.monitor('pinged', kibitzer.paxos.pinged.pump(this, function () {
+            this.scheduler.schedule(Date.now() + this._timeout.chaperon, Keyify.stringify({
+                island: envelope.island,
+                id: envelope.id
+            }), {
+                name: 'recoverable',
+                island: envelope.island,
+                id: envelope.id
             })
-            destructible.markDestroyed(colleague)
-            async(function () {
-                destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
-            }, function(conduit) {
-                colleague.conduit = conduit
-                return colleague
-            })
+        }), 'destructible', null)
+        destructible.destruct.wait(this, function () {
+            this.scheduler.unschedule(Keyify.stringify({
+                island: envelope.island,
+                id: envelope.id
+            }))
+        })
+        var colleague = this.colleagues.island[envelope.island][envelope.id] = {
+            destructible: destructible,
+            initalizer: envelope,
+            kibitzer: kibitzer,
+            createdAt: Date.now(),
+            destroyed: false
+        }
+        var connection = new Connection(this._ua, colleague, this.scheduler)
+        destructible.monitor('entries', kibitzer.paxos.log.pump(connection, 'entry'), 'destructible', null)
+        destructible.monitor('entries2', kibitzer.paxos.log.pump(function (envelope) {
+            console.log(envelope)
+        }), 'destructible', null)
+        destructible.destruct.wait(this, function () {
+            var colleague = this.colleagues.island[envelope.island][envelope.id]
+            delete this.colleagues.island[envelope.island][envelope.id]
+        })
+        destructible.markDestroyed(colleague)
+        async(function () {
+            destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
+        }, function(conduit) {
+            colleague.conduit = conduit
+            return colleague
         })
     })
 })
