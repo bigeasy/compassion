@@ -51,7 +51,6 @@ Conference.prototype.ready = cadence(function (async) {
         request.inbox.dequeue(async())
     }, function (envelope) {
         assert(envelope.method == 'ready')
-        console.log('did get ready ------------------------------------------------------')
         this._destructible.monitor('inbox', request.inbox.pump(this, 'receive'), 'destructible', null)
     })
 })
@@ -134,7 +133,6 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                     government: this._government
                                 }, async())
                             } else if (arrival.id == this._id) {
-                                console.log('snapshotting')
                                 var request = this._conduit.connect({
                                     method: 'snapshot',
                                     promise: this._government.promise,
@@ -186,7 +184,6 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                     // warning and not a fatal exception.
                                     Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
                                     this.events.push({ type: 'broadcasts', id: this._id, body: body })
-                                    console.log('-- will for each --', body)
                                     async.forEach(function (broadcast) {
                                         async(function () {
                                             this.entry({
@@ -276,7 +273,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     }, async())
                 }, function () {
                     console.log('pushing accilimate')
-                    this.outbox.push({
+                    this._outbox.push({
                         module: 'compassion',
                         method: 'acclimate',
                         body: null
@@ -332,7 +329,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
             }
         }, function () {
             if (this._replaying) {
-                this.outbox.push({
+                this._outbox.push({
                     module: 'compassion',
                     method: 'consumed',
                     promise: entry.promise,

@@ -36,7 +36,7 @@ function prove (okay, callback) {
                 readable: readable,
                 id: 'second'
             }, async())
-            destructible.monitor('conference', Conference, outbox, inbox, application, {}, async())
+            destructible.monitor('conference', Conference, outbox, inbox, application, true, async())
         }, function (replayer, conference) {
             conference.ready(async())
         }, function () {

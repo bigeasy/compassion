@@ -16,10 +16,8 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
     this.envelopes.push(envelope)
     switch (envelope.method) {
     case 'bootstrap':
-        console.log('BOOTSTRAPPED!')
         break
     case 'join':
-        console.log('MANY JOIN!!!!', envelope)
         async(function () {
             envelope.snapshot.dequeue(async())
         }, function (value) {
@@ -27,7 +25,6 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
         })
         break
     case 'arrive':
-        console.log('>>>>', envelope.entry)
         if (envelope.entry.arrive.id == this._id) {
             setTimeout(function () { this.arrived.unlatch() }.bind(this), 250)
         }

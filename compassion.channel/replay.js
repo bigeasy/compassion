@@ -60,7 +60,6 @@ Replay.prototype._snapshot = cadence(function (async, outbox) {
     var loop = async(function () {
         this._advance('snapshot', async())
     }, function (envelope) {
-        console.log('!', envelope)
         outbox.push(envelope.body)
         if (envelope.body == null) {
             return [ loop.break ]
@@ -80,7 +79,6 @@ Replay.prototype._advance = cadence(function (async, type) {
                 return [ loop.break, null ]
             }
             envelope = JSON.parse(envelope.toString('utf8'))
-            console.log(envelope)
             if (envelope.id == this._options.id) {
                 switch (envelope.type) {
                 case 'kibitzer':
@@ -134,7 +132,6 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
         var loop = async(function () {
             this._advance('entry', async())
         }, function (envelope) {
-            console.log('advanced', envelope)
             if (envelope == null) {
                 return [ loop.break ]
             }
@@ -142,7 +139,6 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
             var entry = this._log.shift()
             departure.raise(entry, envelope.body)
             async(function () {
-                console.log('entry >>>', entry)
                 outbox.push({ method: 'entry', body: entry })
                 this._consumed(inbox, entry, async())
             }, function (eos) {

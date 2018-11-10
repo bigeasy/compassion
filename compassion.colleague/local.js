@@ -159,9 +159,6 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
         }
         var connection = new Connection(this._ua, colleague, this.scheduler)
         destructible.monitor('entries', kibitzer.paxos.log.pump(connection, 'entry'), 'destructible', null)
-        destructible.monitor('entries2', kibitzer.paxos.log.pump(function (envelope) {
-            console.log(envelope)
-        }), 'destructible', null)
         destructible.destruct.wait(this, function () {
             var colleague = this.colleagues.island[envelope.island][envelope.id]
             delete this.colleagues.island[envelope.island][envelope.id]
@@ -216,7 +213,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         }, async())
         break
     case 'snapshot':
-        console.log('$$$', envelope)
         var government = this.kibitzer.paxos.government
         var leaderUrl = government.properties[government.majority[0]].url
         async(function () {
@@ -229,7 +225,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 parse: 'stream'
             }, async())
         }, function (stream, response) {
-            console.log(response.statusCode, response.headers)
             Deserialize(stream, outbox, async())
         })
         break
@@ -241,6 +236,7 @@ Connection.prototype.entry = cadence(function (async, envelope) {
 })
 
 Connection.prototype.receive = cadence(function (async, envelope) {
+    console.log('receive >', envelope)
     if (envelope == null) {
         return
     }

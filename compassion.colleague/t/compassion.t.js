@@ -75,7 +75,6 @@ function prove (okay, callback) {
             destructible.monitor('events', containerized.events.pump(merged, 'enqueue'), 'destructible', null)
             destructible.monitor('merged', merged.pump(function (envelope, callback) {
                 if (envelope == null) {
-                    console.log('very much done')
                     writable.end(callback)
                 } else {
                     writable.write(JSON.stringify(envelope) + '\n', callback)
