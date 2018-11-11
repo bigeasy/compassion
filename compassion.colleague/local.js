@@ -401,16 +401,6 @@ Local.prototype.register = cadence(function (async, inbox, outbox, registration)
     this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', inbox, outbox, registration, async())
 })
 
-Local.prototype.record = cadence(function (async, request) {
-    var colleague = this._getColleagueByToken(request)
-    this.events.push({
-        type: 'record',
-        id: colleague.id,
-        body: request.body
-    })
-    return request.body
-})
-
 Local.prototype.broadcast = cadence(function (async, request) {
     var colleague = this._getColleagueByToken(request)
     colleague.conference.broadcast(request.body.method, request.body.message)

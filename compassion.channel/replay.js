@@ -151,14 +151,6 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
     })
 })
 
-Replay.prototype.record = cadence(function (async, request) {
-    async(function () {
-        this._advance('record', async())
-    }, function (envelope) {
-        return envelope.body
-    })
-})
-
 module.exports = cadence(function (async, destructible, options) {
     new Replay(destructible, options, async())
 })
