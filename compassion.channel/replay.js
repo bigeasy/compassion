@@ -104,9 +104,10 @@ Replay.prototype._consumed = cadence(function (async, inbox, entry) {
     var loop = async(function () {
         inbox.dequeue(async())
     }, function (envelope) {
+        console.log('!', envelope)
         if (envelope == null) {
             return [ loop.break, true ]
-        } else if (envelope.type == 'consumed') {
+        } else if (envelope.method == 'consumed') {
             departure.raise(envelope.promise, envelope.promise)
             return [ loop.break, false ]
         }
@@ -142,6 +143,9 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
                 this._consumed(inbox, entry, async())
             }, function (eos) {
                 console.log('DONE SENDING', eos)
+                if (eos) {
+                    return [ loop.break ]
+                }
             })
         })()
     })
