@@ -34,6 +34,7 @@ function prove (okay, callback) {
                 inbox: inbox,
                 outbox: outbox,
                 readable: readable,
+                island: 'island',
                 id: 'second'
             }, async())
             destructible.monitor('conference', Conference, outbox, inbox, application, true, async())

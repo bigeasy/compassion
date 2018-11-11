@@ -39,8 +39,8 @@ Replay.prototype._initialize = cadence(function (async, destructible, inbox, out
 Replay.prototype._connect = cadence(function (async, envelope, inbox, outbox) {
     switch (envelope.method) {
     case 'ready':
-        outbox.push({ method: 'ready' })
         this._destructible.monitor('play', this, '_play', inbox, outbox, null)
+        outbox.push({ method: 'ready', island: this._options.island, id: this._options.id })
         break
     case 'broadcasts':
         async(function () {
