@@ -2,6 +2,7 @@ var cadence = require('cadence')
 var Reactor = require('reactor')
 var Vizsla = require('vizsla')
 var Signal = require('signal')
+var Procession = require('procession')
 
 function Application (id, okay) {
     this._id = id
@@ -9,7 +10,7 @@ function Application (id, okay) {
     this.arrived = new Signal
     this.blocker = new Signal
     this._ua = new Vizsla()
-    this.envelopes = []
+    this.envelopes = new Procession
 }
 
 Application.prototype.dispatch = cadence(function (async, envelope) {
@@ -29,12 +30,20 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
             setTimeout(function () { this.arrived.unlatch() }.bind(this), 250)
         }
         break
-        if (request.body.arrived.id == 'second') {
-            this._okay.call(null, true, 'arrived')
-        } else if (request.body.self.id == 'fourth') {
-            return 500
-        }
-        return 200
+    case 'receive':
+        async(function () {
+            if (this._id == 'second') {
+                console.log('blocking')
+                this.blocker.wait(async())
+            }
+        }, function () {
+            return { from: envelope.self.id }
+        })
+        break
+    case 'reduce':
+        break
+    case 'depart':
+        break
     }
 })
 

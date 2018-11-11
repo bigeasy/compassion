@@ -159,35 +159,35 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                     this.events.push({ type: 'broadcasts', id: this.id, body: body })
                                     async.forEach(function (broadcast) {
                                         async(function () {
-                                            this.entry({
-                                                // paxos
-                                                body: {
-                                                    // islander
-                                                    body: {
-                                                        module: 'conference',
-                                                        method: 'broadcast',
-                                                        internal: broadcast.internal,
-                                                        request: {
-                                                            key: broadcast.key,
-                                                            method: broadcast.method,
-                                                            body: broadcast.body
+                                            this._entry({
+                                                body: { // turnstile
+                                                    body: { // paxos
+                                                        body: { // islander
+                                                            module: 'conference',
+                                                            method: 'broadcast',
+                                                            internal: broadcast.internal,
+                                                            request: {
+                                                                key: broadcast.key,
+                                                                method: broadcast.method,
+                                                                body: broadcast.body
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }, async())
                                         }, function () {
                                             async.forEach(function (promise) {
-                                                this.entry({
-                                                    // paxos
-                                                    body: {
-                                                        // islander
-                                                        body: {
-                                                            module: 'conference',
-                                                            method: 'reduce',
-                                                            reduction: {
-                                                                from: promise,
-                                                                key: broadcast.key,
-                                                                body: broadcast.responses[promise]
+                                                this._entry({
+                                                    body: { // turnstile
+                                                        body: { // paxos
+                                                            body: { // islander
+                                                                module: 'conference',
+                                                                method: 'reduce',
+                                                                reduction: {
+                                                                    from: promise,
+                                                                    key: broadcast.key,
+                                                                    body: broadcast.responses[promise]
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -200,11 +200,15 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         })
                     } else if (entry.body.departed) {
                         async(function () {
-                            this._postback([ 'depart' ], {
-                                self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                            this._application.dispatch({
+                                self: {
+                                    id: this.id,
+                                    arrived: this._government.arrived.promise[this.id]
+                                },
+                                method: 'depart',
+                                body: entry.body,
                                 replaying: this._replaying,
-                                government: this._government,
-                                departed: entry.body.departed
+                                government: this._government
                             }, async())
                         }, function () {
                             var depart = entry.body.departed
@@ -253,6 +257,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     })
                 })
             } else {
+                console.log('!!!!', entry)
                 // Bombs on a flush!
                 assert(entry.body.body)
                 // Reminder that if you ever want to do queued instead async then the
@@ -272,15 +277,19 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         responses: {}
                     }
                     async(function () {
-                        this._postback([ 'receive', envelope.request.method ], {
-                            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                        this._application.dispatch({
+                            self: {
+                                id: this.id,
+                                arrived: this._government.arrived.promise[this.id]
+                            },
+                            method: 'receive',
                             from: envelope.request.from,
                             replaying: this._replaying,
                             government: this._government,
                             body: envelope.request.body
                         }, async())
                     }, function (response) {
-                        this._network.publish(true, {
+                        this._outbox.push({
                             module: 'compassion',
                             method: 'reduce',
                             reduction: {
@@ -294,6 +303,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 // Tally our responses and if they match the number of participants,
                 // then invoke the reduction method.
                 case 'reduce':
+                    console.log('--- reduce ----------------------------------------------------------------------------')
                     var broadcast = this._broadcasts[envelope.reduction.key]
                     broadcast.responses[envelope.reduction.from] = envelope.reduction.body
                     this._checkReduced(broadcast, async())
@@ -342,11 +352,15 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
         // `reduced` postback with both the id and the arrived promise because
         // the only responses provided are those that are still present in the
         // government at the time of this postback.
-        this._postback([ 'reduced', broadcast.method ], {
-            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+        this._application.dispatch({
+            self: {
+                id: this.id,
+                arrived: this._government.arrived.promise[this.id]
+            },
+            method: 'reduced',
+            from: broadcast.from,
             replaying: this._replaying,
             government: this._government,
-            from: broadcast.from,
             request: broadcast.body,
             arrayed: reduced,
             mapped: broadcast.responses
@@ -359,7 +373,7 @@ Conference.prototype.broadcast = function (method, message) {
     var cookie = this._nextCookie()
     var uniqueId = this._government.arrived.promise[this.id]
     var key = method + '[' + uniqueId + '](' + cookie + ')'
-    this._network.publish(false, {
+    this._outbox.push({
         module: 'conference',
         method: 'broadcast',
         request: {

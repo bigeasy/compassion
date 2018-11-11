@@ -251,6 +251,12 @@ Connection.prototype.receive = cadence(function (async, envelope) {
     case 'acclimate':
         this.colleague.kibitzer.acclimate()
         return []
+    case 'broadcast':
+    case 'reduce':
+        console.log('--- broadcast -----------------------------------------------------------------------------')
+        console.log(envelope)
+        this.colleague.kibitzer.publish(envelope)
+        return []
     }
 })
 
