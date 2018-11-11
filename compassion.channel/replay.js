@@ -15,7 +15,6 @@ var Vizsla = require('vizsla')
 
 var departure = require('departure')
 
-var backplayer = require('./backplayer')
 var Operation = require('operation')
 
 var Conduit = require('conduit/conduit')
@@ -146,12 +145,6 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
             })
         })()
     })
-})
-
-Replay.prototype.snapshot = cadence(function (async, request) {
-    // TODO To unit test entirely, break out advance and seek as members of a
-    // reader class, then create a snapshot replayer that takes that class.
-    backplayer(Operation([ this, '_advance']), async())
 })
 
 Replay.prototype.record = cadence(function (async, request) {
