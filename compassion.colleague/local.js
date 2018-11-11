@@ -200,7 +200,12 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
             island: this.colleague.island,
             id: this.colleague.id
         })
-        outbox.push({ method: 'ready' })
+        outbox.push({
+            method: 'ready',
+            island: this.colleague.island,
+            id: this.colleague.id,
+            properties: this.colleague.properties
+        })
         break
     case 'broadcasts':
         var government = this.kibitzer.paxos.government

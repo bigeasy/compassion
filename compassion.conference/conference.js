@@ -51,6 +51,9 @@ Conference.prototype.ready = cadence(function (async) {
         request.inbox.dequeue(async())
     }, function (envelope) {
         assert(envelope.method == 'ready')
+        this.id = envelope.id
+        this.island = envelope.island
+        this.properties = envelope.properties
         this._destructible.monitor('inbox', request.inbox.pump(this, 'receive'), 'destructible', null)
     })
 })
@@ -82,11 +85,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
     if (entry == null) {
         return
     }
-    // TODO Move stuff up.
-    if (this._id == null) {
-        this._id = entry.body.arrive.id
-    }
-    this.events.push({ type: 'entry', id: this._id, body: envelope.body })
+    this.events.push({ type: 'entry', id: this.id, body: envelope.body })
     async([function () {
         assert(entry != null)
         this.log.push(entry)
@@ -101,23 +100,23 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                             if (entry.body.promise == '1/0') {
                                 this._application.dispatch({
                                     method: 'bootstrap',
-                                    self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                                     entry: entry.body,
                                     replaying: this._replaying,
                                     government: this._government
                                 }, async())
-                            } else if (arrival.id == this._id) {
+                            } else if (arrival.id == this.id) {
                                 var request = this._conduit.connect({
                                     method: 'snapshot',
                                     promise: this._government.promise,
                                     inbox: true
                                 })
                                 this._destructible.monitor('snapshot', true, request.inbox.pump(this, function (envelope) {
-                                    this.events.push({ type: 'snapshot', id: this._id, body: envelope })
+                                    this.events.push({ type: 'snapshot', id: this.id, body: envelope })
                                 }), 'destructible', null)
                                 this._application.dispatch({
                                     method: 'join',
-                                    self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                                     entry: entry.body,
                                     replaying: this._replaying,
                                     government: this._government,
@@ -127,13 +126,13 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         }, function () {
                             this._application.dispatch({
                                 method: 'arrive',
-                                self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                                 entry: entry.body,
                                 replaying: this._replaying,
                                 government: this._government
                             }, async())
                         }, function () {
-                            if (arrival.id != this._id) {
+                            if (arrival.id != this.id) {
                                 var broadcasts = []
                                 for (var key in this._broadcasts) {
                                     broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
@@ -157,7 +156,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                     // have it programatically marked as a
                                     // warning and not a fatal exception.
                                     Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
-                                    this.events.push({ type: 'broadcasts', id: this._id, body: body })
+                                    this.events.push({ type: 'broadcasts', id: this.id, body: body })
                                     async.forEach(function (broadcast) {
                                         async(function () {
                                             this.entry({
@@ -202,7 +201,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     } else if (entry.body.departed) {
                         async(function () {
                             this._postback([ 'depart' ], {
-                                self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                                self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                                 replaying: this._replaying,
                                 government: this._government,
                                 departed: entry.body.departed
@@ -225,8 +224,8 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     if (entry.body.acclimate != null) {
                         this._application.dispatch({
                             self: {
-                                id: this._id,
-                                arrived: this._government.arrived.promise[this._id]
+                                id: this.id,
+                                arrived: this._government.arrived.promise[this.id]
                             },
                             method: 'acclimated',
                             body: entry.body,
@@ -237,8 +236,8 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 }, function () {
                     this._application.dispatch({
                         self: {
-                            id: this._id,
-                            arrived: this._government.arrived.promise[this._id]
+                            id: this.id,
+                            arrived: this._government.arrived.promise[this.id]
                         },
                         method: 'government',
                         body: entry.body,
@@ -274,7 +273,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     }
                     async(function () {
                         this._postback([ 'receive', envelope.request.method ], {
-                            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+                            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                             from: envelope.request.from,
                             replaying: this._replaying,
                             government: this._government,
@@ -286,7 +285,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                             method: 'reduce',
                             reduction: {
                                 key: envelope.request.key,
-                                from: this._government.arrived.promise[this._id],
+                                from: this._government.arrived.promise[this.id],
                                 body: coalesce(response)
                             }
                         })
@@ -344,7 +343,7 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
         // the only responses provided are those that are still present in the
         // government at the time of this postback.
         this._postback([ 'reduced', broadcast.method ], {
-            self: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             replaying: this._replaying,
             government: this._government,
             from: broadcast.from,
@@ -358,14 +357,14 @@ Conference.prototype._checkReduced = cadence(function (async, broadcast) {
 
 Conference.prototype.broadcast = function (method, message) {
     var cookie = this._nextCookie()
-    var uniqueId = this._government.arrived.promise[this._id]
+    var uniqueId = this._government.arrived.promise[this.id]
     var key = method + '[' + uniqueId + '](' + cookie + ')'
     this._network.publish(false, {
         module: 'conference',
         method: 'broadcast',
         request: {
             key: key,
-            from: { id: this._id, arrived: this._government.arrived.promise[this._id] },
+            from: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             method: method,
             body: message
         }
