@@ -72,7 +72,7 @@ Networked.prototype.islanders = cadence(function (async, request, island) {
         for (var id in island) {
             var colleague = island[id]
             members.push({
-                id: colleague.initalizer.id,
+                id: colleague.initializer.id,
                 government: colleague.kibitzer.paxos.government,
                 cookie: coalesce(colleague.kibitzer.paxos.cookie),
                 createdAt: colleague.createdAt
