@@ -55,26 +55,6 @@ Conference.prototype.ready = cadence(function (async) {
     })
 })
 
-Conference.prototype.server = cadence(function (async, header) {
-    var receiver = { outbox: new Procession, inbox: new Procession }
-    switch (header.method) {
-    case 'snapshot':
-        // TODO Major problem here. Want to start sending messages now, assume
-        // we have a socket open somewhere, but now have to wait for an
-        // additional notification to know that our outbox has been connected to
-        // the socket, we really out to build with inbox and outbox given to us
-        // or else the server needs to hold onto shifters and do something with
-        // them. This is why we don't use Server everywhere and as the basis of
-        // Caller and Procedure, or in leiu of Multiplexer.
-        //
-        // TODO Although, it multiplexes naturally. The header is the procedure
-        // body, and perhaps the header can indicate an upward stream, so it
-        // includes it as a property, or `null`. Then you respond with either a
-        // body to send back, or else respond with a shifter.
-        break
-    }
-})
-
 Conference.prototype.connect = cadence(function (async, request, inbox, outbox) {
     switch (request.method) {
     case 'broadcasts':
@@ -93,12 +73,6 @@ Conference.prototype.receive = cadence(function (async, envelope) {
     switch (envelope.method) {
     case 'entry':
         this._entries.push(envelope.body)
-        break
-    case 'backlog':
-        this._backlog.push(envelope.body)
-        break
-    case 'snapshot':
-        this._snapshot.push(envelope.body)
         break
     }
 })
