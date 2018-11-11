@@ -152,7 +152,9 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
         })
         var colleague = this.colleagues.island[envelope.island][envelope.id] = {
             destructible: destructible,
-            initializer: envelope,
+            id: envelope.id,
+            island: envelope.island,
+            properties: envelope.properties,
             kibitzer: kibitzer,
             createdAt: Date.now(),
             destroyed: false
@@ -191,12 +193,12 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         this.destructible.monitor('inbox', inbox.pump(this, 'receive'), 'destructible', null)
         this.colleague.outbox = outbox
         this.scheduler.schedule(Date.now(), Keyify.stringify({
-            island: this.colleague.initializer.island,
-            id: this.colleague.initializer.id
+            island: this.colleague.island,
+            id: this.colleague.id
         }), {
             name: 'discover',
-            island: this.colleague.initializer.island,
-            id: this.colleague.initializer.id
+            island: this.colleague.island,
+            id: this.colleague.id
         })
         outbox.push({ method: 'ready' })
         break
@@ -295,7 +297,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
     })
     switch (action.action) {
     case 'bootstrap':
-        var properties = JSON.parse(JSON.stringify(coalesce(colleague.initializer.properties, {})))
+        var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))
         properties.url = action.url
         colleague.kibitzer.bootstrap(0, properties)
         break
@@ -331,7 +333,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         // maybe it doesn't. You'll know when the Paxos object starts working.
         // Until then, keep sending embarkation requests. The leader knows how
         // to deal with duplicate or in-process requests.
-        var properties = JSON.parse(JSON.stringify(coalesce(colleague.initializer.properties, {})))
+        var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))
         properties.url = envelope.body.url
         this._ua.fetch({
             url: action.url,
@@ -392,7 +394,7 @@ Local.prototype.record = cadence(function (async, request) {
     var colleague = this._getColleagueByToken(request)
     this.events.push({
         type: 'record',
-        id: colleague.initializer.id,
+        id: colleague.id,
         body: request.body
     })
     return request.body
