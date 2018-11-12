@@ -23,6 +23,7 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
             envelope.snapshot.dequeue(async())
         }, function (value) {
             console.log('snapshot', value)
+            envelope.snapshot.dequeue(async())
         }, function (value) {
             console.log('snapshot eos', value)
         })
