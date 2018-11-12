@@ -177,7 +177,7 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
             // TODO Furthermore, if we end the outbox when the colleague
             // destructs, we get an error implying that we've hung the test.
             destructible.destruct.wait(function () {
-                // inbox.end()
+                inbox.end()
                 // outbox.end()
             })
             /*
@@ -415,19 +415,6 @@ Local.prototype.register = cadence(function (async, inbox, outbox, registration)
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
     this._destructible.monitor([ 'colleague', this._instance++, registration.island, registration.id ], true, this, 'colleague', inbox, outbox, registration, async())
-})
-
-Local.prototype.health = cadence(function () {
-    var health = { islands: {} }
-    for (var island in this.colleagues.island) {
-        health.islands[island] = {}
-        for (var id in this.colleagues.island[island]) {
-            health.islands[island][id] = {
-                government: this.colleagues.island[island][id].kibitzer.paxos.government
-            }
-        }
-    }
-    return health
 })
 
 module.exports = Local

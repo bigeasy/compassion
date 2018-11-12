@@ -1,4 +1,4 @@
-require('proof')(2, prove)
+require('proof')(3, prove)
 
 function prove (okay, callback) {
    // try {
@@ -10,7 +10,7 @@ function prove (okay, callback) {
     var Procession = require('procession')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
-    var destructible = new Destructible('t/compassion.t.js')
+    var destructible = new Destructible(3000, 't/compassion.t.js')
     var Application = require('./application')
     var cadence = require('cadence')
     var Vizsla = require('vizsla')
@@ -152,6 +152,7 @@ function prove (okay, callback) {
                 }, function () {
                     applications.third.application.arrived.wait(async())
                 }, function () {
+                    okay(containerized.ids('missing').length, 0, 'no ids')
                     containerized.terminate('missing')
                     containerized.terminate('island', 'fourth')
                     containerized.terminate('island', 'second')
@@ -159,7 +160,18 @@ function prove (okay, callback) {
                         return envelope.method == 'depart'
                     }, async())
                 }, function () {
-                    setTimeout(async(), 250)
+                    containerized.terminate('island', 'first')
+                    var loop = async(function () {
+                        async(function () {
+                            console.log(containerized.ids('island'))
+                            if (containerized.ids('island').length == 0) {
+                                return [ loop.break ]
+                            }
+                            setTimeout(async(), 1000)
+                        })
+                    })()
+                }, function () {
+                    console.log('existing')
                 })
             })
         })
