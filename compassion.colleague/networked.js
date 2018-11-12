@@ -54,7 +54,6 @@ Networked.prototype.broadcasts = cadence(function (async, request, island, id) {
 })
 
 Networked.prototype.snapshot = cadence(function (async, request, island, id) {
-    console.log('snapshotted', request.body)
     var request = this._getColleague(island, id).conduit.connect({
         method: 'snapshot',
         promise: request.body.promise,

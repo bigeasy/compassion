@@ -124,7 +124,6 @@ function prove (okay, callback) {
                 }, function () {
                     applications.first.application.arrived.wait(async())
                 }, function () {
-                    console.log('--- arrival -----------')
                 })
             }, function () {
                 async(function () {
@@ -144,7 +143,6 @@ function prove (okay, callback) {
                         return envelope.method == 'receive'
                     }, async())
                     applications.first.conference.broadcast('name', { value: 1 })
-                    console.log('--- arrival -----------')
                 })
             }, function () {
                 async(function () {
@@ -154,14 +152,14 @@ function prove (okay, callback) {
                 }, function () {
                     applications.third.application.arrived.wait(async())
                 }, function () {
-                    console.log('--- arrival -----------')
                     containerized.terminate('missing')
                     containerized.terminate('island', 'fourth')
                     containerized.terminate('island', 'second')
                     applications.third.application.envelopes.shifter().join(function (envelope) {
-                        console.log(envelope)
                         return envelope.method == 'depart'
                     }, async())
+                }, function () {
+                    setTimeout(async(), 250)
                 })
             })
         })

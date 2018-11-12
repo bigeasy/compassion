@@ -180,10 +180,11 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
                 // inbox.end()
                 // outbox.end()
             })
+            /*
             destructible.destruct.wait(function () {
                 console.log('goodbye inbox', envelope.id)
             })
-            console.log('--- created ---', envelope.id)
+            */
             colleague.conduit = conduit
             return colleague
         })
@@ -254,7 +255,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
 })
 
 Connection.prototype.entry = cadence(function (async, envelope) {
-    console.log('id', this.colleague.id, envelope)
     if (envelope == null) {
         return
     }
@@ -262,7 +262,6 @@ Connection.prototype.entry = cadence(function (async, envelope) {
 })
 
 Connection.prototype.receive = cadence(function (async, envelope) {
-    console.log('receive >', this.colleague.id, envelope)
     if (envelope == null) {
         return
     }
@@ -272,8 +271,6 @@ Connection.prototype.receive = cadence(function (async, envelope) {
         return []
     case 'broadcast':
     case 'reduce':
-        console.log('--- broadcast -----------------------------------------------------------------------------')
-        console.log(envelope)
         this.colleague.kibitzer.publish(envelope)
         return []
     }
@@ -291,7 +288,6 @@ Local.prototype._getColleagueByIslandAndId = function (island, id) {
 }
 
 Local.prototype.terminate = function (island, id) {
-    console.log('terminating', id)
     var colleague = this._getColleagueByIslandAndId(island, id)
     if (colleague != null) {
         colleague.destructible.destroy()
@@ -333,7 +329,6 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         colleague.kibitzer.bootstrap(0, properties)
         break
     case 'join':
-        console.log(envelope.body, action)
         colleague.kibitzer.join(0)
         this.scheduler.schedule(Date.now(), Keyify.stringify({
             island: envelope.body.island,
@@ -407,7 +402,6 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
         return
     }
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
-    console.log('scehduled', envelope.body)
     async(function () {
         this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {

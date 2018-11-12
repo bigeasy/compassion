@@ -120,8 +120,8 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
         var kibitzer = this._kibitzer = new Kibitzer({
             id: this._options.id,
             caller: caller,
-            ping: this._ping,
-            timeout: this._timeout
+            ping: this._options.ping,
+            timeout: this._options.timeout
         })
         destructible.monitor('islander', kibitzer.paxos.log.pump(kibitzer.islander, 'push'), 'destructible', null)
         this._paxos = kibitzer.paxos.outbox.shifter()

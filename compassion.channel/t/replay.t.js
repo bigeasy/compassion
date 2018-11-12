@@ -59,6 +59,8 @@ function prove (okay, callback) {
                     outbox: outbox,
                     readable: readable,
                     island: 'island',
+                    ping: 150,
+                    timeout:  450,
                     id: 'first'
                 }, async())
                 destructible.monitor('conference', Conference, outbox, inbox, application, true, async())

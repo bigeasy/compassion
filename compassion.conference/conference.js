@@ -249,7 +249,6 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                         government: this._government
                     }, async())
                 }, function () {
-                    console.log('pushing accilimate')
                     this._outbox.push({
                         module: 'compassion',
                         method: 'acclimate',
@@ -257,7 +256,6 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                     })
                 })
             } else {
-                console.log('!!!!', entry)
                 // Bombs on a flush!
                 assert(entry.body.body)
                 // Reminder that if you ever want to do queued instead async then the
@@ -303,7 +301,6 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 // Tally our responses and if they match the number of participants,
                 // then invoke the reduction method.
                 case 'reduce':
-                    console.log('--- reduce ----------------------------------------------------------------------------')
                     var broadcast = this._broadcasts[envelope.reduction.key]
                     broadcast.responses[envelope.reduction.from] = envelope.reduction.body
                     this._checkReduced(broadcast, async())
