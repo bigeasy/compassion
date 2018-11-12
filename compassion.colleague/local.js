@@ -167,8 +167,23 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
         })
         destructible.markDestroyed(colleague)
         async(function () {
-            destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
+            destructible.monitor('conduit-s', Conduit, inbox, outbox, connection, 'connect', async())
         }, function(conduit) {
+            // TODO Although we end the inbox at the end of the test, we will
+            // get a hung error with a socket remaining open the conduit for
+            // `racer`, we can change this to use `this._destructible` to
+            // shutdown at the end and we'll have the same problem.
+            //
+            // TODO Furthermore, if we end the outbox when the colleague
+            // destructs, we get an error implying that we've hung the test.
+            destructible.destruct.wait(function () {
+                // inbox.end()
+                // outbox.end()
+            })
+            destructible.destruct.wait(function () {
+                console.log('goodbye inbox', envelope.id)
+            })
+            console.log('--- created ---', envelope.id)
             colleague.conduit = conduit
             return colleague
         })
@@ -239,11 +254,15 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
 })
 
 Connection.prototype.entry = cadence(function (async, envelope) {
+    console.log('id', this.colleague.id, envelope)
+    if (envelope == null) {
+        return
+    }
     this.colleague.outbox.push({ method: 'entry', body: envelope })
 })
 
 Connection.prototype.receive = cadence(function (async, envelope) {
-    console.log('receive >', envelope)
+    console.log('receive >', this.colleague.id, envelope)
     if (envelope == null) {
         return
     }
@@ -272,6 +291,7 @@ Local.prototype._getColleagueByIslandAndId = function (island, id) {
 }
 
 Local.prototype.terminate = function (island, id) {
+    console.log('terminating', id)
     var colleague = this._getColleagueByIslandAndId(island, id)
     if (colleague != null) {
         colleague.destructible.destroy()
@@ -313,6 +333,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         colleague.kibitzer.bootstrap(0, properties)
         break
     case 'join':
+        console.log(envelope.body, action)
         colleague.kibitzer.join(0)
         this.scheduler.schedule(Date.now(), Keyify.stringify({
             island: envelope.body.island,
@@ -386,6 +407,7 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
         return
     }
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
+    console.log('scehduled', envelope.body)
     async(function () {
         this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {
@@ -398,7 +420,7 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
 Local.prototype.register = cadence(function (async, inbox, outbox, registration) {
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
-    this._destructible.monitor([ 'colleague', this._instance++ ], true, this, 'colleague', inbox, outbox, registration, async())
+    this._destructible.monitor([ 'colleague', this._instance++, registration.island, registration.id ], true, this, 'colleague', inbox, outbox, registration, async())
 })
 
 Local.prototype.health = cadence(function () {

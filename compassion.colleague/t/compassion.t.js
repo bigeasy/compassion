@@ -30,18 +30,25 @@ function prove (okay, callback) {
     var population = new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla)
 
     var cadence = require('cadence')
+    var containerized
 
     cadence(function (async) {
         async(function () {
             destructible.monitor('containerized', Containerized, {
                 Conference: Conference,
                 population: {
+                    called: 0,
                     census: function (island, id, callback) {
-                        if (id == 'racer') {
-                            console.log('will terminate')
-                            containerized.terminate('island', 'racer')
+                            console.log('here i am', id, this.called)
+                        if (this.called++ != 0) {
+                            if (id == 'racer') {
+                                console.log('will terminate')
+                                containerized.terminate('island', 'racer')
+                            }
+                            population.census(island, id, callback)
+                        } else {
+                            callback(null, [])
                         }
-                        population.census(island, id, callback)
                     }
                 },
                 ping: {
@@ -69,7 +76,8 @@ function prove (okay, callback) {
                     }
                 }
             }, async())
-        }, function (containerized) {
+        }, function ($containerized) {
+            containerized = $containerized
             var merged = new Procession
             var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
             destructible.monitor('events', containerized.events.pump(merged, 'enqueue'), 'destructible', null)
@@ -86,6 +94,9 @@ function prove (okay, callback) {
                 var inbox = new Procession, outbox = new Procession
                 destructible.destruct.wait(inbox, 'end')
                 destructible.destruct.wait(outbox, 'end')
+                destructible.destruct.wait(function () {
+                    console.log('destructing', id)
+                })
                 async(function () {
                     containerized.register(inbox, outbox, { island: 'island', id: id, snapshot: true }, async())
                     destructible.monitor('conference', Conference, outbox, inbox, application, {}, async())
@@ -114,6 +125,12 @@ function prove (okay, callback) {
                     applications.first.application.arrived.wait(async())
                 }, function () {
                     console.log('--- arrival -----------')
+                })
+            }, function () {
+                async(function () {
+                    destructible.monitor('racer', createApplication, 'racer', async())
+                }, function () {
+                    applications.racer.conference.ready(async())
                 })
             }, function () {
                 async(function () {

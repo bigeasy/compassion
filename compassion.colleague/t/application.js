@@ -27,7 +27,7 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
         break
     case 'arrive':
         if (envelope.entry.arrive.id == this._id) {
-            setTimeout(function () { this.arrived.unlatch() }.bind(this), 250)
+            setTimeout(function () { this.arrived.unlatch() }.bind(this), 0)
         }
         break
     case 'receive':
