@@ -84,12 +84,10 @@ Replay.prototype._advance = cadence(function (async, type) {
                     this._kibitzer.replay(envelope.body)
                     break
                 case 'paxos':
-                    departure.raise(this._colleague.paxos.shift(), envelope.body)
+                    departure.raise(this._paxos.shift(), envelope.body)
                     break
                 case 'islander':
-                    departure.raise(this._colleague.islander.shift(), envelope.body)
-                    break
-                case 'consumed':
+                    departure.raise(this._islander.shift(), envelope.body)
                     break
                 default:
                     departure.raise(envelope.type, type)

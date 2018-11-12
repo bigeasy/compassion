@@ -23,6 +23,8 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
             envelope.snapshot.dequeue(async())
         }, function (value) {
             console.log('snapshot', value)
+        }, function (value) {
+            console.log('snapshot eos', value)
         })
         break
     case 'arrive':
@@ -48,6 +50,7 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
 })
 
 Application.prototype.snapshot = cadence(function (async, outbox) {
+    outbox.push(1)
     outbox.push(null)
 })
 

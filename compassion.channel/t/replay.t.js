@@ -1,4 +1,4 @@
-require('proof')(1, prove)
+require('proof')(2, prove)
 
 function prove (okay, callback) {
     var Conference = require('../../compassion.conference/conference')
@@ -23,27 +23,52 @@ function prove (okay, callback) {
     var cadence = require('cadence')
 
     cadence(function (async) {
-        var inbox = new Procession, outbox = new Procession
-        var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
         async(function () {
-            var application = new Application('second', null)
-            var readable = new Staccato.Readable(byline(input))
-            destructible.destruct.wait(inbox, 'end')
-            destructible.destruct.wait(outbox, 'end')
-            destructible.monitor('replay', Replay, {
-                inbox: inbox,
-                outbox: outbox,
-                readable: readable,
-                island: 'island',
-                id: 'second'
-            }, async())
-            destructible.monitor('conference', Conference, outbox, inbox, application, true, async())
-        }, function (replayer, conference) {
-            conference.ready(async())
+            var inbox = new Procession, outbox = new Procession
+            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
+            async(function () {
+                var application = new Application('second', null)
+                var readable = new Staccato.Readable(byline(input))
+                destructible.destruct.wait(inbox, 'end')
+                destructible.destruct.wait(outbox, 'end')
+                destructible.monitor('replay', Replay, {
+                    inbox: inbox,
+                    outbox: outbox,
+                    readable: readable,
+                    island: 'island',
+                    id: 'second'
+                }, async())
+                destructible.monitor('conference', Conference, outbox, inbox, application, true, async())
+            }, function (replayer, conference) {
+                conference.ready(async())
+            }, function () {
+                setTimeout(async(), 250)
+            }, function () {
+                okay(true, 'second')
+            })
         }, function () {
-            setTimeout(async(), 250)
-        }, function () {
-            okay(true, 'ran')
+            var inbox = new Procession, outbox = new Procession
+            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
+            async(function () {
+                var application = new Application('first', null)
+                var readable = new Staccato.Readable(byline(input))
+                destructible.destruct.wait(inbox, 'end')
+                destructible.destruct.wait(outbox, 'end')
+                destructible.monitor('replay', Replay, {
+                    inbox: inbox,
+                    outbox: outbox,
+                    readable: readable,
+                    island: 'island',
+                    id: 'first'
+                }, async())
+                destructible.monitor('conference', Conference, outbox, inbox, application, true, async())
+            }, function (replayer, conference) {
+                conference.ready(async())
+            }, function () {
+                setTimeout(async(), 250)
+            }, function () {
+                okay(true, 'first')
+            })
         })
     })(destructible.monitor('test'))
 }
