@@ -86,240 +86,244 @@ Conference.prototype._entry = cadence(function (async, envelope) {
         return
     }
     this.events.push({ type: 'entry', id: this.id, body: envelope.body })
-    async([function () {
-        assert(entry != null)
-        this.log.push(entry)
-        async(function () {
-            if (entry.method == 'government') {
-                this._government = entry.government
-                var properties = entry.properties
-                async(function () {
-                    if (entry.body.arrive) {
-                        var arrival = entry.body.arrive
-                        async(function () {
-                            if (entry.body.promise == '1/0') {
-                                this._application.dispatch({
-                                    method: 'bootstrap',
-                                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                                    entry: entry.body,
-                                    replaying: this._replaying,
-                                    government: this._government
-                                }, async())
-                            } else if (arrival.id == this.id) {
-                                var request = this._conduit.connect({
-                                    method: 'snapshot',
-                                    promise: this._government.promise,
-                                    inbox: true
-                                })
-                                this._destructible.monitor('snapshot', true, request.inbox.pump(this, function (envelope) {
-                                    this.events.push({ type: 'snapshot', id: this.id, body: envelope })
-                                }), 'destructible', null)
-                                this._application.dispatch({
-                                    method: 'join',
-                                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                                    entry: entry.body,
-                                    replaying: this._replaying,
-                                    government: this._government,
-                                    snapshot: request.inbox
-                                }, async())
-                            }
-                        }, function () {
+    assert(entry != null)
+    this.log.push(entry)
+    async(function () {
+        if (entry.method == 'government') {
+            this._government = entry.government
+            var properties = entry.properties
+            async(function () {
+                if (entry.body.arrive) {
+                    var arrival = entry.body.arrive
+                    async(function () {
+                        if (entry.body.promise == '1/0') {
                             this._application.dispatch({
-                                method: 'arrive',
+                                method: 'bootstrap',
                                 self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                                 entry: entry.body,
                                 replaying: this._replaying,
                                 government: this._government
                             }, async())
-                        }, function () {
-                            if (arrival.id != this.id) {
-                                var broadcasts = []
-                                for (var key in this._broadcasts) {
-                                    broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
-                                }
-                                this._snapshots.set(this._government.promise, null, broadcasts)
-                            } else if (this._government.promise != '1/0') {
-                                async(function () {
-                                    this._conduit.connect({
-                                        method: 'broadcasts',
-                                        promise: this._government.promise
-                                    }).inbox.dequeue(async())
-                                    // Uncomment to trigger the assertion below.
-                                    // this._destructible.destroy()
-                                }, function (body) {
-                                    // TODO Would be nice to throw a particular
-                                    // type of message and have it logged as a
-                                    // warning and not an error, so use `Rescue`
-                                    // to filter out anything that is just a
-                                    // warning or caused by some expected event,
-                                    // then spare ourselves the stack trace or
-                                    // have it programatically marked as a
-                                    // warning and not a fatal exception.
-                                    Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
-                                    this.events.push({ type: 'broadcasts', id: this.id, body: body })
-                                    async.forEach(function (broadcast) {
-                                        async(function () {
+                        } else if (arrival.id == this.id) {
+                            var request = this._conduit.connect({
+                                method: 'snapshot',
+                                promise: this._government.promise,
+                                inbox: true
+                            })
+                            this._destructible.monitor('snapshot', true, request.inbox.pump(this, function (envelope) {
+                                this.events.push({ type: 'snapshot', id: this.id, body: envelope })
+                            }), 'destructible', null)
+                            this._application.dispatch({
+                                method: 'join',
+                                self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                                entry: entry.body,
+                                replaying: this._replaying,
+                                government: this._government,
+                                snapshot: request.inbox
+                            }, async())
+                        }
+                    }, function () {
+                        this._application.dispatch({
+                            method: 'arrive',
+                            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                            entry: entry.body,
+                            replaying: this._replaying,
+                            government: this._government
+                        }, async())
+                    }, function () {
+                        if (arrival.id != this.id) {
+                            var broadcasts = []
+                            for (var key in this._broadcasts) {
+                                broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
+                            }
+                            this._snapshots.set(this._government.promise, null, broadcasts)
+                        } else if (this._government.promise != '1/0') {
+                            async(function () {
+                                this._conduit.connect({
+                                    method: 'broadcasts',
+                                    promise: this._government.promise
+                                }).inbox.dequeue(async())
+                                // Uncomment to trigger the assertion below.
+                                // this._destructible.destroy()
+                            }, function (body) {
+                                // TODO Would be nice to throw a particular
+                                // type of message and have it logged as a
+                                // warning and not an error, so use `Rescue`
+                                // to filter out anything that is just a
+                                // warning or caused by some expected event,
+                                // then spare ourselves the stack trace or
+                                // have it programatically marked as a
+                                // warning and not a fatal exception.
+                                //
+                                // But, this is going to be rare. It means
+                                // crashing at startup which means there are
+                                // programatic errors afoot. This would be
+                                // part of the mess that gets reporting in
+                                // the exception bouquet and hopfully it
+                                // would be seen as a symptom and not a
+                                // cause. Maybe these comments will help.
+                                Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
+                                this.events.push({ type: 'broadcasts', id: this.id, body: body })
+                                async.forEach(function (broadcast) {
+                                    async(function () {
+                                        this._entry({
+                                            body: { // turnstile
+                                                body: { // paxos
+                                                    body: { // islander
+                                                        module: 'conference',
+                                                        method: 'broadcast',
+                                                        internal: broadcast.internal,
+                                                        request: {
+                                                            key: broadcast.key,
+                                                            method: broadcast.method,
+                                                            body: broadcast.body
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }, async())
+                                    }, function () {
+                                        async.forEach(function (promise) {
                                             this._entry({
                                                 body: { // turnstile
                                                     body: { // paxos
                                                         body: { // islander
                                                             module: 'conference',
-                                                            method: 'broadcast',
-                                                            internal: broadcast.internal,
-                                                            request: {
+                                                            method: 'reduce',
+                                                            reduction: {
+                                                                from: promise,
                                                                 key: broadcast.key,
-                                                                method: broadcast.method,
-                                                                body: broadcast.body
+                                                                body: broadcast.responses[promise]
                                                             }
                                                         }
                                                     }
                                                 }
                                             }, async())
-                                        }, function () {
-                                            async.forEach(function (promise) {
-                                                this._entry({
-                                                    body: { // turnstile
-                                                        body: { // paxos
-                                                            body: { // islander
-                                                                module: 'conference',
-                                                                method: 'reduce',
-                                                                reduction: {
-                                                                    from: promise,
-                                                                    key: broadcast.key,
-                                                                    body: broadcast.responses[promise]
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }, async())
-                                            })(Object.keys(broadcast.responses))
-                                        })
-                                    })(body)
-                                })
-                            }
-                        })
-                    } else if (entry.body.departed) {
-                        async(function () {
-                            this._application.dispatch({
-                                self: {
-                                    id: this.id,
-                                    arrived: this._government.arrived.promise[this.id]
-                                },
-                                method: 'depart',
-                                body: entry.body,
-                                replaying: this._replaying,
-                                government: this._government
-                            }, async())
-                        }, function () {
-                            var depart = entry.body.departed
-                            var promise = depart.promise
-                            var broadcasts = []
-                            for (var key in this._broadcasts) {
-                                delete this._broadcasts[key].responses[promise]
-                                broadcasts.push(this._broadcasts[key])
-                            }
-                            this._snapshots.remove(promise)
-                            async.forEach(function (broadcast) {
-                                this._checkReduced(broadcast, async())
-                            })(broadcasts)
-                        })
-                    }
-                }, function () {
-                    if (entry.body.acclimate != null) {
-                        this._application.dispatch({
-                            self: {
-                                id: this.id,
-                                arrived: this._government.arrived.promise[this.id]
-                            },
-                            method: 'acclimated',
-                            body: entry.body,
-                            replaying: this._replaying,
-                            government: this._government
-                        }, async())
-                    }
-                }, function () {
-                    this._application.dispatch({
-                        self: {
-                            id: this.id,
-                            arrived: this._government.arrived.promise[this.id]
-                        },
-                        method: 'government',
-                        body: entry.body,
-                        replaying: this._replaying,
-                        government: this._government
-                    }, async())
-                }, function () {
-                    this._outbox.push({
-                        module: 'compassion',
-                        method: 'acclimate',
-                        body: null
+                                        })(Object.keys(broadcast.responses))
+                                    })
+                                })(body)
+                            })
+                        }
                     })
-                })
-            } else {
-                // Bombs on a flush!
-                assert(entry.body.body)
-                // Reminder that if you ever want to do queued instead async then the
-                // queue should be external and a property of the object the conference
-                // operates.
-
-                //
-                var envelope = entry.body.body
-                switch (envelope.method) {
-                case 'broadcast':
-                    this._broadcasts[envelope.request.key] = {
-                        key: envelope.request.key,
-                        internal: coalesce(envelope.internal, false),
-                        from: envelope.request.from,
-                        method: envelope.request.method,
-                        body: envelope.request.body,
-                        responses: {}
-                    }
+                } else if (entry.body.departed) {
                     async(function () {
                         this._application.dispatch({
                             self: {
                                 id: this.id,
                                 arrived: this._government.arrived.promise[this.id]
                             },
-                            method: 'receive',
-                            from: envelope.request.from,
+                            method: 'depart',
+                            body: entry.body,
                             replaying: this._replaying,
-                            government: this._government,
-                            body: envelope.request.body
+                            government: this._government
                         }, async())
-                    }, function (response) {
-                        this._outbox.push({
-                            module: 'compassion',
-                            method: 'reduce',
-                            reduction: {
-                                key: envelope.request.key,
-                                from: this._government.arrived.promise[this.id],
-                                body: coalesce(response)
-                            }
-                        })
+                    }, function () {
+                        var depart = entry.body.departed
+                        var promise = depart.promise
+                        var broadcasts = []
+                        for (var key in this._broadcasts) {
+                            delete this._broadcasts[key].responses[promise]
+                            broadcasts.push(this._broadcasts[key])
+                        }
+                        this._snapshots.remove(promise)
+                        async.forEach(function (broadcast) {
+                            this._checkReduced(broadcast, async())
+                        })(broadcasts)
                     })
-                    break
-                // Tally our responses and if they match the number of participants,
-                // then invoke the reduction method.
-                case 'reduce':
-                    var broadcast = this._broadcasts[envelope.reduction.key]
-                    broadcast.responses[envelope.reduction.from] = envelope.reduction.body
-                    this._checkReduced(broadcast, async())
-                    break
                 }
-            }
-        }, function () {
-            if (this._replaying) {
+            }, function () {
+                if (entry.body.acclimate != null) {
+                    this._application.dispatch({
+                        self: {
+                            id: this.id,
+                            arrived: this._government.arrived.promise[this.id]
+                        },
+                        method: 'acclimated',
+                        body: entry.body,
+                        replaying: this._replaying,
+                        government: this._government
+                    }, async())
+                }
+            }, function () {
+                this._application.dispatch({
+                    self: {
+                        id: this.id,
+                        arrived: this._government.arrived.promise[this.id]
+                    },
+                    method: 'government',
+                    body: entry.body,
+                    replaying: this._replaying,
+                    government: this._government
+                }, async())
+            }, function () {
                 this._outbox.push({
                     module: 'compassion',
-                    method: 'consumed',
-                    promise: entry.promise,
+                    method: 'acclimate',
                     body: null
                 })
+            })
+        } else {
+            // Bombs on a flush!
+            assert(entry.body.body)
+            // Reminder that if you ever want to do queued instead async then the
+            // queue should be external and a property of the object the conference
+            // operates.
+
+            //
+            var envelope = entry.body.body
+            switch (envelope.method) {
+            case 'broadcast':
+                this._broadcasts[envelope.request.key] = {
+                    key: envelope.request.key,
+                    internal: coalesce(envelope.internal, false),
+                    from: envelope.request.from,
+                    method: envelope.request.method,
+                    body: envelope.request.body,
+                    responses: {}
+                }
+                async(function () {
+                    this._application.dispatch({
+                        self: {
+                            id: this.id,
+                            arrived: this._government.arrived.promise[this.id]
+                        },
+                        method: 'receive',
+                        from: envelope.request.from,
+                        replaying: this._replaying,
+                        government: this._government,
+                        body: envelope.request.body
+                    }, async())
+                }, function (response) {
+                    this._outbox.push({
+                        module: 'compassion',
+                        method: 'reduce',
+                        reduction: {
+                            key: envelope.request.key,
+                            from: this._government.arrived.promise[this.id],
+                            body: coalesce(response)
+                        }
+                    })
+                })
+                break
+            // Tally our responses and if they match the number of participants,
+            // then invoke the reduction method.
+            case 'reduce':
+                var broadcast = this._broadcasts[envelope.reduction.key]
+                broadcast.responses[envelope.reduction.from] = envelope.reduction.body
+                this._checkReduced(broadcast, async())
+                break
             }
-        })
-    }, rescue(/^qualified:compassion.conference#postback$/, function () {
-        this._destructible.destroy()
-    })])
+        }
+    }, function () {
+        if (this._replaying) {
+            this._outbox.push({
+                module: 'compassion',
+                method: 'consumed',
+                promise: entry.promise,
+                body: null
+            })
+        }
+    })
 })
 
 Conference.prototype._checkReduced = cadence(function (async, broadcast) {
