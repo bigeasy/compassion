@@ -62,11 +62,6 @@ function prove (okay, callback) {
                     http: 500
                 },
                 bind: {
-                    local: {
-                        listen: function (server, callback) {
-                            server.listen(8386, '127.0.0.1', callback)
-                        }
-                    },
                     networked: {
                         listen: function (server, callback) {
                             server.listen(8486, '127.0.0.1', callback)
