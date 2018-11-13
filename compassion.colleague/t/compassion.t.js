@@ -99,7 +99,7 @@ function prove (okay, callback) {
                 })
                 async(function () {
                     containerized.register(inbox, outbox, { island: 'island', id: id, snapshot: true }, async())
-                    destructible.monitor('conference', Conference, outbox, inbox, application, {}, async())
+                    destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
                 }, function (colleague, conference) {
                     destructible.monitor('events', conference.events.pump(merged, 'enqueue'), 'destructible', null)
                     applications[id] = {
