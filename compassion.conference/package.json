@@ -26,9 +26,7 @@
                             "extant":                       "1.0.x",
                             "interrupt":                    "6.3.x",
                             "monotonic":                    "3.0.x",
-                            "procession":                   "2.2.x",
-                            "rescue":                       "4.1.x",
-                            "vizsla":                       "12.14.x"
+                            "procession":                   "2.2.x"
     },
     "devDependencies":
     {

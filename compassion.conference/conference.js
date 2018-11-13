@@ -1,14 +1,17 @@
-var cadence = require('cadence')
-var Interrupt = require('interrupt').createInterrupter('compassion.conference')
-var Procession = require('procession')
-var Monotonic = require('monotonic').asString
 var assert = require('assert')
-var UserAgent = require('vizsla')
-var coalesce = require('extant')
-var Cubbyhole = require('cubbyhole')
-var rescue = require('rescue/redux')
 
-var Multiplexer = require('conduit/multiplexer')
+var cadence = require('cadence')
+
+var Interrupt = require('interrupt').createInterrupter('compassion.conference')
+
+var Procession = require('procession')
+
+var Monotonic = require('monotonic').asString
+
+var coalesce = require('extant')
+
+var Cubbyhole = require('cubbyhole')
+
 var Conduit = require('conduit/conduit')
 
 var Turnstile = require('turnstile')
