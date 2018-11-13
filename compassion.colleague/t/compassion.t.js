@@ -7,6 +7,8 @@ function prove (okay, callback) {
      //   var Conference = require('compassion.conference/conference')
       //  var Pinger = require('compassion.conference/pinger')
   //  }
+
+    var Counterfeiter = require('../../compassion.counterfeiter')(Conference)
     var Procession = require('procession')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
@@ -85,31 +87,6 @@ function prove (okay, callback) {
             }), 'destructible', null)
             var applications = {}
             var count = 1
-            var Counterfeiter = cadence(function (async, destructible, colleague, application, registration) {
-                var inbox = new Procession, outbox = new Procession
-                inbox.counterfeiter = count++
-                destructible.destruct.wait(function () { console.log('ending!', registration.id) })
-                destructible.destruct.wait(inbox, 'end')
-                destructible.destruct.wait(function () {
-                    console.log('counterfeiter end!!!', inbox.conduit)
-                    inbox.end()
-                })
-                destructible.destruct.wait(outbox, 'end')
-                destructible.destruct.wait(function () { console.log('ended!', registration.id) })
-                async(function () {
-                    containerized.register(inbox, outbox, registration, async())
-                }, function () {
-                    async(function () {
-                        destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
-                    }, function (conference) {
-                        async(function () {
-                            conference.ready(async())
-                        }, function () {
-                            return [ conference, colleague ]
-                        })
-                    })
-                })
-            })
             var createApplication = cadence(function (async, destructible, id) {
                 var application = new Application
                 async(function () {
