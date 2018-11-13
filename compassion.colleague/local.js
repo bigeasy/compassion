@@ -176,7 +176,9 @@ Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox
             //
             // TODO Furthermore, if we end the outbox when the colleague
             // destructs, we get an error implying that we've hung the test.
+            console.log(destructible.instance, destructible.key, inbox.conduit)
             destructible.destruct.wait(function () {
+                console.log('ending', destructible.instance, inbox.conduit)
                 inbox.end()
                 // outbox.end()
             })

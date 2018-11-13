@@ -10,7 +10,7 @@ function prove (okay, callback) {
     var Procession = require('procession')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
-    var destructible = new Destructible(3000, 't/compassion.t.js')
+    var destructible = new Destructible(5000, 't/compassion.t.js')
     var Application = require('./application')
     var cadence = require('cadence')
     var Vizsla = require('vizsla')
@@ -84,25 +84,46 @@ function prove (okay, callback) {
                 }
             }), 'destructible', null)
             var applications = {}
-            var createApplication = cadence(function (async, destructible, id) {
-                var application = new Application(id, okay)
+            var count = 1
+            var Counterfeiter = cadence(function (async, destructible, colleague, application, registration) {
                 var inbox = new Procession, outbox = new Procession
+                inbox.counterfeiter = count++
+                destructible.destruct.wait(function () { console.log('ending!', registration.id) })
                 destructible.destruct.wait(inbox, 'end')
-                destructible.destruct.wait(outbox, 'end')
                 destructible.destruct.wait(function () {
-                    console.log('destructing', id)
+                    console.log('counterfeiter end!!!', inbox.conduit)
+                    inbox.end()
                 })
+                destructible.destruct.wait(outbox, 'end')
+                destructible.destruct.wait(function () { console.log('ended!', registration.id) })
                 async(function () {
-                    containerized.register(inbox, outbox, { island: 'island', id: id }, async())
-                    destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
-                }, function (colleague, conference) {
+                    containerized.register(inbox, outbox, registration, async())
+                }, function () {
+                    async(function () {
+                        destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
+                    }, function (conference) {
+                        async(function () {
+                            conference.ready(async())
+                        }, function () {
+                            return [ conference, colleague ]
+                        })
+                    })
+                })
+            })
+            var createApplication = cadence(function (async, destructible, id) {
+                var application = new Application
+                async(function () {
+                    destructible.monitor('counterfeiter', Counterfeiter, containerized, application, {
+                        island: 'island',
+                        id: id
+                    }, async())
+                }, function (conference) {
                     destructible.monitor('events', conference.events.pump(merged, 'enqueue'), 'destructible', null)
                     applications[id] = {
                         application: application,
-                        colleague: colleague,
                         conference: conference
                     }
-                    return [ conference ]
+                    return []
                 })
             })
             async(function () {
@@ -115,7 +136,7 @@ function prove (okay, callback) {
                 async(function () {
                     destructible.monitor('first', createApplication, 'first', async())
                 }, function () {
-                    applications.first.conference.ready(async())
+                //    applications.first.conference.ready(async())
                 }, function () {
                     applications.first.application.arrived.wait(async())
                 }, function () {
@@ -124,13 +145,13 @@ function prove (okay, callback) {
                 async(function () {
                     destructible.monitor('racer', createApplication, 'racer', async())
                 }, function () {
-                    applications.racer.conference.ready(async())
+//                    applications.racer.conference.ready(async())
                 })
             }, function () {
                 async(function () {
                     destructible.monitor('second', createApplication, 'second', async())
                 }, function () {
-                    applications.second.conference.ready(async())
+                 //   applications.second.conference.ready(async())
                 }, function () {
                     applications.second.application.arrived.wait(async())
                 }, function () {
@@ -143,7 +164,7 @@ function prove (okay, callback) {
                 async(function () {
                     destructible.monitor('third', createApplication, 'third', async())
                 }, function () {
-                    applications.third.conference.ready(async())
+                  //  applications.third.conference.ready(async())
                 }, function () {
                     applications.third.application.arrived.wait(async())
                 }, function () {
