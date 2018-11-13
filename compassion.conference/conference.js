@@ -73,6 +73,7 @@ Conference.prototype.receive = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
+    Interrupt.assert(envelope.method == 'entry', 'method')
     switch (envelope.method) {
     case 'entry':
         this._entries.push(envelope.body)
@@ -82,9 +83,7 @@ Conference.prototype.receive = cadence(function (async, envelope) {
 
 Conference.prototype._entry = cadence(function (async, envelope) {
     var entry = envelope.body
-    if (entry == null) {
-        return
-    }
+    Interrupt.assert(entry != null, 'entry eos')
     this.events.push({ type: 'entry', id: this.id, body: envelope.body })
     assert(entry != null)
     this.log.push(entry)
