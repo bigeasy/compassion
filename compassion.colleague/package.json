@@ -45,7 +45,9 @@
     {
                             "interlocutor":                 "0.5.x",
                             "proof":                        "3.0.x",
-                            "signal":                       "4.0.x"
+                            "signal":                       "4.0.x",
+                            "mingle":                       "*",
+                            "mingle.static":                     "0.7.x"
     },
     "main":                 "colleague.bin",
     "bin":
