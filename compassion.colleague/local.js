@@ -67,7 +67,7 @@ Local.prototype._connect = cadence(function (async, destructible, inbox, outbox)
     async(function () {
         destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
     }, function (conduit) {
-        destructible.destruct.wait(inbox, 'end')
+        destructible.destruct.wait(conduit.shifter, 'destroy')
         connection.conduit = conduit
     })
 })
