@@ -12,7 +12,7 @@ function prove (okay, callback) {
     var Procession = require('procession')
     var Containerized = require('../containerized')
     var Destructible = require('destructible')
-    var destructible = new Destructible(5000, 't/compassion.t.js')
+    var destructible = new Destructible(1000, 't/compassion.t.js')
     var Application = require('./application')
     var cadence = require('cadence')
     var Vizsla = require('vizsla')

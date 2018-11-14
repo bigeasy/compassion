@@ -47,8 +47,8 @@ Conference.prototype._initialize = cadence(function (async, destructible, inbox,
     })
 })
 
-Conference.prototype.ready = cadence(function (async) {
-    var request = this._conduit.connect({ method: 'ready', inbox: true, outbox: true })
+Conference.prototype.ready = cadence(function (async, registration) {
+    var request = this._conduit.connect({ method: 'ready', registration: registration, inbox: true, outbox: true })
     this._outbox = request.outbox
     async(function () {
         request.inbox.dequeue(async())
@@ -107,6 +107,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                 government: this._government
                             }, async())
                         } else if (arrival.id == this.id) {
+                            console.log('snapshotting!', this.id, this._government)
                             var request = this._conduit.connect({
                                 method: 'snapshot',
                                 promise: this._government.promise,

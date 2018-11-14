@@ -13,13 +13,13 @@ module.exports = function (Conference) {
         destructible.destruct.wait(outbox, 'end')
         destructible.destruct.wait(function () { console.log('ended!', registration.id) })
         async(function () {
-            colleague.register(inbox, outbox, registration, async())
+            colleague.connect(inbox, outbox, async())
         }, function () {
             async(function () {
                 destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
             }, function (conference) {
                 async(function () {
-                    conference.ready(async())
+                    conference.ready(registration, async())
                 }, function () {
                     return [ conference, colleague ]
                 })

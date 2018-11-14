@@ -50,7 +50,7 @@ function Local (destructible, colleagues, options) {
     this.scheduler = scheduler
 
     this._instance = 0
-    this._ua = new UserAgent
+    this._ua = new UserAgent().bind({ timeout: this._timeout.http })
 
     this.events = new Procession
 }
@@ -62,112 +62,24 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
     return kibitzer
 })
 
-Local.prototype.colleague = cadence(function (async, destructible, inbox, outbox, envelope) {
+Local.prototype._connect = cadence(function (async, destructible, inbox, outbox) {
+    var connection = new Connection(destructible, this)
+    async(function () {
+        destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
+    }, function (conduit) {
+        destructible.destruct.wait(inbox, 'end')
+        connection.conduit = conduit
+    })
+})
+
+Local.prototype.x = cadence(function (async) {
     var kibitzer
     async(function () {
-        var ua = new UserAgent().bind({ timeout: this._timeout.http })
-        kibitzer = new Kibitzer({
-            id: envelope.id,
-            ping: this._ping.paxos,
-            timeout: this._timeout.paxos,
-            ua: {
-                send: cadence(function (async, envelope) {
-                    logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
-                    ua.fetch({
-                        url: envelope.to.url
-                    }, {
-                        url: './kibitz',
-                        post: envelope,
-                        parse: 'json',
-                        nullify: true
-                    }, async())
-                })
-            }
-        })
-        destructible.monitor('kibitzer', kibitzer, 'listen', async())
     }, function () {
-        destructible.monitor('record', this, '_record', kibitzer, envelope.id, async())
     }, function (kibitzer) {
-        if (this.colleagues.island[envelope.island] == null) {
-            this.colleagues.island[envelope.island] = {}
-        }
-        // TODO Move `Conduit` to `Procession` and call these `conduits`.
-        var events = this.events
-        /*
-        // Notice that conference here references the colleague ua. All of
-        // this is rather slapdash, but that's how these last little bits of
-        // assembly tend to be. We've deferred the circular references to
-        // the final assembly, the upper most abstractions, but we can't
-        // chase them out of existence for they exist.
-        var conference = new this._Conference(destructible, {
-            acclimate: function () { kibitzer.acclimate() },
-            publish: function (record, envelope) { kibitzer.publish(envelope) },
-            broadcasts: cadence(function (async, promise) {
-                async(function () {
-                    var government = kibitzer.paxos.government
-                    var leaderUrl = government.properties[government.majority[0]].url
-                    colleague.ua.fetch({
-                        url: leaderUrl
-                    }, {
-                        url: './broadcasts',
-                        post: { promise: promise },
-                        raise: true,
-                        parse: 'json'
-                    }, async())
-                }, function (body) {
-                    events.push({
-                        type: 'broadcasts',
-                        id: colleague.initializer.id,
-                        body: body
-                    })
-                    return [ body ]
-                })
-            })
-        }, envelope, kibitzer)
-        */
-        // TODO Restore below.
-        /*
-        conference.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('log'))
-        destructible.destruct.wait(function () { conference.log.push(null) })
-        conference.consumed.pump(new Recorder(this.events, envelope.id, 'consumed'), 'record', destructible.monitor('consumed'))
-        destructible.destruct.wait(function () { conference.consumed.push(null) })
-        */
-        // TODO Restore above.
-        // kibitzer.paxos.log.pump(new Recorder(this.events, envelope.id, 'entry'), 'record', destructible.monitor('events'))
-        destructible.monitor('pinged', kibitzer.paxos.pinged.pump(this, function () {
-            this.scheduler.schedule(Date.now() + this._timeout.chaperon, Keyify.stringify({
-                island: envelope.island,
-                id: envelope.id
-            }), {
-                name: 'recoverable',
-                island: envelope.island,
-                id: envelope.id
-            })
-        }), 'destructible', null)
-        destructible.destruct.wait(this, function () {
-            this.scheduler.unschedule(Keyify.stringify({
-                island: envelope.island,
-                id: envelope.id
-            }))
-        })
-        var colleague = this.colleagues.island[envelope.island][envelope.id] = {
-            destructible: destructible,
-            id: envelope.id,
-            island: envelope.island,
-            properties: envelope.properties,
-            kibitzer: kibitzer,
-            createdAt: Date.now(),
-            destroyed: false
-        }
         var connection = new Connection(this._ua, colleague, this.scheduler)
-        destructible.monitor('entries', kibitzer.paxos.log.pump(connection, 'entry'), 'destructible', null)
-        destructible.destruct.wait(this, function () {
-            var colleague = this.colleagues.island[envelope.island][envelope.id]
-            delete this.colleagues.island[envelope.island][envelope.id]
-        })
-        destructible.markDestroyed(colleague)
         async(function () {
-            destructible.monitor('conduit-s', Conduit, inbox, outbox, connection, 'connect', async())
+            destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
         }, function(conduit) {
             // TODO Although we end the inbox at the end of the test, we will
             // get a hung error with a socket remaining open the conduit for
@@ -197,38 +109,102 @@ var discover = require('./discover')
 var embark = require('./embark')
 var recoverable = require('./recoverable')
 
-function Connection (ua, colleague, scheduler) {
-    this.ua = ua
-    this.destructible = colleague.destructible
-    this.scheduler = scheduler
-    this.kibitzer = colleague.kibitzer
+function Connection (destructible, colleague, ua) {
+    this.destructible = destructible
     this.colleague = colleague
+    this.ua = ua
+    this.createdAt = Date.now()
+    this.destroyed = false
+    destructible.markDestroyed(this)
 }
 
 Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox) {
+        var ua = this.colleague._ua
     switch (envelope.method) {
     case 'ready':
+        this.outbox = outbox
+        this.id = envelope.registration.id
+        this.island = envelope.registration.island
+        this.properties = coalesce(envelope.registration.properties, {})
+        this.destructible.context.push(this.island, this.id, this.properties)
+        if (this.colleague.colleagues.island[this.island] == null) {
+            this.colleague.colleagues.island[this.island] = {}
+        }
+        this.colleague.colleagues.island[this.island][this.id] = this
         this.destructible.monitor('inbox', inbox.pump(this, 'receive'), 'destructible', null)
         this.colleague.outbox = outbox
-        this.scheduler.schedule(Date.now(), Keyify.stringify({
-            island: this.colleague.island,
-            id: this.colleague.id
-        }), {
-            name: 'discover',
-            island: this.colleague.island,
-            id: this.colleague.id
+        this.kibitzer = new Kibitzer({
+            id: this.id,
+            ping: this.colleague._ping.paxos,
+            timeout: this.colleague._timeout.paxos,
+            ua: {
+                send: cadence(function (async, envelope) {
+                    logger.info('recorded', { source: 'ua', method: envelope.method, $envelope: envelope })
+                    ua.fetch({
+                        url: envelope.to.url
+                    }, {
+                        url: './kibitz',
+                        post: envelope,
+                        parse: 'json',
+                        nullify: true
+                    }, async())
+                })
+            }
         })
-        outbox.push({
-            method: 'ready',
-            island: this.colleague.island,
-            id: this.colleague.id,
-            properties: this.colleague.properties
+        this.destructible.monitor('pinged', this.kibitzer.paxos.pinged.pump(this, function (envelope) {
+            if (envelope == null) {
+                return
+            }
+            this.colleague.scheduler.schedule(Date.now() + this.colleague._timeout.chaperon, Keyify.stringify({
+                island: this.island,
+                id: this.id
+            }), {
+                name: 'recoverable',
+                island: this.island,
+                id: this.id
+            })
+        }), 'destructible', null)
+        this.destructible.destruct.wait(this, function () {
+            console.log('deleted!', this.island, this.id)
+            var colleague = this.colleague.colleagues.island[this.island][this.id]
+            delete this.colleague.colleagues.island[this.island][this.id]
+        })
+        this.destructible.destruct.wait(this, function () {
+            console.log(this.colleague.scheduler._what)
+            console.log('unscheduled!', this.island, this.id)
+            this.colleague.scheduler.unschedule(Keyify.stringify({ island: this.island, id: this.id }))
+            console.log(this.colleague.scheduler._what)
+        })
+        this.destructible.monitor('entries', this.kibitzer.paxos.log.pump(this, 'entry'), 'destructible', null)
+        async(function () {
+            this.destructible.monitor('kibitzer', this.kibitzer, 'listen', async())
+        }, function () {
+            this.destructible.monitor('record', this.colleague, '_record', this.kibitzer, this.id, async())
+        }, function () {
+            console.log('schedule discover', this.island, this.id)
+            this.colleague.scheduler.schedule(Date.now(), Keyify.stringify({
+                island: this.island,
+                id: this.id
+            }), {
+                name: 'discover',
+                island: this.island,
+                id: this.id
+            })
+            outbox.push({
+                method: 'ready',
+                island: this.island,
+                id: this.id,
+                properties: this.properties
+            })
+            if (this.id == 'racer') {
+                console.log('racer is all built')
+            }
         })
         break
     case 'broadcasts':
         var government = this.kibitzer.paxos.government
         var leaderUrl = government.properties[government.majority[0]].url
-        this.ua.fetch({
+        ua.fetch({
             url: leaderUrl
         }, {
             url: './broadcasts',
@@ -241,7 +217,7 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         var government = this.kibitzer.paxos.government
         var leaderUrl = government.properties[government.majority[0]].url
         async(function () {
-            this.ua.fetch({
+            ua.fetch({
                 url: leaderUrl
             }, {
                 url: './snapshot',
@@ -260,7 +236,7 @@ Connection.prototype.entry = cadence(function (async, envelope) {
     if (envelope == null) {
         return
     }
-    this.colleague.outbox.push({ method: 'entry', body: envelope })
+    this.outbox.push({ method: 'entry', body: envelope })
 })
 
 Connection.prototype.receive = cadence(function (async, envelope) {
@@ -269,11 +245,11 @@ Connection.prototype.receive = cadence(function (async, envelope) {
     }
     switch (envelope.method) {
     case 'acclimate':
-        this.colleague.kibitzer.acclimate()
+        this.kibitzer.acclimate()
         return []
     case 'broadcast':
     case 'reduce':
-        this.colleague.kibitzer.publish(envelope)
+        this.kibitzer.publish(envelope)
         return []
     }
 })
@@ -404,6 +380,10 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
         return
     }
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
+    if (colleague == null) {
+        console.log('&&&', envelope.body)
+        console.log('&&&', this.colleagues)
+    }
     async(function () {
         this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {
@@ -413,10 +393,10 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
     })
 })
 
-Local.prototype.register = cadence(function (async, inbox, outbox, registration) {
+Local.prototype.connect = cadence(function (async, inbox, outbox) {
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
-    this._destructible.monitor([ 'colleague', this._instance++, registration.island, registration.id ], true, this, 'colleague', inbox, outbox, registration, async())
+    this._destructible.monitor([ 'colleague', this._instance++ ], true, this, '_connect', inbox, outbox, async())
 })
 
 module.exports = Local
