@@ -45,7 +45,8 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
     }
 })
 
-Application.prototype.snapshot = cadence(function (async, outbox) {
+Application.prototype.snapshot = cadence(function (async, promise, outbox) {
+    console.log('--- promise -------- > - >>>', promise)
     outbox.push(1)
     outbox.push(null)
 })

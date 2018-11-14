@@ -67,7 +67,7 @@ Conference.prototype.connect = cadence(function (async, request, inbox, outbox) 
         this._snapshots.wait(request.promise, async())
         break
     case 'snapshot':
-        this._application.snapshot(outbox, async())
+        this._application.snapshot(request.promise, outbox, async())
         break
     }
 })
