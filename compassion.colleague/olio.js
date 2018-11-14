@@ -20,6 +20,7 @@ module.exports = cadence(function (async, destructible, binder, properties) {
         }), async())
     }, function (olio) {
         async(function () {
+            console.log('getting mingle')
             olio.sender('mingle', cadence(function (async, destructible, inbox, outbox) {
                 destructible.monitor('conduit', Conduit, inbox, outbox, null, async())
             }), async())

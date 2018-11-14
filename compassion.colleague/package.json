@@ -32,7 +32,7 @@
                             "keyify":                       "0.0.x",
                             "kibitz":                       "0.36.x",
                             "monotonic":                    "3.0.x",
-                            "olio":                         "0.25.x",
+                            "olio":                         "0.27.x",
                             "procession":                   "2.2.x",
                             "prolific.logger":              "8.4.x",
                             "prolific.shuttle":             "20.12.x",
@@ -44,10 +44,10 @@
     "devDependencies":
     {
                             "interlocutor":                 "0.5.x",
+                            "mingle":                       "0.16.x",
+                            "mingle.static":                "0.7.x",
                             "proof":                        "3.0.x",
-                            "signal":                       "4.0.x",
-                            "mingle":                       "*",
-                            "mingle.static":                     "0.7.x"
+                            "signal":                       "4.0.x"
     },
     "main":                 "colleague.bin",
     "bin":
