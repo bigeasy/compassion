@@ -1,11 +1,15 @@
 require('proof')(1, require('cadence')(prove))
 
 function prove (async, okay) {
+    var Procession = require('procession')
     var Procedure = require('../resolver/procedure')
     async(function () {
         new Procedure({
-            invoke: function (envelope, callback) {
-                callback(null, [])
+            connect: function (envelope, callback) {
+                var inbox = new Procession
+                var shifter = inbox.shifter()
+                inbox.push([])
+                return { inbox: shifter }
             }
         }).resolve(async())
     }, function (resolved) {
