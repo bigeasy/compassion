@@ -63,9 +63,10 @@ Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
 })
 
 Local.prototype._connect = cadence(function (async, destructible, inbox, outbox) {
+    var shifter = inbox.shifter()
     var connection = new Connection(destructible, this)
     async(function () {
-        destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
+        destructible.monitor('conduit', Conduit, shifter, outbox, connection, 'connect', async())
     }, function (conduit) {
         destructible.destruct.wait(conduit.shifter, 'destroy')
         connection.conduit = conduit
@@ -86,7 +87,7 @@ function Connection (destructible, colleague, ua) {
 }
 
 Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox) {
-        var ua = this.colleague._ua
+    var ua = this.colleague._ua
     switch (envelope.method) {
     case 'ready':
         this.outbox = outbox
@@ -267,6 +268,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         $action: action,
         complete: complete
     })
+    console.log(action, members)
     switch (action.action) {
     case 'bootstrap':
         var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))

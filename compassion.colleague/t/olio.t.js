@@ -17,8 +17,13 @@ function prove (okay, callback) {
             destructible.monitor('mock', Mock, {
                 socket: 't/socket',
                 children: {
-                    olio: {
+                    compassion: {
                         path: path.resolve(__dirname, '../olio.js'),
+                        workers: 1,
+                        properties: {}
+                    },
+                    child: {
+                        path: path.resolve(__dirname, './child.js'),
                         workers: 1,
                         properties: {}
                     },
@@ -26,21 +31,17 @@ function prove (okay, callback) {
                         module: 'mingle/olio',
                         workers: 1,
                         properties: {
-                            module: 'mingle.static'
+                            module: 'mingle.static',
+                            format: 'http://%s:%d/',
+                            argv: [ '127.0.0.1:8486' ]
                         }
                     }
                 }
             }, async())
         }, function (children) {
-            children.client[0].processes[0].conduit.connect({}).inbox.dequeue(async())
-        }, function (response) {
-            okay({
-                isArray: Array.isArray(response),
-                response: response
-            }, {
-                isArray: true,
-                response: []
-            }, 'olio')
+            children.child[0].bootstrapped.wait(async())
+        }, function (bootstrapped) {
+            okay(bootstrapped, 'bootstrapped', 'bootstrapped')
         })
     })(destructible.monitor('test'))
 }

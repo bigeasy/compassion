@@ -4,30 +4,25 @@ var Population = require('./population')
 var Resolver = require('./resolver/conduit')
 var Containerized = require('./containerized')
 var Signal = require('signal')
+var UserAgent = require('vizsla')
 
-module.exports = cadence(function (async, destructible, binder, properties) {
+function Listener (colleague) {
+    this.colleague = colleague
+}
+
+Listener.prototype.connect = cadence(function (async, destructible, inbox, outbox) {
+    this.colleague.connect(inbox, outbox, async())
+})
+
+module.exports = cadence(function (async, destructible, olio, properties) {
+    var ua = new UserAgent
     var ready = new Signal
     async(function () {
-    }, function (resolver) {
-        binder.listen(cadence(function (async, destructible, inbox, outbox) {
-            async(function () {
-                ready.wait(async())
-            }, function () {
-                destructible.monitor('conduit', Conduit, inbox, outbox, cadence(function (async, request, inbox, outbox) {
-                    resolver.resolve(async())
-                }), async())
-            })
+        olio.sender('mingle', cadence(function (async, destructible, inbox, outbox) {
+            destructible.monitor('conduit', Conduit, inbox, outbox, null, async())
         }), async())
-    }, function (olio) {
-        async(function () {
-            console.log('getting mingle')
-            olio.sender('mingle', cadence(function (async, destructible, inbox, outbox) {
-                destructible.monitor('conduit', Conduit, inbox, outbox, null, async())
-            }), async())
-        }, function (conduits) {
-            console.log('---', conduits)
-        })
-    }, function (olio) {
+    }, function (sender) {
+        var resolver = new Resolver(sender.processes[0].conduit)
         destructible.monitor('containerized', Containerized, {
             population: new Population(resolver, ua),
             ping: {
@@ -50,6 +45,7 @@ module.exports = cadence(function (async, destructible, binder, properties) {
                 }
             }
         }, async())
-        return [ binder.index ]
+    }, function (colleague) {
+        return new Listener(colleague)
     })
 })
