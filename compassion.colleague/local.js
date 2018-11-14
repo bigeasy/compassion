@@ -72,39 +72,6 @@ Local.prototype._connect = cadence(function (async, destructible, inbox, outbox)
     })
 })
 
-Local.prototype.x = cadence(function (async) {
-    var kibitzer
-    async(function () {
-    }, function () {
-    }, function (kibitzer) {
-        var connection = new Connection(this._ua, colleague, this.scheduler)
-        async(function () {
-            destructible.monitor('conduit', Conduit, inbox, outbox, connection, 'connect', async())
-        }, function(conduit) {
-            // TODO Although we end the inbox at the end of the test, we will
-            // get a hung error with a socket remaining open the conduit for
-            // `racer`, we can change this to use `this._destructible` to
-            // shutdown at the end and we'll have the same problem.
-            //
-            // TODO Furthermore, if we end the outbox when the colleague
-            // destructs, we get an error implying that we've hung the test.
-            console.log(destructible.instance, destructible.key, inbox.conduit)
-            destructible.destruct.wait(function () {
-                console.log('ending', destructible.instance, inbox.conduit)
-                inbox.end()
-                // outbox.end()
-            })
-            /*
-            destructible.destruct.wait(function () {
-                console.log('goodbye inbox', envelope.id)
-            })
-            */
-            colleague.conduit = conduit
-            return colleague
-        })
-    })
-})
-
 var discover = require('./discover')
 var embark = require('./embark')
 var recoverable = require('./recoverable')
@@ -380,10 +347,6 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
         return
     }
     var colleague = this._getColleagueByIslandAndId(envelope.body.island, envelope.body.id)
-    if (colleague == null) {
-        console.log('&&&', envelope.body)
-        console.log('&&&', this.colleagues)
-    }
     async(function () {
         this._population.census(envelope.body.island, envelope.body.id, async())
     }, function (members, complete) {
