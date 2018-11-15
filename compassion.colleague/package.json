@@ -22,7 +22,7 @@
     {
                             "byline":                       "5.0.x",
                             "cadence":                      "1.0.x",
-                            "compassion.conference":        "0.11.x",
+                            "compassion.conference":        "0.12.x",
                             "conduit":                      "2.27.x",
                             "delta":                        "1.4.x",
                             "destructible":                 "0.35.x",
