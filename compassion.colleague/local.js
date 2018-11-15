@@ -133,15 +133,11 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
             })
         }), 'destructible', null)
         this.destructible.destruct.wait(this, function () {
-            console.log('deleted!', this.island, this.id)
             var colleague = this.colleague.colleagues.island[this.island][this.id]
             delete this.colleague.colleagues.island[this.island][this.id]
         })
         this.destructible.destruct.wait(this, function () {
-            console.log(this.colleague.scheduler._what)
-            console.log('unscheduled!', this.island, this.id)
             this.colleague.scheduler.unschedule(Keyify.stringify({ island: this.island, id: this.id }))
-            console.log(this.colleague.scheduler._what)
         })
         this.destructible.monitor('entries', this.kibitzer.paxos.log.pump(this, 'entry'), 'destructible', null)
         async(function () {
@@ -149,7 +145,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         }, function () {
             this.destructible.monitor('record', this.colleague, '_record', this.kibitzer, this.id, async())
         }, function () {
-            console.log('schedule discover', this.island, this.id)
             this.colleague.scheduler.schedule(Date.now(), Keyify.stringify({
                 island: this.island,
                 id: this.id
@@ -164,9 +159,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 id: this.id,
                 properties: this.properties
             })
-            if (this.id == 'racer') {
-                console.log('racer is all built')
-            }
         })
         break
     case 'broadcasts':
@@ -268,7 +260,6 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         $action: action,
         complete: complete
     })
-    console.log(action, members)
     switch (action.action) {
     case 'bootstrap':
         var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))

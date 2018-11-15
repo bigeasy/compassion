@@ -6,7 +6,6 @@ module.exports = function (Conference) {
                 destructible.monitor('conference', Conference, inbox, outbox, application, false, async())
             }), async())
         }, function (sender) {
-            console.log('sender!!!')
             async(function () {
                 sender.processes[0].conduit.ready({
                     island: island,

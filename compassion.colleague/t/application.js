@@ -1,6 +1,7 @@
 var cadence = require('cadence')
 var Signal = require('signal')
 var Procession = require('procession')
+var assert = require('assert')
 
 function Application () {
     this.arrived = new Signal
@@ -17,10 +18,9 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
         async(function () {
             envelope.snapshot.dequeue(async())
         }, function (value) {
-            console.log('snapshot', value)
             envelope.snapshot.dequeue(async())
         }, function (value) {
-            console.log('snapshot eos', value)
+            assert(value == null)
         })
         break
     case 'arrive':
@@ -31,7 +31,6 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
     case 'receive':
         async(function () {
             if (envelope.self.id == 'second') {
-                console.log('blocking')
                 this.blocker.wait(async())
             }
         }, function () {
@@ -46,7 +45,6 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
 })
 
 Application.prototype.snapshot = cadence(function (async, promise, outbox) {
-    console.log('--- promise -------- > - >>>', promise)
     outbox.push(1)
     outbox.push(null)
 })

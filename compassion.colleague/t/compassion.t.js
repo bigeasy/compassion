@@ -41,10 +41,8 @@ function prove (okay, callback) {
                 population: {
                     called: 0,
                     census: function (island, id, callback) {
-                            console.log('here i am', id, this.called)
                         if (this.called++ != 0) {
                             if (id == 'racer') {
-                                console.log('will terminate')
                                 containerized.terminate('island', 'racer')
                             }
                             population.census(island, id, callback)
@@ -156,15 +154,12 @@ function prove (okay, callback) {
                     containerized.terminate('island', 'first')
                     var loop = async(function () {
                         async(function () {
-                            console.log(containerized.ids('island'))
                             if (containerized.ids('island').length == 0) {
                                 return [ loop.break ]
                             }
                             setTimeout(async(), 1000)
                         })
                     })()
-                }, function () {
-                    console.log('existing')
                 })
             })
         })
