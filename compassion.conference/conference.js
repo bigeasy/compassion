@@ -326,6 +326,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                 body: null
             })
         }
+        this.consumed.push(entry)
     })
 })
 
