@@ -24,7 +24,7 @@
                             "compassion.colleague":         "0.53.x",
                             "compassion.conference":        "0.12.x",
                             "extant":                       "1.0.x",
-                            "procession":                   "2.4.x",
+                            "procession":                   "2.5.x",
                             "vizsla":                       "12.14.x"
     },
     "devDependencies":
