@@ -75,7 +75,14 @@ function prove (okay, callback) {
             containerized = $containerized
             var merged = new Procession
             var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
-            destructible.monitor('events', containerized.events.pump(merged, 'enqueue'), 'destructible', null)
+            destructible.monitor('events', containerized.events.pump(merge), 'destructible', null)
+            function merge (envelope) {
+                if (envelope != null) {
+                    merged.push(envelope)
+                } else {
+                    console.log('intercepted null')
+                }
+            }
             destructible.monitor('merged', merged.pump(function (envelope, callback) {
                 if (envelope == null) {
                     writable.end(callback)
@@ -93,7 +100,7 @@ function prove (okay, callback) {
                         id: id
                     }, async())
                 }, function (conference) {
-                    destructible.monitor('events', conference.events.pump(merged, 'enqueue'), 'destructible', null)
+                    destructible.monitor('events', conference.events.pump(merge), 'destructible', null)
                     applications[id] = {
                         application: application,
                         conference: conference
@@ -115,22 +122,27 @@ function prove (okay, callback) {
                 }, function () {
                     applications.first.application.arrived.wait(async())
                 }, function () {
+                    console.log('arrived first')
                 })
             }, function () {
                 async(function () {
-                    destructible.monitor('racer', createApplication, 'racer', async())
+                    destructible.monitor('racer', true, createApplication, 'racer', async())
                 }, function () {
+                    console.log('racer built')
 //                    applications.racer.conference.ready(async())
                 })
             }, function () {
                 async(function () {
-                    destructible.monitor('second', createApplication, 'second', async())
+                    destructible.monitor('second', true, createApplication, 'second', async())
                 }, function () {
+                    console.log('built second')
                  //   applications.second.conference.ready(async())
                 }, function () {
                     applications.second.application.arrived.wait(async())
                 }, function () {
+                    console.log('arrived second')
                     applications.second.application.envelopes.shifter().join(function (envelope) {
+                        console.log(envelope)
                         return envelope.method == 'receive'
                     }, async())
                     applications.first.conference.broadcast('name', { value: 1 })

@@ -18,6 +18,8 @@ var Conduit = require('conduit/conduit')
 
 var Deserialize = require('procession/deserialize')
 
+var Staccato = require('staccato')
+
 function Local (destructible, colleagues, options) {
     this._destructible = destructible
 
@@ -186,7 +188,7 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 parse: 'stream'
             }, async())
         }, function (stream, response) {
-            Deserialize(stream, outbox, async())
+            Deserialize(new Staccato.Readable(stream), outbox, async())
         })
         break
     }

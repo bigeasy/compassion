@@ -3,14 +3,17 @@ var Procession = require('procession')
 
 module.exports = function (Conference) {
     return cadence(function (async, destructible, colleague, application, registration) {
-        var inbox = new Procession, outbox = new Procession
-        destructible.destruct.wait(inbox, 'end')
-        destructible.destruct.wait(outbox, 'end')
+        var queues = {
+            colleague: { inbox: new Procession, outbox: new Procession },
+            conference: { inbox: new Procession, outbox: new Procession }
+        }
+        destructible.monitor('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
+        destructible.monitor('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
         async(function () {
-            colleague.connect(inbox, outbox, async())
+            colleague.connect(queues.colleague.inbox, queues.colleague.outbox, async())
         }, function () {
             async(function () {
-                destructible.monitor('conference', Conference, outbox, inbox, application, false, async())
+                destructible.monitor('conference', Conference, queues.conference.inbox, queues.conference.outbox, application, false, async())
             }, function (conference) {
                 async(function () {
                     conference.ready(registration, async())

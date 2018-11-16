@@ -7,6 +7,8 @@ var coalesce = require('extant')
 
 var Serialize = require('procession/serialize')
 
+var Staccato = require('staccato')
+
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues
@@ -60,7 +62,7 @@ Networked.prototype.snapshot = cadence(function (async, request, island, id) {
         inbox: true
     })
     return [ 200, { 'content-type': 'application/octet-stream' }, function (response, callback) {
-        Serialize(request.inbox, response, callback)
+        Serialize(request.inbox, new Staccato.Writable(response), callback)
     } ]
 })
 

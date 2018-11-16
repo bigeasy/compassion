@@ -15,9 +15,13 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
     case 'bootstrap':
         break
     case 'join':
+        console.log('joining!!!')
         async(function () {
+            console.log('dequeue')
             envelope.snapshot.dequeue(async())
         }, function (value) {
+            console.log('dequeued', value)
+        console.log('joining!!!', value)
             envelope.snapshot.dequeue(async())
         }, function (value) {
             assert(value == null)
@@ -45,6 +49,7 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
 })
 
 Application.prototype.snapshot = cadence(function (async, promise, outbox) {
+    console.log('snapshot get')
     outbox.push(1)
     outbox.push(null)
 })
