@@ -24,21 +24,24 @@ function prove (okay, callback) {
 
     cadence(function (async) {
         async(function () {
-            var inbox = new Procession, outbox = new Procession
+            var queues = {
+                colleague: { inbox: new Procession, outbox: new Procession },
+                conference: { inbox: new Procession, outbox: new Procession }
+            }
+            destructible.monitor('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
+            destructible.monitor('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
             var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
             async(function () {
                 var application = new Application('second', null)
                 var readable = new Staccato.Readable(byline(input))
-                destructible.destruct.wait(inbox, 'end')
-                destructible.destruct.wait(outbox, 'end')
                 destructible.monitor('replay', Replay, {
-                    inbox: inbox,
-                    outbox: outbox,
+                    inbox: queues.colleague.inbox,
+                    outbox: queues.colleague.outbox,
                     readable: readable,
                     island: 'island',
                     id: 'second'
                 }, async())
-                destructible.monitor('conference', Conference, outbox, inbox, application, true, async())
+                destructible.monitor('conference', Conference, queues.conference.inbox, queues.conference.outbox, application, true, async())
             }, function (replayer, conference) {
                 conference.ready(async())
             }, function () {

@@ -53,6 +53,7 @@ Conference.prototype.ready = cadence(function (async, registration) {
     async(function () {
         request.inbox.dequeue(async())
     }, function (envelope) {
+    console.log('ready!!!', envelope)
         assert(envelope.method == 'ready')
         this.id = envelope.id
         this.island = envelope.island
