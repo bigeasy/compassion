@@ -33,7 +33,7 @@
                             "kibitz":                       "0.39.x",
                             "monotonic":                    "3.0.x",
                             "olio":                         "0.32.x",
-                            "procession":                   "2.5.x",
+                            "procession":                   "2.6.x",
                             "prolific.logger":              "8.4.x",
                             "prolific.shuttle":             "20.12.x",
                             "reactor":                      "10.9.x",
