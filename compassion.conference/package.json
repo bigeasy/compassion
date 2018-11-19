@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "cadence":                      "1.0.x",
-                            "conduit":                      "2.30.x",
+                            "conduit":                      "2.31.x",
                             "cubbyhole":                    "1.3.x",
                             "extant":                       "1.0.x",
                             "interrupt":                    "6.3.x",
