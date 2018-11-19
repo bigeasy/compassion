@@ -31,7 +31,7 @@
                             "operation":                    "2.0.x",
                             "procession":                   "2.5.x",
                             "prolific.logger":              "8.4.x",
-                            "reactor":                      "10.8.x",
+                            "reactor":                      "10.9.x",
                             "server-destroy":               "1.0.1",
                             "signal":                       "4.0.x",
                             "staccato":                     "6.4.x",
