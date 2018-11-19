@@ -35,7 +35,7 @@
                             "server-destroy":               "1.0.1",
                             "signal":                       "4.0.x",
                             "staccato":                     "6.3.x",
-                            "vizsla":                       "12.14.x"
+                            "vizsla":                       "12.15.x"
     },
     "devDependencies":
     {
