@@ -20,26 +20,18 @@
     },
     "dependencies":
     {
+                            "byline":                       "5.0.x",
                             "cadence":                      "1.0.x",
                             "compassion.conference":        "0.13.x",
                             "conduit":                      "2.30.x",
-                            "delta":                        "1.4.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.35.x",
                             "kibitz":                       "0.38.x",
-                            "monotonic":                    "3.0.x",
-                            "operation":                    "2.0.x",
-                            "procession":                   "2.5.x",
-                            "prolific.logger":              "8.4.x",
-                            "reactor":                      "10.9.x",
-                            "server-destroy":               "1.0.1",
-                            "signal":                       "4.0.x",
-                            "staccato":                     "6.4.x",
-                            "vizsla":                       "12.15.x"
+                            "staccato":                     "6.4.x"
     },
     "devDependencies":
     {
-                            "byline":                       "5.0.x",
+                            "procession":                   "2.5.x",
                             "proof":                        "3.0.x"
     },
     "main":                 "channel.bin",

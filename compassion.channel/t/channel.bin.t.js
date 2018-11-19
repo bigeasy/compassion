@@ -8,9 +8,6 @@ function prove (okay, callback) {
 
     destructible.completed.wait(callback)
 
-    var UserAgent = require('vizsla')
-    var ua = new UserAgent
-
     var cadence = require('cadence')
 
     program = bin([ '--id', 'third' ], {}, destructible.monitor('run'))

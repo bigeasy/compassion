@@ -1,21 +1,10 @@
 var cadence = require('cadence')
-var Reactor = require('reactor')
-var http = require('http')
-var delta = require('delta')
-var destroyer = require('server-destroy')
-
-var Caller = require('conduit/caller')
-var Procedure = require('conduit/procedure')
 
 var Kibitzer = require('kibitz')
 
 var crypto = require('crypto')
 
-var Vizsla = require('vizsla')
-
 var departure = require('departure')
-
-var Operation = require('operation')
 
 var Conduit = require('conduit/conduit')
 
@@ -114,12 +103,8 @@ Replay.prototype._consumed = cadence(function (async, inbox, entry) {
 
 Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
     async(function () {
-        destructible.monitor('caller', Caller, async())
-    }, function (caller) {
-        destructible.destruct.wait(function () { caller.inbox.push(null) })
         var kibitzer = this._kibitzer = new Kibitzer({
             id: this._options.id,
-            caller: caller,
             ping: this._options.ping,
             timeout: this._options.timeout
         })
