@@ -33,7 +33,7 @@ function prove (okay, callback) {
                         properties: {
                             module: 'mingle.static',
                             format: 'http://%s:%d/',
-                            argv: [ '127.0.0.1:8486' ]
+                            addresses: [ '127.0.0.1:8486' ]
                         }
                     }
                 }

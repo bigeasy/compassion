@@ -45,7 +45,7 @@
     {
                             "interlocutor":                 "0.5.x",
                             "mingle":                       "0.23.x",
-                            "mingle.static":                "0.7.x",
+                            "mingle.static":                "0.8.x",
                             "proof":                        "3.0.x",
                             "signal":                       "4.0.x"
     },
