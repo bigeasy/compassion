@@ -50,10 +50,6 @@
                             "signal":                       "4.0.x"
     },
     "main":                 "colleague.bin",
-    "bin":
-    {
-                            "compassion-colleague":         "0.54.1"
-    },
     "scripts":
     {
                             "test": "proof test t/*.t.js"
