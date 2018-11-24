@@ -52,7 +52,7 @@
     "main":                 "colleague.bin",
     "bin":
     {
-                            "compassion-colleague":         "colleague.bin.js"
+                            "compassion-colleague":         "0.54.1"
     },
     "scripts":
     {
