@@ -14,6 +14,6 @@ function prove (okay) {
         }
     })
     logger({}, function () {
-        okay(true, 'called back')
+        okay('called back')
     })
 }
