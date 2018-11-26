@@ -45,26 +45,26 @@ Replay.prototype._connect = cadence(function (async, envelope, inbox, outbox) {
 })
 
 Replay.prototype._snapshot = cadence(function (async, outbox) {
-    var loop = async(function () {
+    async.loop([], function () {
         this._advance('snapshot', async())
     }, function (envelope) {
         outbox.push(envelope.body)
         if (envelope.body == null) {
-            return [ loop.break ]
+            return [ async.break ]
         }
-    })()
+    })
 })
 
 // TODO Note that you cannot assert that the broadcasts are in any particular
 // order. They are not necessarily triggered by response to a specific log
 // entry. We could set up a way to associate a broadcast with an entry.
 Replay.prototype._advance = cadence(function (async, type) {
-    var loop = async(function () {
+    async.loop([], function () {
         async(function () {
             this._readable.read(async())
         }, function (envelope) {
             if (envelope == null) {
-                return [ loop.break, null ]
+                return [ async.break, null ]
             }
             envelope = JSON.parse(envelope.toString('utf8'))
             if (envelope.id == this._options.id) {
@@ -80,25 +80,25 @@ Replay.prototype._advance = cadence(function (async, type) {
                     break
                 default:
                     departure.raise(envelope.type, type)
-                    return [ loop.break, envelope ]
+                    return [ async.break, envelope ]
                 }
             }
         })
-    })()
+    })
 })
 
 Replay.prototype._consumed = cadence(function (async, inbox, entry) {
-    var loop = async(function () {
+    async.loop([], function () {
         inbox.dequeue(async())
     }, function (envelope) {
         console.log('!', envelope)
         if (envelope == null) {
-            return [ loop.break, true ]
+            return [ async.break, true ]
         } else if (envelope.method == 'consumed') {
             departure.raise(envelope.promise, envelope.promise)
-            return [ loop.break, false ]
+            return [ async.break, false ]
         }
-    })()
+    })
 })
 
 Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
@@ -112,11 +112,11 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
         this._paxos = kibitzer.paxos.outbox.shifter()
         this._islander = kibitzer.islander.outbox.shifter()
         this._log = kibitzer.paxos.log.shifter()
-        var loop = async(function () {
+        async.loop([], function () {
             this._advance('entry', async())
         }, function (envelope) {
             if (envelope == null) {
-                return [ loop.break ]
+                return [ async.break ]
             }
             // TODO While `entry` is null.
             var entry = this._log.shift()
@@ -127,10 +127,10 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
             }, function (eos) {
                 console.log('DONE SENDING', eos)
                 if (eos) {
-                    return [ loop.break ]
+                    return [ async.break ]
                 }
             })
-        })()
+        })
     })
 })
 
