@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "cadence":                      "1.0.x",
+                            "cadence":                      "2.0.x",
                             "compassion.colleague":         "0.55.x",
                             "compassion.conference":        "0.15.x",
                             "extant":                       "1.0.x",
