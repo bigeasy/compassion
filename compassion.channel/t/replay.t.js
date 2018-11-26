@@ -47,7 +47,7 @@ function prove (okay, callback) {
             }, function () {
                 setTimeout(async(), 250)
             }, function () {
-                okay(true, 'second')
+                okay('second')
             })
         }, function () {
             var inbox = new Procession, outbox = new Procession
@@ -72,7 +72,7 @@ function prove (okay, callback) {
             }, function () {
                 setTimeout(async(), 250)
             }, function () {
-                okay(true, 'first')
+                okay('first')
             })
         })
     })(destructible.monitor('test'))

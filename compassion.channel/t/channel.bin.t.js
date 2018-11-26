@@ -19,7 +19,7 @@ function prove (okay, callback) {
             program.stdin.end('\n')
             program.emit('SIGTERM')
         }, function () {
-            okay(true, 'ran')
+            okay('ran')
         })
     })(destructible.monitor('test'))
 }
