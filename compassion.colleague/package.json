@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "byline":                       "5.0.x",
-                            "cadence":                      "1.0.x",
+                            "cadence":                      "2.0.x",
                             "compassion.conference":        "0.15.x",
                             "conduit":                      "2.33.x",
                             "delta":                        "1.4.x",

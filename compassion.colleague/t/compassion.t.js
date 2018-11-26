@@ -164,14 +164,14 @@ function prove (okay, callback) {
                     }, async())
                 }, function () {
                     containerized.terminate('island', 'first')
-                    var loop = async(function () {
+                    async.loop([], function () {
                         async(function () {
                             if (containerized.ids('island').length == 0) {
-                                return [ loop.break ]
+                                return [ async.break ]
                             }
                             setTimeout(async(), 1000)
                         })
-                    })()
+                    })
                 })
             })
         })

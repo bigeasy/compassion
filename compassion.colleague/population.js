@@ -15,7 +15,7 @@ Population.prototype.census = cadence(function (async, island, id) {
     }, function (instances) {
         var complete = true
         async(function () {
-            async.map(function (location) {
+            async.map([ instances ], function (location) {
                 async(function () {
                     this._ua.fetch({
                         url: location
@@ -37,7 +37,7 @@ Population.prototype.census = cadence(function (async, island, id) {
                         }
                     }) ]
                 })
-            })(instances)
+            })
         }, function (results) {
             var members = []
             while (results.length) {
