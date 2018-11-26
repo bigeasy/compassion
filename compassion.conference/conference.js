@@ -168,7 +168,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                 // cause. Maybe these comments will help.
                                 Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
                                 this.events.push({ type: 'broadcasts', id: this.id, body: body })
-                                async.forEach(function (broadcast) {
+                                async.forEach([ body ], function (broadcast) {
                                     async(function () {
                                         this._entry({
                                             body: { // turnstile
@@ -187,7 +187,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                             }
                                         }, async())
                                     }, function () {
-                                        async.forEach(function (promise) {
+                                        async.forEach([ Object.keys(broadcast.responses) ], function (promise) {
                                             this._entry({
                                                 body: { // turnstile
                                                     body: { // paxos
@@ -203,9 +203,9 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                                     }
                                                 }
                                             }, async())
-                                        })(Object.keys(broadcast.responses))
+                                        })
                                     })
-                                })(body)
+                                })
                             })
                         }
                     })
@@ -230,9 +230,9 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                             broadcasts.push(this._broadcasts[key])
                         }
                         this._snapshots.remove(promise)
-                        async.forEach(function (broadcast) {
+                        async.forEach([ broadcasts ], function (broadcast) {
                             this._checkReduced(broadcast, async())
-                        })(broadcasts)
+                        })
                     })
                 }
             }, function () {
