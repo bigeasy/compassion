@@ -38,7 +38,7 @@
                             "reactor":                      "10.9.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.4.x",
-                            "vizsla":                       "12.15.x"
+                            "vizsla":                       "12.16.x"
     },
     "devDependencies":
     {
