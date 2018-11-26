@@ -31,9 +31,5 @@
     "devDependencies":
     {
     },
-    "main":                 "conference",
-    "scripts":
-    {
-                            "test": "proof test t/*.t.js"
-    }
+    "main":                 "conference"
 }
