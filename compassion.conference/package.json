@@ -30,7 +30,6 @@
     },
     "devDependencies":
     {
-                            "proof":                        "3.0.x"
     },
     "main":                 "conference",
     "scripts":
