@@ -43,7 +43,7 @@
     "devDependencies":
     {
                             "interlocutor":                 "0.6.x",
-                            "mingle":                       "0.24.x",
+                            "mingle":                       "0.25.x",
                             "mingle.static":                "0.8.x",
                             "proof":                        "5.0.x",
                             "signal":                       "4.0.x"
