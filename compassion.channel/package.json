@@ -26,7 +26,7 @@
                             "conduit":                      "2.33.x",
                             "departure":                    "0.0.x",
                             "destructible":                 "0.36.x",
-                            "kibitz":                       "0.38.x",
+                            "kibitz":                       "0.40.x",
                             "staccato":                     "6.4.x"
     },
     "devDependencies":
