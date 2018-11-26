@@ -27,7 +27,7 @@
                             "departure":                    "0.0.x",
                             "destructible":                 "0.37.x",
                             "kibitz":                       "0.40.x",
-                            "staccato":                     "6.4.x"
+                            "staccato":                     "6.5.x"
     },
     "devDependencies":
     {
