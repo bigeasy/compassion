@@ -10,7 +10,7 @@ function Listener (colleague) {
 }
 
 Listener.prototype.connect = cadence(function (async, destructible, inbox, outbox) {
-    destructible.monitor('conduit', Conduit, inbox, outbox, this, cadence(function (async, request, inbox, outbox) {
+    destructible.durable('conduit', Conduit, inbox, outbox, this, cadence(function (async, request, inbox, outbox) {
         /* Necessary?
             destructible.destruct.wait(inbox, 'end')
             destructible.destruct.wait(outbox, 'end')
@@ -35,7 +35,7 @@ Application.prototype.dispatch = cadence(function (async, envelope) {
 module.exports = cadence(function (async, destructible, olio, properties) {
     var application = new Application
     async(function () {
-        destructible.monitor('compassion', Compassion, olio, application, 'island', 'first', {}, async())
+        destructible.durable('compassion', Compassion, olio, application, 'island', 'first', {}, async())
     }, function (conference) {
         application.conference = conference
         return application

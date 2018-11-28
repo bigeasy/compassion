@@ -7,13 +7,13 @@ module.exports = function (Conference) {
             colleague: { inbox: new Procession, outbox: new Procession },
             conference: { inbox: new Procession, outbox: new Procession }
         }
-        destructible.monitor('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
-        destructible.monitor('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
+        destructible.durable('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
+        destructible.durable('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
         async(function () {
             colleague.connect(queues.colleague.inbox, queues.colleague.outbox, async())
         }, function () {
             async(function () {
-                destructible.monitor('conference', Conference, queues.conference.inbox, queues.conference.outbox, application, false, async())
+                destructible.durable('conference', Conference, queues.conference.inbox, queues.conference.outbox, application, false, async())
             }, function (conference) {
                 async(function () {
                     conference.ready(registration, async())

@@ -3,7 +3,7 @@ module.exports = function (Conference) {
     return cadence(function (async, destructible, olio, application, island, id, properties) {
         async(function () {
             olio.sender('compassion', cadence(function (async, destructible, inbox, outbox) {
-                destructible.monitor('conference', Conference, inbox, outbox, application, false, async())
+                destructible.durable('conference', Conference, inbox, outbox, application, false, async())
             }), async())
         }, function (sender) {
             async(function () {

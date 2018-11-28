@@ -40,7 +40,7 @@ function Conference (destructible, inbox, outbox, application, replaying, callba
 
 Conference.prototype._initialize = cadence(function (async, destructible, inbox, outbox) {
     async(function () {
-        destructible.monitor('conduit', Conduit, inbox, outbox, this, 'connect', async())
+        destructible.durable('conduit', Conduit, inbox, outbox, this, 'connect', async())
     }, function (conduit) {
         this._conduit = conduit
         return this
@@ -58,7 +58,7 @@ Conference.prototype.ready = cadence(function (async, registration) {
         this.id = envelope.id
         this.island = envelope.island
         this.properties = envelope.properties
-        this._destructible.monitor('inbox', request.inbox.pump(this, 'receive'), 'destructible', null)
+        this._destructible.durable('inbox', request.inbox.pump(this, 'receive'), 'destructible', null)
     })
 })
 
@@ -114,7 +114,7 @@ Conference.prototype._entry = cadence(function (async, envelope) {
                                 promise: this._government.promise,
                                 inbox: true
                             })
-                            this._destructible.monitor('snapshot', true, request.inbox.pump(this, function (envelope) {
+                            this._destructible.ephemeral('snapshot', request.inbox.pump(this, function (envelope) {
                                 this.events.push({ type: 'snapshot', id: this.id, body: envelope })
                             }), 'destructible', null)
                             this._application.dispatch({

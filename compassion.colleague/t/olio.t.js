@@ -14,7 +14,7 @@ function prove (okay, callback) {
 
     cadence(function (async) {
         async(function () {
-            destructible.monitor('mock', Mock, {
+            destructible.durable('mock', Mock, {
                 socket: 't/socket',
                 children: {
                     compassion: {
@@ -43,5 +43,5 @@ function prove (okay, callback) {
         }, function (bootstrapped) {
             okay(bootstrapped, 'bootstrapped', 'bootstrapped')
         })
-    })(destructible.monitor('test'))
+    })(destructible.durable('test'))
 }

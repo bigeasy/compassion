@@ -19,11 +19,11 @@ module.exports = cadence(function (async, destructible, olio, properties) {
     var ready = new Signal
     async(function () {
         olio.sender('mingle', cadence(function (async, destructible, inbox, outbox) {
-            destructible.monitor('conduit', Conduit, inbox, outbox, null, async())
+            destructible.durable('conduit', Conduit, inbox, outbox, null, async())
         }), async())
     }, function (sender) {
         var resolver = new Resolver(sender.processes[0].conduit)
-        destructible.monitor('containerized', Containerized, {
+        destructible.durable('containerized', Containerized, {
             population: new Population(resolver, ua),
             ping: {
                 chaperon: 150,

@@ -36,7 +36,7 @@ function prove (okay, callback) {
 
     cadence(function (async) {
         async(function () {
-            destructible.monitor('containerized', Containerized, {
+            destructible.durable('containerized', Containerized, {
                 Conference: Conference,
                 population: {
                     called: 0,
@@ -75,7 +75,7 @@ function prove (okay, callback) {
             containerized = $containerized
             var merged = new Procession
             var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
-            destructible.monitor('events', containerized.events.pump(merge), 'destructible', null)
+            destructible.durable('events', containerized.events.pump(merge), 'destructible', null)
             function merge (envelope) {
                 if (envelope != null) {
                     merged.push(envelope)
@@ -83,7 +83,7 @@ function prove (okay, callback) {
                     console.log('intercepted null')
                 }
             }
-            destructible.monitor('merged', merged.pump(function (envelope, callback) {
+            destructible.durable('merged', merged.pump(function (envelope, callback) {
                 if (envelope == null) {
                     writable.end(callback)
                 } else {
@@ -95,12 +95,12 @@ function prove (okay, callback) {
             var createApplication = cadence(function (async, destructible, id) {
                 var application = new Application
                 async(function () {
-                    destructible.monitor('counterfeiter', Counterfeiter, containerized, application, {
+                    destructible.durable('counterfeiter', Counterfeiter, containerized, application, {
                         island: 'island',
                         id: id
                     }, async())
                 }, function (conference) {
-                    destructible.monitor('events', conference.events.pump(merge), 'destructible', null)
+                    destructible.durable('events', conference.events.pump(merge), 'destructible', null)
                     applications[id] = {
                         application: application,
                         conference: conference
@@ -116,7 +116,7 @@ function prove (okay, callback) {
             }, function (body) {
                 okay(body, [], 'empty island')
                 async(function () {
-                    destructible.monitor('first', createApplication, 'first', async())
+                    destructible.durable('first', createApplication, 'first', async())
                 }, function () {
                 //    applications.first.conference.ready(async())
                 }, function () {
@@ -126,14 +126,14 @@ function prove (okay, callback) {
                 })
             }, function () {
                 async(function () {
-                    destructible.monitor('racer', true, createApplication, 'racer', async())
+                    destructible.ephemeral('racer', createApplication, 'racer', async())
                 }, function () {
                     console.log('racer built')
 //                    applications.racer.conference.ready(async())
                 })
             }, function () {
                 async(function () {
-                    destructible.monitor('second', true, createApplication, 'second', async())
+                    destructible.ephemeral('second', createApplication, 'second', async())
                 }, function () {
                     console.log('built second')
                  //   applications.second.conference.ready(async())
@@ -149,7 +149,7 @@ function prove (okay, callback) {
                 })
             }, function () {
                 async(function () {
-                    destructible.monitor('third', createApplication, 'third', async())
+                    destructible.durable('third', createApplication, 'third', async())
                 }, function () {
                   //  applications.third.conference.ready(async())
                 }, function () {
@@ -175,5 +175,5 @@ function prove (okay, callback) {
                 })
             })
         })
-    })(destructible.monitor('test'))
+    })(destructible.durable('test'))
 }

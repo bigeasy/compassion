@@ -46,8 +46,8 @@ function Local (destructible, colleagues, options) {
     var timer = new Timer(scheduler)
 
     destructible.destruct.wait(scheduler, 'clear')
-    destructible.monitor('timer', timer.events.pump(this, '_scheduled'), 'destructible', null)
-    destructible.monitor('scheduler', scheduler.events.pump(timer, 'enqueue'), 'destructible', null)
+    destructible.durable('timer', timer.events.pump(this, '_scheduled'), 'destructible', null)
+    destructible.durable('scheduler', scheduler.events.pump(timer, 'enqueue'), 'destructible', null)
 
     this.scheduler = scheduler
 
@@ -58,9 +58,9 @@ function Local (destructible, colleagues, options) {
 }
 
 Local.prototype._record = cadence(function (async, destructible, kibitzer, id) {
-    destructible.monitor('played', kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record'), 'destructible', null)
-    destructible.monitor('paxos', kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record'), 'destructible', null)
-    destructible.monitor('islander', kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record'), 'destructible', null)
+    destructible.durable('played', kibitzer.played.pump(new Recorder(this.events, id, 'kibitzer'), 'record'), 'destructible', null)
+    destructible.durable('paxos', kibitzer.paxos.outbox.pump(new Recorder(this.events, id, 'paxos'), 'record'), 'destructible', null)
+    destructible.durable('islander', kibitzer.islander.outbox.pump(new Recorder(this.events, id, 'islander'), 'record'), 'destructible', null)
     return kibitzer
 })
 
@@ -68,7 +68,7 @@ Local.prototype._connect = cadence(function (async, destructible, inbox, outbox)
     var shifter = inbox.shifter()
     var connection = new Connection(destructible, this)
     async(function () {
-        destructible.monitor('conduit', Conduit, shifter, outbox, connection, 'connect', async())
+        destructible.durable('conduit', Conduit, shifter, outbox, connection, 'connect', async())
     }, function (conduit) {
         destructible.destruct.wait(conduit.shifter, 'destroy')
         connection.conduit = conduit
@@ -101,7 +101,7 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
             this.colleague.colleagues.island[this.island] = {}
         }
         this.colleague.colleagues.island[this.island][this.id] = this
-        this.destructible.monitor('inbox', inbox.pump(this, 'receive'), 'destructible', null)
+        this.destructible.durable('inbox', inbox.pump(this, 'receive'), 'destructible', null)
         this.colleague.outbox = outbox
         this.kibitzer = new Kibitzer({
             id: this.id,
@@ -121,7 +121,7 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 })
             }
         })
-        this.destructible.monitor('pinged', this.kibitzer.paxos.pinged.pump(this, function (envelope) {
+        this.destructible.durable('pinged', this.kibitzer.paxos.pinged.pump(this, function (envelope) {
             if (envelope == null) {
                 return
             }
@@ -141,11 +141,11 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         this.destructible.destruct.wait(this, function () {
             this.colleague.scheduler.unschedule(Keyify.stringify({ island: this.island, id: this.id }))
         })
-        this.destructible.monitor('entries', this.kibitzer.paxos.log.pump(this, 'entry'), 'destructible', null)
+        this.destructible.durable('entries', this.kibitzer.paxos.log.pump(this, 'entry'), 'destructible', null)
         async(function () {
-            this.destructible.monitor('kibitzer', this.kibitzer, 'listen', async())
+            this.destructible.durable('kibitzer', this.kibitzer, 'listen', async())
         }, function () {
-            this.destructible.monitor('record', this.colleague, '_record', this.kibitzer, this.id, async())
+            this.destructible.durable('record', this.colleague, '_record', this.kibitzer, this.id, async())
         }, function () {
             this.colleague.scheduler.schedule(Date.now(), Keyify.stringify({
                 island: this.island,
@@ -354,7 +354,7 @@ Local.prototype._scheduled = cadence(function (async, envelope) {
 Local.prototype.connect = cadence(function (async, inbox, outbox) {
     // If we already have one and it doesn't match, then we destroy this one.
     // Create a new instance.
-    this._destructible.monitor([ 'colleague', this._instance++ ], true, this, '_connect', inbox, outbox, async())
+    this._destructible.ephemeral([ 'colleague', this._instance++ ], this, '_connect', inbox, outbox, async())
 })
 
 module.exports = Local
