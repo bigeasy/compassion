@@ -32,7 +32,7 @@
                             "keyify":                       "0.0.x",
                             "kibitz":                       "0.40.x",
                             "monotonic":                    "3.0.x",
-                            "olio":                         "0.37.x",
+                            "olio":                         "0.38.x",
                             "procession":                   "2.7.x",
                             "prolific.logger":              "8.4.x",
                             "reactor":                      "10.10.x",
