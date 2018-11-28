@@ -116,7 +116,7 @@ function prove (okay, callback) {
             }, function (body) {
                 okay(body, [], 'empty island')
                 async(function () {
-                    destructible.durable('first', createApplication, 'first', async())
+                    destructible.ephemeral('first', createApplication, 'first', async())
                 }, function () {
                 //    applications.first.conference.ready(async())
                 }, function () {
@@ -160,10 +160,13 @@ function prove (okay, callback) {
                     containerized.terminate('island', 'fourth')
                     containerized.terminate('island', 'second')
                     applications.third.application.envelopes.shifter().join(function (envelope) {
+                        console.log('>>>', envelope)
                         return envelope.method == 'depart'
                     }, async())
                 }, function () {
+                    console.log(containerized.ids('island'))
                     containerized.terminate('island', 'first')
+                    console.log(containerized.ids('island'))
                     async.loop([], function () {
                         async(function () {
                             if (containerized.ids('island').length == 0) {
