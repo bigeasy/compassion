@@ -18,7 +18,7 @@ function Replay (destructible, options, callback) {
 
 Replay.prototype._initialize = cadence(function (async, destructible, inbox, outbox) {
     async(function () {
-        destructible.monitor('conduit', Conduit, inbox, outbox, this, '_connect', async())
+        destructible.durable('conduit', Conduit, inbox, outbox, this, '_connect', async())
     }, function (conduit) {
         this._conduit = conduit
         return this
@@ -28,7 +28,7 @@ Replay.prototype._initialize = cadence(function (async, destructible, inbox, out
 Replay.prototype._connect = cadence(function (async, envelope, inbox, outbox) {
     switch (envelope.method) {
     case 'ready':
-        this._destructible.monitor('play', this, '_play', inbox, outbox, null)
+        this._destructible.durable('play', this, '_play', inbox, outbox, null)
         outbox.push({ method: 'ready', island: this._options.island, id: this._options.id })
         break
     case 'broadcasts':
@@ -39,7 +39,7 @@ Replay.prototype._connect = cadence(function (async, envelope, inbox, outbox) {
         })
         break
     case 'snapshot':
-        this._snapshot(outbox, this._destructible.monitor('snapshot', true))
+        this._snapshot(outbox, this._destructible.ephemeral('snapshot'))
         break
     }
 })
@@ -108,7 +108,7 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
             ping: this._options.ping,
             timeout: this._options.timeout
         })
-        destructible.monitor('islander', kibitzer.paxos.log.pump(kibitzer.islander, 'push'), 'destructible', null)
+        destructible.durable('islander', kibitzer.paxos.log.pump(kibitzer.islander, 'push'), 'destructible', null)
         this._paxos = kibitzer.paxos.outbox.shifter()
         this._islander = kibitzer.islander.outbox.shifter()
         this._log = kibitzer.paxos.log.shifter()

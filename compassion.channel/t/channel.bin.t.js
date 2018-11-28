@@ -10,7 +10,7 @@ function prove (okay, callback) {
 
     var cadence = require('cadence')
 
-    program = bin([ '--id', 'third' ], {}, destructible.monitor('run'))
+    program = bin([ '--id', 'third' ], {}, destructible.durable('run'))
 
     cadence(function (async) {
         async(function () {
@@ -21,5 +21,5 @@ function prove (okay, callback) {
         }, function () {
             okay('ran')
         })
-    })(destructible.monitor('test'))
+    })(destructible.durable('test'))
 }

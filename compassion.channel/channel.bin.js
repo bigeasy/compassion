@@ -48,5 +48,5 @@ require('arguable')(module, function (program, callback) {
         }, function () {
             program.ready.unlatch()
         })
-    })(destructible.monitor('test'))
+    })(destructible.durable('main'))
 })
