@@ -85,7 +85,7 @@ function Connection (destructible, colleague, ua) {
     this.ua = ua
     this.createdAt = Date.now()
     this.destroyed = false
-    destructible.markDestroyed(this)
+    destructible.destruct.wait(this, function () { this.destroyed = true })
 }
 
 Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox) {
