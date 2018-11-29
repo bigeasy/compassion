@@ -22,12 +22,12 @@
     {
                             "byline":                       "5.0.x",
                             "cadence":                      "2.0.x",
-                            "compassion.conference":        "0.18.x",
-                            "conduit":                      "2.35.x",
+                            "compassion.conference":        "0.19.x",
+                            "conduit":                      "2.36.x",
                             "departure":                    "0.0.x",
-                            "destructible":                 "0.40.x",
-                            "kibitz":                       "0.42.x",
-                            "staccato":                     "6.5.x"
+                            "destructible":                 "0.41.x",
+                            "kibitz":                       "0.43.x",
+                            "staccato":                     "6.6.x"
     },
     "devDependencies":
     {
