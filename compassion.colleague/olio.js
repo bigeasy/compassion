@@ -1,4 +1,7 @@
 var cadence = require('cadence')
+
+var coalesce = require('extant')
+
 var Conduit = require('conduit/conduit')
 var Population = require('./population')
 var Resolver = require('./resolver/conduit')
@@ -22,18 +25,19 @@ module.exports = cadence(function (async, destructible, olio, properties) {
             destructible.durable('conduit', Conduit, inbox, outbox, null, async())
         }), async())
     }, function (sender) {
+        var ping = coalesce(properties.ping, {})
+        var timeout = coalesce(properties.timeout, {})
         var resolver = new Resolver(sender.processes[0].conduit)
         destructible.durable('containerized', Containerized, {
             population: new Population(resolver, ua),
             ping: {
-                chaperon: 150,
-                paxos: 150,
-                application: 150
+                chaperon: coalesce(ping.chaperon, 150),
+                paxos: coalesce(ping.paxos, 150)
             },
             timeout: {
-                chaperon: 450,
-                paxos: 450,
-                http: 500
+                chaperon: coalesce(timeout.chaperon, 450),
+                paxos: coalesce(timeout.paxos, 450),
+                http: coalesce(timeout.http, 500)
             },
             bind: {
                 networked: {
