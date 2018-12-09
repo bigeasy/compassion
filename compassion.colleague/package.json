@@ -35,7 +35,7 @@
                             "olio":                         "0.42.x",
                             "procession":                   "2.10.x",
                             "prolific.logger":              "8.4.x",
-                            "reactor":                      "10.10.x",
+                            "reactor":                      "10.12.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.6.x",
                             "vizsla":                       "12.17.x"
