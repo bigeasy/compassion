@@ -34,7 +34,7 @@
                             "monotonic":                    "3.0.x",
                             "olio":                         "0.42.x",
                             "procession":                   "2.10.x",
-                            "prolific.logger":              "8.4.x",
+                            "prolific.logger":              "8.6.x",
                             "reactor":                      "10.12.x",
                             "server-destroy":               "1.0.1",
                             "staccato":                     "6.6.x",
