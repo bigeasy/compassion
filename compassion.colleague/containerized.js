@@ -16,7 +16,7 @@ module.exports = cadence(function (async, destructible, options) {
         destructible.destruct.wait(server, 'destroy')
         async(function () {
             delta(async()).ee(server).on('listening')
-            server.listen(options.bind.port, options.bind.iface,)
+            server.listen(options.bind.port, options.bind.iface)
         }, function () {
             delta(destructible.durable('networked')).ee(server).on('close')
             return [ local, networked ]
