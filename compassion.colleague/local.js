@@ -27,7 +27,7 @@ function Local (destructible, colleagues, options) {
 
     this._Conference = options.Conference
     this._population = options.population
-    this._networkedUrl = 'http://' + options.bind.networked.address + ':' + options.bind.networked.port + '/'
+    this._networkedUrl = 'http://' + options.bind.address + ':' + options.bind.port + '/'
 
     var ping = coalesce(options.ping, {})
     var timeout = coalesce(options.timeout, {})

@@ -14,9 +14,12 @@ module.exports = cadence(function (async, destructible, options) {
         var server = http.createServer(networked.reactor.middleware)
         destroyer(server)
         destructible.destruct.wait(server, 'destroy')
-        delta(destructible.durable('networked')).ee(server).on('close')
-        options.bind.networked.listen(server, async())
-    }, function () {
-        return [ local, networked ]
+        async(function () {
+            delta(async()).ee(server).on('listening')
+            server.listen(options.bind.port, options.bind.iface,)
+        }, function () {
+            delta(destructible.durable('networked')).ee(server).on('close')
+            return [ local, networked ]
+        })
     })
 })

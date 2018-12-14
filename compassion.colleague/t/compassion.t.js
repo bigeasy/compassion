@@ -62,13 +62,9 @@ function prove (okay, callback) {
                     http: 500
                 },
                 bind: {
-                    networked: {
-                        listen: function (server, callback) {
-                            server.listen(8486, '127.0.0.1', callback)
-                        },
-                        address: '127.0.0.1',
-                        port: 8486
-                    }
+                    iface: '127.0.0.1',
+                    address: '127.0.0.1',
+                    port: 8486
                 }
             }, async())
         }, function ($containerized) {

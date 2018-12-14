@@ -40,13 +40,9 @@ module.exports = cadence(function (async, destructible, olio, properties) {
                 http: coalesce(timeout.http, 500)
             },
             bind: {
-                networked: {
-                    listen: function (server, callback) {
-                        server.listen(8486, '127.0.0.1', callback)
-                    },
-                    address: '127.0.0.1',
-                    port: 8486
-                }
+                iface: coalesce(properties.iface, '127.0.0.1'),
+                address: coalesce(properties.address, '127.0.0.1'),
+                port: coalesce(properties.port, 8486)
             }
         }, async())
     }, function (colleague) {
