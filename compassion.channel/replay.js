@@ -118,7 +118,6 @@ Replay.prototype._play = cadence(function (async, destructible, inbox, outbox) {
             if (envelope == null) {
                 return [ async.break ]
             }
-            // TODO While `entry` is null.
             var entry = this._log.shift()
             departure.raise(entry, envelope.body)
             async(function () {
