@@ -28,6 +28,7 @@ module.exports = cadence(function (async, destructible, olio, properties) {
         var ping = coalesce(properties.ping, {})
         var timeout = coalesce(properties.timeout, {})
         var resolver = new Resolver(sender.processes[0].conduit)
+        var bind = coalesce(properties.bind, {})
         destructible.durable('containerized', Containerized, {
             population: new Population(resolver, ua),
             ping: {
@@ -40,9 +41,8 @@ module.exports = cadence(function (async, destructible, olio, properties) {
                 http: coalesce(timeout.http, 500)
             },
             bind: {
-                iface: coalesce(properties.iface, '127.0.0.1'),
-                address: coalesce(properties.address, '127.0.0.1'),
-                port: coalesce(properties.port, 8486)
+                iface: coalesce(bind.iface, '127.0.0.1'),
+                port: coalesce(bind.port, 8486)
             }
         }, async())
     }, function (colleague) {
