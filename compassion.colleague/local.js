@@ -83,7 +83,6 @@ function Connection (destructible, colleague, ua) {
     this.destructible = destructible
     this.colleague = colleague
     this.ua = ua
-    this.createdAt = Date.now()
     this.destroyed = false
     destructible.destruct.wait(this, function () { this.destroyed = true })
 }
@@ -250,7 +249,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         action = discover(envelope.body.id, members, complete)
         break
     case 'embark':
-        action = embark(members, 0)
+        action = embark(members, envelope.body.republic)
         break
     case 'recoverable':
         action = recoverable(envelope.body.id, members)
@@ -266,10 +265,10 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
     case 'bootstrap':
         var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))
         properties.url = action.url
-        colleague.kibitzer.bootstrap(0, properties)
+        colleague.kibitzer.bootstrap(Date.now(), properties)
         break
     case 'join':
-        colleague.kibitzer.join(0)
+        colleague.kibitzer.join(action.republic)
         this.scheduler.schedule(Date.now(), Keyify.stringify({
             island: envelope.body.island,
             id: envelope.body.id
