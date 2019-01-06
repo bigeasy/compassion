@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "cadence":                      "2.0.x",
+                            "cadence":                      "3.0.x",
                             "procession":                   "3.0.x"
     },
     "devDependencies":
