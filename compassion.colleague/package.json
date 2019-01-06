@@ -42,7 +42,7 @@
     },
     "devDependencies":
     {
-                            "interlocutor":                 "0.6.x",
+                            "interlocutor":                 "0.7.x",
                             "mingle":                       "0.31.x",
                             "mingle.static":                "0.10.x",
                             "proof":                        "5.0.x",
