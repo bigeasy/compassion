@@ -33,7 +33,7 @@
                             "kibitz":                       "0.43.x",
                             "monotonic":                    "3.0.x",
                             "olio":                         "0.44.x",
-                            "procession":                   "2.10.x",
+                            "procession":                   "3.0.x",
                             "prolific.logger":              "9.0.x",
                             "reactor":                      "11.0.x",
                             "server-destroy":               "1.0.1",
