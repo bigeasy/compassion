@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "cadence":                      "2.0.x",
+                            "cadence":                      "3.0.x",
                             "conduit":                      "3.0.x",
                             "cubbyhole":                    "1.6.x",
                             "extant":                       "1.0.x",
