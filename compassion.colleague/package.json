@@ -46,7 +46,7 @@
                             "mingle":                       "0.31.x",
                             "mingle.static":                "0.10.x",
                             "proof":                        "5.0.x",
-                            "signal":                       "6.0.x"
+                            "signal":                       "7.0.x"
     },
     "main":                 "colleague.bin",
     "scripts":
