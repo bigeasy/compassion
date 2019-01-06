@@ -22,7 +22,7 @@
     {
                             "cadence":                      "2.0.x",
                             "conduit":                      "2.36.x",
-                            "cubbyhole":                    "1.4.x",
+                            "cubbyhole":                    "1.6.x",
                             "extant":                       "1.0.x",
                             "interrupt":                    "6.4.x",
                             "monotonic":                    "3.0.x",
