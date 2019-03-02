@@ -45,7 +45,7 @@
                             "interlocutor":                 "1.0.x",
                             "mingle":                       "0.32.x",
                             "mingle.static":                "0.12.x",
-                            "proof":                        "5.0.x",
+                            "proof":                        "7.0.x",
                             "signal":                       "7.0.x"
     },
     "main":                 "colleague.bin",
