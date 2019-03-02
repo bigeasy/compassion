@@ -15,7 +15,7 @@ function prove (okay, callback) {
     cadence(function (async) {
         async(function () {
             destructible.durable('mock', Mock, {
-                socket: 't/socket',
+                socket: path.join(__dirname, 'socket'),
                 children: {
                     compassion: {
                         path: path.resolve(__dirname, '../olio.js'),

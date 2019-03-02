@@ -11,10 +11,10 @@ function prove (okay, callback) {
     var Staccato = require('staccato')
 
     var Replay = require('../replay')
-    var Application = require('../../compassion.colleague/t/application')
+    var Application = require('../../compassion.colleague/test/application')
 
     var Destructible = require('destructible')
-    var destructible = new Destructible('t/replay.t.js')
+    var destructible = new Destructible('test/replay.t.js')
 
     var byline = require('byline')
 
@@ -30,7 +30,7 @@ function prove (okay, callback) {
             }
             destructible.durable('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
             destructible.durable('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
-            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
+            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 'test', 'entries.jsons'))
             async(function () {
                 var application = new Application('second', null)
                 var readable = new Staccato.Readable(byline(input))
@@ -51,7 +51,7 @@ function prove (okay, callback) {
             })
         }, function () {
             var inbox = new Procession, outbox = new Procession
-            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 't', 'entries.jsons'))
+            var input = fs.createReadStream(path.join(__dirname, '..', '..', 'compassion.colleague', 'test', 'entries.jsons'))
             async(function () {
                 var application = new Application('first', null)
                 var readable = new Staccato.Readable(byline(input))

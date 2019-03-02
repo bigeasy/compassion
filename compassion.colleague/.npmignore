@@ -3,4 +3,4 @@
 /Dockerfile
 /Dockerfile.*
 /coverage
-/t
+/test
