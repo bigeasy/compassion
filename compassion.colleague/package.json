@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.colleague",
-    "version":              "0.64.1",
+    "version":              "1.0.0",
     "description":
 
       "Instance of a compassion island participant.",
