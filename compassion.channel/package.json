@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.channel",
-    "version":              "0.25.1",
+    "version":              "1.0.0",
     "description":
 
       "Instance of a compassion island participant.",
