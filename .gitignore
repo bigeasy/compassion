@@ -4,8 +4,10 @@
 /*/node_modules/*
 !/compassion.channel/node_modules/example.js
 !/compassion.root/node_modules/compassion.test.js
-/compassion.counterfeiter/t/counterfeiter.*.jsons
-/compassion.colleague/t/*.jsons
+/compassion.counterfeiter/test/counterfeiter.*.jsons
+/compassion.colleague/test/*.jsons
 /.proof.out
 /coverage
+/.nyc_output
 /*/coverage
+/*/.nyc_output
