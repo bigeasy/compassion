@@ -25,7 +25,7 @@
                             "compassion.conference":        "0.19.x",
                             "conduit":                      "2.36.x",
                             "departure":                    "0.0.x",
-                            "destructible":                 "0.41.x",
+                            "destructible":                 "1.0.x",
                             "kibitz":                       "0.43.x",
                             "staccato":                     "6.6.x"
     },
