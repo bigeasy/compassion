@@ -28,5 +28,9 @@
     "scripts":
     {
                             "test": "proof test compassion.colleague/test/*.t.js compassion.channel/test/*.t.js compassion.root/test/*.t.js"
+    },
+    "nyc":
+    {
+                            "exclude": [ "*/test**" ]
     }
 }
