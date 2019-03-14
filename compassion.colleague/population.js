@@ -21,7 +21,8 @@ Population.prototype.census = cadence(function (async, island, id) {
                         url: location
                     }, {
                         url: [ '.', 'island', island, 'islanders' ].join('/'),
-                        parse: 'json'
+                        parse: 'json',
+                        nullify: true
                     }, async())
                 }, function (body, response) {
                     if (body == null) {
