@@ -1,25 +1,19 @@
-require('proof')(1, prove)
+require('proof')(1, require('cadence')(prove))
 
-function prove (okay, callback) {
-    var bin = require('..'), program
-
-    var Destructible = require('destructible')
-    var destructible = new Destructible('t/channel.bin')
-
-    destructible.completed.wait(callback)
-
-    var cadence = require('cadence')
-
-    program = bin([ '--id', 'third' ], {}, destructible.durable('run'))
-
-    cadence(function (async) {
+function prove (async, okay) {
+    var bin = require('..')
+    var stream = require('stream')
+    async(function () {
+        bin([ '--id', 'third' ], {
+            $trap: false,
+            $stdin: new stream.PassThrough
+        }, async())
+    }, function (child) {
         async(function () {
-            program.ready.wait(async())
-        }, function () {
-            program.stdin.end('\n')
-            program.emit('SIGTERM')
-        }, function () {
-            okay('ran')
+            child.exit(async())
+            child.destroy()
+        }, function (exitCode) {
+            okay(exitCode, 0, 'exit')
         })
-    })(destructible.durable('test'))
+    })
 }
