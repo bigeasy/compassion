@@ -96,10 +96,6 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
         this.island = envelope.registration.island
         this.properties = coalesce(envelope.registration.properties, {})
         this.destructible.context.push(this.island, this.id, this.properties)
-        if (this.colleague.colleagues.island[this.island] == null) {
-            this.colleague.colleagues.island[this.island] = {}
-        }
-        this.colleague.colleagues.island[this.island][this.id] = this
         this.destructible.durable('inbox', inbox.pump(this, 'receive'), 'destructible', null)
         this.colleague.outbox = outbox
         this.kibitzer = new Kibitzer({
@@ -160,6 +156,11 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 id: this.id,
                 properties: this.properties
             })
+            if (this.colleague.colleagues.island[this.island] == null) {
+                this.colleague.colleagues.island[this.island] = {}
+            }
+            this.colleague.colleagues.island[this.island][this.id] = this
+            this.createdAt = Date.now()
         })
         break
     case 'broadcasts':
