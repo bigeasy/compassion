@@ -16,7 +16,7 @@ function prove (okay, callback) {
         async(function () {
             destructible.durable('mock', Mock, {
                 socket: path.join(__dirname, 'socket'),
-                children: {
+                constituents: {
                     compassion: {
                         path: path.resolve(__dirname, '../olio.js'),
                         workers: 1,
