@@ -19,11 +19,13 @@ function prove (async, okay) {
     var islanders = [ [ 200, { 'content-type': 'application/json' }, [{
         id: 'first',
         government: {},
-        cookie: 0
+        cookie: 0,
+        createdAt: 0
     }, {
         id: 'second',
         government: {},
-        cookie: 0
+        cookie: 0,
+        createdAt: 1
     }]], 404 ]
     Service.prototype.islanders = cadence(function (async) {
         return islanders.shift()
@@ -47,12 +49,14 @@ function prove (async, okay) {
             id: 'first',
             url: 'http://127.0.0.1:8080/island/island/islander/first/',
             government: {},
-            cookie: 0
+            cookie: 0,
+            createdAt: 0
         }, {
             id: 'second',
             url: 'http://127.0.0.1:8080/island/island/islander/second/',
             government: {},
-            cookie: 0
+            cookie: 0,
+            createdAt: 1
         }], 'members')
     })
 }

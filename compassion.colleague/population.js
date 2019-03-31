@@ -1,5 +1,6 @@
 var cadence = require('cadence')
 var url = require('url')
+var logger = require('prolific.logger').createLogger('compassion.colleague')
 
 function Population (resolver, ua) {
     this._resolver = resolver
@@ -13,6 +14,7 @@ Population.prototype.census = cadence(function (async, island, id) {
     async(function () {
         this._resolver.resolve(async())
     }, function (instances) {
+        logger.trace('population.instances', { $instances: instances })
         var complete = true
         async(function () {
             async.map([ instances ], function (location) {
@@ -25,6 +27,9 @@ Population.prototype.census = cadence(function (async, island, id) {
                         nullify: true
                     }, async())
                 }, function (body, response) {
+                    logger.trace('population.instance', {
+                        island: island, $body: body
+                    })
                     if (body == null) {
                         return null
                     }
@@ -34,7 +39,8 @@ Population.prototype.census = cadence(function (async, island, id) {
                             id: member.id,
                             government: member.government,
                             cookie: member.cookie,
-                            url: url.resolve(location, path)
+                            url: url.resolve(location, path),
+                            createdAt: member.createdAt
                         }
                     }) ]
                 })
