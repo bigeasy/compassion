@@ -321,7 +321,7 @@ Local.prototype._overwatch = cadence(function (async, colleague, envelope, membe
         this.scheduler.schedule(Date.now() + this._ping.chaperon, envelope.key, envelope.body)
         break
     case 'unrecoverable':
-        colleague.destructible.destroy()
+        this._destructible.destroy()
         break
     }
 })
