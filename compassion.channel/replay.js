@@ -64,6 +64,7 @@ Replay.prototype._advance = cadence(function (async, type) {
             this._readable.read(async())
         }, function (envelope) {
             if (envelope == null) {
+                this._readable.raise()
                 return [ async.break, null ]
             }
             envelope = JSON.parse(envelope.toString('utf8'))
