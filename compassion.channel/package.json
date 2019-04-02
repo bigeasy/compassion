@@ -26,12 +26,12 @@
                             "compassion.conference":        "1.0.x",
                             "conduit":                      "3.0.x",
                             "departure":                    "1.0.x",
-                            "destructible":                 "2.0.x",
                             "kibitz":                       "1.0.x",
                             "staccato":                     "8.0.x"
     },
     "devDependencies":
     {
+                            "destructible":                 "2.0.x",
                             "procession":                   "4.0.x",
                             "proof":                        "7.0.x"
     },
