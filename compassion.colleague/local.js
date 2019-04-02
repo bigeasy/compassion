@@ -16,9 +16,7 @@ var Recorder = require('./recorder')
 
 var Conduit = require('conduit/conduit')
 
-var Deserialize = require('procession/deserialize')
-
-var Staccato = require('staccato')
+var Reader = require('procession/reader')
 
 function Local (destructible, colleagues, options) {
     this._destructible = destructible
@@ -188,7 +186,13 @@ Connection.prototype.connect = cadence(function (async, envelope, inbox, outbox)
                 parse: 'stream'
             }, async())
         }, function (stream, response) {
-            Deserialize(new Staccato.Readable(stream), outbox, async())
+            var reader = new Reader(outbox, stream)
+            async(function () {
+                reader.read(async())
+            }, function () {
+                reader.raise()
+                return []
+            })
         })
         break
     }

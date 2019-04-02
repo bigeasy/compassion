@@ -61,9 +61,14 @@ Networked.prototype.snapshot = cadence(function (async, request, island, id) {
         promise: request.body.promise,
         inbox: true
     })
-    return [ 200, { 'content-type': 'application/octet-stream' }, function (response, callback) {
-        Serialize(request.inbox, new Staccato.Writable(response), callback)
-    } ]
+    return [ 200, { 'content-type': 'application/octet-stream' }, cadence(function(async, response) {
+        var writer = new Writer(request.inbox, response)
+        async(function () {
+            writer.write(async())
+        }, function () {
+            return []
+        })
+    }) ]
 })
 
 Networked.prototype.islanders = cadence(function (async, request, island) {
