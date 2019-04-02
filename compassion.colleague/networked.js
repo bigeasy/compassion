@@ -5,7 +5,7 @@ var logger = require('prolific.logger').createLogger('compassion.networked')
 
 var coalesce = require('extant')
 
-var Serialize = require('procession/serialize')
+var Writer = require('procession/writer')
 
 function Networked (destructible, colleagues) {
     this._destructible = destructible
