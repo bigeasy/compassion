@@ -7,8 +7,6 @@ var coalesce = require('extant')
 
 var Serialize = require('procession/serialize')
 
-var Staccato = require('staccato')
-
 function Networked (destructible, colleagues) {
     this._destructible = destructible
     this._colleagues = colleagues

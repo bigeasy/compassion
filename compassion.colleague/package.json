@@ -37,7 +37,6 @@
                             "prolific.logger":              "9.0.x",
                             "reactor":                      "13.0.x",
                             "server-destroy":               "1.0.1",
-                            "staccato":                     "7.0.x",
                             "vizsla":                       "13.0.x"
     },
     "devDependencies":
