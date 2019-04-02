@@ -25,7 +25,6 @@
                             "compassion.conference":        "1.0.x",
                             "conduit":                      "3.0.x",
                             "delta":                        "3.0.x",
-                            "destructible":                 "2.0.x",
                             "extant":                       "1.0.x",
                             "foremost":                     "1.0.x",
                             "happenstance":                 "11.0.x",
@@ -41,6 +40,7 @@
     },
     "devDependencies":
     {
+                            "destructible":                 "2.0.x",
                             "interlocutor":                 "1.0.x",
                             "mingle":                       "4.0.x",
                             "mingle.static":                "1.0.x",
