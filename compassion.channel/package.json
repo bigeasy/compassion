@@ -32,7 +32,7 @@
     },
     "devDependencies":
     {
-                            "procession":                   "3.0.x",
+                            "procession":                   "4.0.x",
                             "proof":                        "7.0.x"
     },
     "main":                 "channel.bin",
