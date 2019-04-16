@@ -33,7 +33,7 @@
                             "monotonic":                    "3.0.x",
                             "olio":                         "4.0.x",
                             "procession":                   "4.0.x",
-                            "prolific.logger":              "9.0.x",
+                            "prolific.logger":              "10.0.x",
                             "reactor":                      "13.0.x",
                             "server-destroy":               "1.0.1",
                             "vizsla":                       "13.0.x"
