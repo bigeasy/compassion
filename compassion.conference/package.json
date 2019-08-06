@@ -20,13 +20,12 @@
     },
     "dependencies":
     {
-                            "cadence":                      "3.0.x",
-                            "conduit":                      "4.0.x",
-                            "cubbyhole":                    "1.6.x",
+                            "conduit":                      "6.0.x",
+                            "cubbyhole":                    "2.0.x",
                             "extant":                       "1.0.x",
-                            "interrupt":                    "7.0.x",
+                            "interrupt":                    "8.0.x",
                             "monotonic":                    "3.0.x",
-                            "procession":                   "4.0.x"
+                            "avenue":                       "0.1.x"
     },
     "devDependencies":
     {

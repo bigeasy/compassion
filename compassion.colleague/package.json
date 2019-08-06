@@ -21,22 +21,17 @@
     "dependencies":
     {
                             "byline":                       "5.0.x",
-                            "cadence":                      "3.0.x",
-                            "compassion.conference":        "2.0.x",
-                            "conduit":                      "4.0.x",
-                            "delta":                        "3.0.x",
+                            "conduit":                      "6.0.x",
                             "extant":                       "1.0.x",
                             "foremost":                     "1.0.x",
                             "happenstance":                 "11.0.x",
                             "keyify":                       "1.0.x",
-                            "kibitz":                       "1.0.x",
+                            "kibitz":                       "2.0.x",
                             "monotonic":                    "3.0.x",
-                            "olio":                         "4.0.x",
-                            "procession":                   "4.0.x",
-                            "prolific.logger":              "10.0.x",
-                            "reactor":                      "14.0.x",
-                            "server-destroy":               "1.0.1",
-                            "vizsla":                       "14.0.x"
+                            "olio":                         "6.0.x",
+                            "avenue":                       "0.1.x",
+                            "prolific.logger":              "12.0.x",
+                            "server-destroy":               "1.0.1"
     },
     "devDependencies":
     {
@@ -47,9 +42,8 @@
                             "proof":                        "7.0.x",
                             "signal":                       "7.0.x"
     },
-    "main":                 "colleague.bin",
     "scripts":
     {
-                            "test": "proof test test/*.t.js"
+                            "test": "mocha test/*.test.js"
     }
 }
