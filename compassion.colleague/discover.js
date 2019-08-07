@@ -1,5 +1,5 @@
-var Monotonic  = require('monotonic').asString
-var coalesce = require('extant')
+const Monotonic  = require('monotonic').asString
+const coalesce = require('extant')
 
 module.exports =  function (id, members, complete) {
     // Never mind.
@@ -8,12 +8,12 @@ module.exports =  function (id, members, complete) {
     }
 
     // Find ourselves.
-    var self = members.filter(function (member) {
+    const selves = members.filter(function (member) {
         return member.id == id
     })
 
     // If we cannot reach ourselves, let's not bother.
-    if (self.length != 1) {
+    if (selves.length != 1) {
         return { action: 'retry' }
     }
 
@@ -25,7 +25,7 @@ module.exports =  function (id, members, complete) {
         if (!complete) {
             return { action: 'retry' }
         }
-        self = self.shift()
+        const self = selves.shift()
         members.sort(function (a, b) {
             return a.createdAt - b.createdAt
         })
@@ -36,7 +36,7 @@ module.exports =  function (id, members, complete) {
         return { action: 'retry' }
     }
 
-    var unsplit = members.filter(function (member) {
+    const unsplit = members.filter(function (member) {
         return member.government.republic == members[0].government.republic
     })
 
@@ -44,10 +44,10 @@ module.exports =  function (id, members, complete) {
         return -Monotonic.compare(a.government.promise, b.government.promise)
     })
 
-    var government = unsplit[0].government
-    var ids = unsplit.map(function (member) { return member.id })
+    const government = unsplit[0].government
+    const ids = unsplit.map(function (member) { return member.id })
 
-    var synod = government.majority.concat(government.minority)
+    const synod = government.majority.concat(government.minority)
 
     if (synod.filter(function (id) {
         return !! ~ids.indexOf(id)
@@ -55,7 +55,7 @@ module.exports =  function (id, members, complete) {
         return { action: 'retry' }
     }
 
-    self = self.shift()
+    const self = selves.shift()
 
     return {
         action: 'join',
