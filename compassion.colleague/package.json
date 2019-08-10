@@ -24,23 +24,17 @@
                             "conduit":                      "6.0.x",
                             "extant":                       "1.0.x",
                             "foremost":                     "1.0.x",
-                            "happenstance":                 "11.0.x",
-                            "keyify":                       "1.0.x",
+                            "happenstance":                 "12.0.x",
+                            "keyify":                       "2.0.x",
                             "kibitz":                       "2.0.x",
                             "monotonic":                    "3.0.x",
                             "olio":                         "6.0.x",
                             "avenue":                       "0.1.x",
-                            "prolific.logger":              "12.0.x",
+                            "prolific.logger":              "10.0.x",
                             "server-destroy":               "1.0.1"
     },
     "devDependencies":
     {
-                            "destructible":                 "2.0.x",
-                            "interlocutor":                 "1.0.x",
-                            "mingle":                       "4.0.x",
-                            "mingle.static":                "1.0.x",
-                            "proof":                        "7.0.x",
-                            "signal":                       "7.0.x"
     },
     "scripts":
     {
