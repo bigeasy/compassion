@@ -15,14 +15,14 @@ const { default: Queue } = require('p-queue')
 console.log('compiled?')
 
 class Conference {
-    constructor (conduit, application, replaying) {
+    constructor (conduit, outbox, application, replaying) {
         this._application = application
         this._destructible = destructible
         this.log = new Avenue
         this.events = new Avenue
         this.consumed = new Avenue
         this._government = null
-        this.outbox = new Avenue
+        this._outbox = outbox
         this._replaying = !! replaying
         this._cookie = '0'
         this._snapshots = new Cubbyhole

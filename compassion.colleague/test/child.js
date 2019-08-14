@@ -1,5 +1,5 @@
-var Conference = require('../../compassion.conference')
-var Compassion = require('../compassion')(Conference)
+const Conference = require('../../compassion.conference')
+const Compassion = require('../compassion')(Conference)
 
 /*
 function Listener (colleague) {
@@ -37,8 +37,9 @@ module.exports = cadence(function (async, destructible, olio, properties) {
 */
 
 // Sketch.
-module.exports = function (destructible, olio, properties) {
-    require('compassion')(destructible.durable('compassion'), olio, async function (envelope, conference) {
+module.exports = async function (destructible, olio, properties) {
+    const assert = require('assert')
+    await Compassion(destructible.durable('compassion'), olio, async (envelope, conference) => {
         switch (envelope.method) {
         case 'bootstrap':
             break
@@ -61,7 +62,6 @@ module.exports = function (destructible, olio, properties) {
         case 'depart':
             break
         }
-    })
-    destructible.durable('conference', compassion.connect(olio))
+    }, 'island', 'first')
     return null
 }
