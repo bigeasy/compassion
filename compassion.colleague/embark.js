@@ -1,7 +1,7 @@
-var Monotonic = require('monotonic').asString
+const Monotonic = require('monotonic').asString
 
 module.exports = function (members, republic) {
-    var unsplit = members.filter(function (member) {
+    const unsplit = members.filter(function (member) {
         return member.government.promise != '0/0' && member.government.republic == republic
     })
 
@@ -14,9 +14,9 @@ module.exports = function (members, republic) {
         return -Monotonic.compare(a.government.promise, b.government.promise)
     })
 
-    var government = unsplit[0].government
+    const government = unsplit[0].government
 
-    var ids = unsplit.map(function (member) { return member.id })
+    const ids = unsplit.map(function (member) { return member.id })
 
     // Cannot find a quorum, unrecoverable.
     if (government.majority.concat(government.minority).filter(function (id) {
