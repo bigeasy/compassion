@@ -1,65 +1,38 @@
-var cadence = require('cadence')
-var url = require('url')
-var logger = require('prolific.logger').createLogger('compassion.colleague')
+const axios = require('axios')
+const url = require('url')
+const logger = require('prolific.logger').createLogger('compassion.colleague')
 
-function Population (resolver, ua) {
-    this._resolver = resolver
-    this._ua = ua
-}
+class Population {
+    constructor (resolver) {
+        this._resolver = resolver
+    }
 
-// We don't use `id` here, but we added it so we can use it in testing to get
-// test coverage of the race conidtion where the colleague is destroyed while
-// we're fetching the population.
-Population.prototype.census = cadence(function (async, island, id) {
-    async(function () {
-        this._resolver.resolve(async())
-    }, function (instances) {
-        logger.trace('population.instances', { $instances: instances })
-        var complete = true
-        async(function () {
-            async.map([ instances ], function (location) {
-                async(function () {
-                    this._ua.fetch({
-                        url: location
-                    }, {
-                        url: [ '.', 'island', island, 'islanders' ].join('/'),
-                        parse: 'json',
-                        nullify: true
-                    }, async())
-                }, function (body, response) {
-                    logger.trace('population.instance', {
-                        island: island, $body: body
+    // We don't use `id` here, but we added it so we can use it in testing to get
+    // test coverage of the race conidtion where the colleague is destroyed while
+    // we're fetching the population.
+    async census (island, id) {
+        const islanders = []
+        let complete = true
+        for (const location of (await this._resolver.resolve())) {
+            try {
+                const path = url.resolve(location, `./island/${island}/islanders`)
+                const response = await axios.get(path)
+                for (const islander of response.data) {
+                    islanders.push({
+                        id: islander.id,
+                        government: islander.government,
+                        cookie: islander.cookie,
+                        url: url.resolve(path, `${islander.id}/`),
+                        createdAt: islander.createdAt
                     })
-                    if (body == null) {
-                        return null
-                    }
-                    return [ body.map(function (member) {
-                        var path = [ '.', 'island', island, 'islander', member.id, ''].join('/')
-                        return {
-                            id: member.id,
-                            government: member.government,
-                            cookie: member.cookie,
-                            url: url.resolve(location, path),
-                            createdAt: member.createdAt
-                        }
-                    }) ]
-                })
-            })
-        }, function (results) {
-            var members = []
-            while (results.length) {
-                if (results[0] == null) {
-                    complete = false
-                } else {
-                    while (results[0].length) {
-                        members.push(results[0].shift())
-                    }
                 }
-                results.shift()
+            } catch (error) {
+                logger.error('population', { stack: error.stack })
+                complete = false
             }
-            return [ members, complete ]
-        })
-    })
-})
+        }
+        return { islanders, complete }
+    }
+}
 
 module.exports = Population
