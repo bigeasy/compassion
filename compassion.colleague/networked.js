@@ -1,89 +1,106 @@
-var cadence = require('cadence')
-var Reactor = require('reactor')
+const Reactor = require('reactor')
 
-var logger = require('prolific.logger').createLogger('compassion.networked')
+const logger = require('prolific.logger').createLogger('compassion.networked')
 
-var coalesce = require('extant')
+const coalesce = require('extant')
 
-var Writer = require('procession/writer')
+const Serialize = require('avenue/serialize')
 
-function Networked (destructible, colleagues) {
-    this._destructible = destructible
-    this._colleagues = colleagues
-    this.reactor = new Reactor(this, function (dispatcher) {
-        dispatcher.dispatch('GET /', 'index')
-        dispatcher.dispatch('GET /island/:island/islanders', 'islanders')
-        dispatcher.dispatch('POST /island/:island/islander/:id/embark', 'embark')
-        dispatcher.dispatch('POST /island/:island/islander/:id/kibitz', 'kibitz')
-        dispatcher.dispatch('POST /island/:island/islander/:id/broadcasts', 'broadcasts')
-        dispatcher.dispatch('POST /island/:island/islander/:id/snapshot', 'snapshot')
-    })
-}
-
-Networked.prototype.index = cadence(function (async) {
-    return [ 200, { 'content-type': 'text/plain' }, 'Compassion Networked API\n' ]
-})
-
-Networked.prototype._getColleague = function (island, id) {
-    if (this._colleagues.island[island] == null || this._colleagues.island[island][id] == null) {
-        throw 404
+class Networked {
+    constructor (destructible, colleagues) {
+        this._destructible = destructible
+        this._colleagues = colleagues
+        this.reactor = new Reactor([{
+            path: '/',
+            method: 'get',
+            f: this.index.bind(this)
+        }, {
+            path: '/island/:island/islanders',
+            method: 'get',
+            f: this.islanders.bind(this)
+        }, {
+            path: '/island/:island/islander/:id/embark',
+            method: 'post',
+            f: this.embark.bind(this)
+        }, {
+            path: '/island/:island/islander/:id/kibitz',
+            method: 'post',
+            f: this.kibits.bind(this)
+        }, {
+            path: '/island/:island/islander/:id/broadcasts',
+            method: 'post',
+            f: this.broadcasts.bind(this)
+        }, {
+            path: '/island/:island/islander/:id/snapshot',
+            method: 'post',
+            f: this.snapshot.bind(this)
+        }])
     }
-    return this._colleagues.island[island][id]
-}
 
-Networked.prototype.embark = cadence(function (async, request, island, id) {
-    var colleague = this._getColleague(island, id)
-    return colleague.kibitzer.embark(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
-})
+    index () {
+        return 'Compassion Networked API\n'
+    }
 
-Networked.prototype.kibitz = cadence(function (async, request, island, id) {
-    logger.info('recorded', {
-        source: 'middleware',
-        method: request.body.method,
-        url: request.url,
-        $body: request.body
-    })
-    this._getColleague(island, id).kibitzer.request(request.body, async())
-})
-
-Networked.prototype.broadcasts = cadence(function (async, request, island, id) {
-    this._getColleague(island, id).conduit.connect({
-        method: 'broadcasts',
-        promise: request.body.promise
-    }).inbox.dequeue(async())
-})
-
-Networked.prototype.snapshot = cadence(function (async, request, island, id) {
-    var request = this._getColleague(island, id).conduit.connect({
-        method: 'snapshot',
-        promise: request.body.promise,
-        inbox: true
-    })
-    return [ 200, { 'content-type': 'application/octet-stream' }, cadence(function(async, response) {
-        var writer = new Writer(request.inbox, response)
-        async(function () {
-            writer.write(async())
-        }, function () {
-            return []
-        })
-    }) ]
-})
-
-Networked.prototype.islanders = cadence(function (async, request, island) {
-    var members = []
-    var island = this._colleagues.island[island]
-    if (island != null) {
-        for (var id in island) {
-            var colleague = island[id]
-            members.push({
-                id: colleague.id,
-                government: colleague.kibitzer.paxos.government,
-                cookie: coalesce(colleague.kibitzer.paxos.cookie),
-                createdAt: colleague.createdAt
-            })
+    _getColleague (island, id) {
+        if (this._colleagues.island[island] == null || this._colleagues.island[island][id] == null) {
+            throw 404
         }
+        return this._colleagues.island[island][id]
     }
-    return [ 200, { 'content-type': 'application/json' }, members ]
-})
+
+    embark (request) {
+        const { island, id } = request.params
+        const colleague = this._getColleague(island, id)
+        return colleague.kibitzer.embark(request.body.republic, request.body.id, request.body.cookie, request.body.properties)
+    }
+
+    kibitz (request) {
+        const { island, id } = request.params
+        logger.info('recorded', {
+            source: 'middleware',
+            method: request.body.method,
+            url: request.url,
+            $body: request.body
+        })
+        return this._getColleague(island, id).kibitzer.request(request.body)
+    }
+
+    async broadcasts (request, island, id) {
+        return await this._getColleague(island, id).conduit.request({
+            method: 'broadcasts',
+            promise: request.body.promise
+        })
+    }
+
+    async snapshot (request, reply) {
+        const { queue } = this._getColleague(reply.params.island, reply.params.id).conduit.request({
+            method: 'snapshot',
+            promise: request.body.promise,
+            inbox: true
+        })
+        const through = new stream.PassThrough
+        reply.code(200)
+        reply.header('content-type', 'application/octet-stream')
+        reply.send(through)
+        await Serialize(queue, through)
+    }
+
+    islanders (request, name) {
+        const islanders = []
+        const island = this._colleagues.island[name]
+        if (island != null) {
+            for (const id in island) {
+                const colleague = island[id]
+                islanders.push({
+                    id: colleague.id,
+                    government: colleague.kibitzer.paxos.government,
+                    cookie: coalesce(colleague.kibitzer.paxos.cookie),
+                    createdAt: colleague.createdAt
+                })
+            }
+        }
+        return islanders
+    }
+}
 
 module.exports = Networked
