@@ -65,7 +65,8 @@ class Networked {
         return this._getColleague(island, id).kibitzer.request(request.body)
     }
 
-    async broadcasts (request, island, id) {
+    async broadcasts (request) {
+        const { island, id } = request.params
         return await this._getColleague(island, id).conduit.request({
             method: 'broadcasts',
             promise: request.body.promise
@@ -86,6 +87,7 @@ class Networked {
     }
 
     islanders (request, name) {
+        const { name } = request.params
         const islanders = []
         const island = this._colleagues.island[name]
         if (island != null) {
