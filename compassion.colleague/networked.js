@@ -25,7 +25,7 @@ class Networked {
         }, {
             path: '/island/:island/islander/:id/kibitz',
             method: 'post',
-            f: this.kibits.bind(this)
+            f: this.kibitz.bind(this)
         }, {
             path: '/island/:island/islander/:id/broadcasts',
             method: 'post',
@@ -86,7 +86,7 @@ class Networked {
         await Serialize(queue, through)
     }
 
-    islanders (request, name) {
+    islanders (request) {
         const { name } = request.params
         const islanders = []
         const island = this._colleagues.island[name]

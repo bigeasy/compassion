@@ -1,83 +1,95 @@
+describe('compassion', () => {
+    it('can compassion', async () => {
+        const path = require('path')
+        const fs = require('fs')
+
+        const Avenue = require('avenue')
+
+        const Conference = require('../../compassion.conference/conference')
+        const Counterfeiter = require('../../compassion.counterfeiter')(Conference)
+        const Application = require('./application')
+        const Containerized = require('../containerized')
+        const Destructible = require('destructible')
+        const destructible = new Destructible(1000, 't/compassion.t.js')
+        const Population = require('../population')
+        const Resolver = { Static: require('../resolver/static') }
+
+        const { local: containerized } = await Containerized(destructible.durable('containerized'), {
+            Conference: Conference,
+            population: {
+                called: 0,
+                census: function (island, id) {
+                    if (this.called++ != 0) {
+                        if (id == 'racer') {
+                            containerized.terminate('island', 'racer')
+                        }
+                        return population.census(island, id, callback)
+                    } else {
+                        return Promise.resolve([])
+                    }
+                },
+            },
+            ping: {
+                chaperon: 150,
+                paxos: 150,
+                application: 150
+            },
+            timeout: {
+                chaperon: 450,
+                paxos: 450,
+                http: 500
+            },
+            bind: {
+                iface: '127.0.0.1',
+                port: 8486
+            }
+        })
+
+        const writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
+
+        const merged = new Avenue()
+        const events = containerized.events.shifter()
+        destructible.durable('events', events.pump(merge), () => events.destroy())
+
+        function merge (envelope) {
+            if (envelope != null) {
+                merged.push(envelope)
+            } else {
+                console.log('intercepted null')
+            }
+        }
+
+        const applications = {}
+        async function createApplication (destructible, id) {
+            const application = new Application
+            const { conference } = Counterfeiter(destructible.durable('counterfeiter'), application, {
+                    island: 'island',
+                    id: id
+            })
+                const events = conference.events.shifter()
+            destructible.durable('events', shifter.pump(merge), () => shifter.destroy())
+            applications[id] = {
+                application: application,
+                conference: conference
+            }
+            return []
+        }
+
+        destructible.destroy()
+
+        await destructible.promise
+    })
+})
+return
 require('proof')(3, prove)
 
 function prove (okay, callback) {
-   // try {
-        var Conference = require('../../compassion.conference/conference')
-    //} catch (e) {
-     //   var Conference = require('compassion.conference/conference')
-      //  var Pinger = require('compassion.conference/pinger')
-  //  }
-
-    var Counterfeiter = require('../../compassion.counterfeiter')(Conference)
-    var Procession = require('procession')
-    var Containerized = require('../containerized')
-    var Destructible = require('destructible')
-    var destructible = new Destructible(1000, 't/compassion.t.js')
-    var Application = require('./application')
-    var cadence = require('cadence')
-    var Vizsla = require('vizsla')
-    var ua = new Vizsla
-    var fs = require('fs')
-    var path = require('path')
-
-    var Population = require('../population')
-    var Resolver = { Static: require('../resolver/static') }
-
-    var applications = []
-
-    var events = null
-
-    destructible.completed.wait(callback)
-
-    var population = new Population(new Resolver.Static([ 'http://127.0.0.1:8486/' ]), new Vizsla)
-
-    var cadence = require('cadence')
-    var containerized
-
     cadence(function (async) {
         async(function () {
-            destructible.durable('containerized', Containerized, {
-                Conference: Conference,
-                population: {
-                    called: 0,
-                    census: function (island, id, callback) {
-                        if (this.called++ != 0) {
-                            if (id == 'racer') {
-                                containerized.terminate('island', 'racer')
-                            }
-                            population.census(island, id, callback)
-                        } else {
-                            callback(null, [])
-                        }
-                    }
-                },
-                ping: {
-                    chaperon: 150,
-                    paxos: 150,
-                    application: 150
-                },
-                timeout: {
-                    chaperon: 450,
-                    paxos: 450,
-                    http: 500
-                },
-                bind: {
-                    iface: '127.0.0.1',
-                    port: 8486
-                }
-            }, async())
-        }, function ($containerized) {
             containerized = $containerized
             var merged = new Procession
             var writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
             destructible.durable('events', containerized.events.pump(merge), 'destructible', null)
-            function merge (envelope) {
-                if (envelope != null) {
-                    merged.push(envelope)
-                } else {
-                    console.log('intercepted null')
-                }
-            }
             destructible.durable('merged', merged.pump(function (envelope, callback) {
                 if (envelope == null) {
                     writable.end(callback)
@@ -87,22 +99,6 @@ function prove (okay, callback) {
             }), 'destructible', null)
             var applications = {}
             var count = 1
-            var createApplication = cadence(function (async, destructible, id) {
-                var application = new Application
-                async(function () {
-                    destructible.durable('counterfeiter', Counterfeiter, containerized, application, {
-                        island: 'island',
-                        id: id
-                    }, async())
-                }, function (conference) {
-                    destructible.durable('events', conference.events.pump(merge), 'destructible', null)
-                    applications[id] = {
-                        application: application,
-                        conference: conference
-                    }
-                    return []
-                })
-            })
             async(function () {
                 ua.fetch({ url: 'http://127.0.0.1:8486', parse: 'text' }, async())
             }, function (body) {

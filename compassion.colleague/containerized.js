@@ -1,25 +1,11 @@
-var cadence = require('cadence')
-var Local = require('./local')
-var Networked = require('./networked')
-var http = require('http')
-var delta = require('delta')
-var destroyer = require('server-destroy')
+const Local = require('./local')
+const Networked = require('./networked')
 
-module.exports = cadence(function (async, destructible, options) {
-    var colleagues = { island: {}, token: {} }, local, networked
-    async(function () {
-        local = new Local(destructible, colleagues, options)
-    }, function () {
-        networked = new Networked(destructible, colleagues)
-        var server = http.createServer(networked.reactor.middleware)
-        destroyer(server)
-        destructible.destruct.wait(server, 'destroy')
-        async(function () {
-            delta(async()).ee(server).on('listening')
-            server.listen(options.bind.port, options.bind.iface)
-        }, function () {
-            delta(destructible.durable('networked')).ee(server).on('close')
-            return [ local, networked ]
-        })
-    })
-})
+module.exports = async function (destructible, options) {
+    const colleagues = { island: {}, token: {} }
+    const local = new Local(destructible.durable('local'), colleagues, options)
+    const networked = new Networked(destructible.durable('networked'), colleagues)
+    await networked.reactor.fastify.listen(options.bind.port, options.bind.iface)
+    destructible.destruct(() => networked.reactor.fastify.close())
+    return { local, networked }
+}

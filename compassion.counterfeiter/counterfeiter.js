@@ -1,17 +1,19 @@
-var cadence = require('cadence')
-var Procession = require('procession')
+const Avenue = require('avenue')
 
 module.exports = function (Conference) {
-    return cadence(function (async, destructible, colleague, application, registration) {
-        var queues = {
-            colleague: { inbox: new Procession, outbox: new Procession },
-            conference: { inbox: new Procession, outbox: new Procession }
+    return function (destructible, colleague, application, registration) {
+        const queues = {
+            colleague: { inbox: new Avenue, outbox: new Avenue },
+            conference: { inbox: new Avenue, outbox: new Avenue }
         }
-        destructible.durable('up', queues.conference.outbox.pump(queues.colleague.inbox, 'push'), 'destructible', null)
-        destructible.durable('down', queues.colleague.outbox.pump(queues.conference.inbox, 'push'), 'destructible', null)
-        async(function () {
-            colleague.connect(queues.colleague.inbox, queues.colleague.outbox, async())
-        }, function () {
+        const up = queues.conference.outbox.shifter()
+        destructible.durable('up', up.pump(entry => queues.colleague.inbox.push(entry)), () => up.destroy())
+        const down = queues.colleague.outbox.shifter()
+        destructible.durable('down', down.pump(entry => queues.colleague.inbox.push(entry)), () => down.destroy())
+        colleague.connect(queues.colleague.inbox, queues.colleague.outbox)
+
+        // confrenece.pump or something.
+        /*
             async(function () {
                 destructible.durable('conference', Conference, queues.conference.inbox, queues.conference.outbox, application, false, async())
             }, function (conference) {
@@ -22,5 +24,6 @@ module.exports = function (Conference) {
                 })
             })
         })
-    })
+        */
+    }
 }

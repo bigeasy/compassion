@@ -75,19 +75,18 @@ class Local {
             http: coalesce(timeout.http, 5000)
         }
 
-        var scheduler = new Scheduler
-        var timer = new Timer(scheduler)
+        const scheduler = new Scheduler
+        const timer = new Timer(scheduler)
 
-        destructible.destruct.wait(scheduler, 'clear')
-        destructible.durable('timer', timer.events.pump(this, '_scheduled'), 'destructible', null)
-        destructible.durable('scheduler', scheduler.events.pump(timer, 'enqueue'), 'destructible', null)
+        destructible.destruct(() => scheduler.clear())
+        destructible.destruct(() => timer.destroy())
+        scheduler.on('data', data => this.enqueue(event))
 
         this.scheduler = scheduler
 
         this._instance = 0
-        this._ua = new UserAgent().bind({ timeout: this._timeout.http })
 
-        this.events = new Procession
+        this.events = new Avenue
     }
 
     _record (destructible, kibitzer, id) {
