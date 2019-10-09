@@ -52,6 +52,7 @@ class Connection {
     }
 }
 
+
 class Local {
     constructor (destructible, colleagues, options) {
         this._destructible = destructible
@@ -107,7 +108,8 @@ class Local {
         })
     }
 
-    async connect (envelope, inbox, outbox) {
+    async renameThisFunction (envelope, inbox, outbox) {
+        console.log('called')
         var ua = this.colleague._ua
         switch (envelope.method) {
         case 'ready':
@@ -354,12 +356,7 @@ class Local {
             }
         })
     }
-
-    connect (inbox, outbox) {
-        // If we already have one and it doesn't match, then we destroy this one.
-        // Create a new instance.
-        this._destructible.ephemeral([ 'colleague', this._instance++ ], this, '_connect', inbox, outbox, async())
-    }
 }
 
+throw new Error
 module.exports = Local

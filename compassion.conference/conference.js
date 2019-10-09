@@ -1,28 +1,28 @@
-var assert = require('assert')
+const assert = require('assert')
 
-var Interrupt = require('interrupt').create('compassion.conference')
+const Interrupt = require('interrupt').create('compassion.conference')
 
-var Avenue = require('avenue')
+const Avenue = require('avenue')
+const Conduit = require('conduit')
 
-var Monotonic = require('monotonic').asString
+const Monotonic = require('monotonic').asString
 
-var coalesce = require('extant')
+const Future = require('prospective/future')
 
-var Cubbyhole = require('cubbyhole')
+const coalesce = require('extant')
+
+const Cubbyhole = require('cubbyhole')
 
 const { default: Queue } = require('p-queue')
 
-console.log('compiled?')
-
 class Conference {
-    constructor (conduit, outbox, application, replaying) {
+    constructor (destructible, shifter, queue, application, replaying) {
         this._application = application
         this._destructible = destructible
         this.log = new Avenue
         this.events = new Avenue
         this.consumed = new Avenue
         this._government = null
-        this._outbox = outbox
         this._replaying = !! replaying
         this._cookie = '0'
         this._snapshots = new Cubbyhole
@@ -30,16 +30,52 @@ class Conference {
         this._broadcasts = {}
         this._snapshot = new Avenue
         this._backlog = new Avenue
-        this._entries = new Queue()
-        this._entries = new Turnstile.Queue(this, '_entry', this._turnstile)
+        this._destructible.destruct(() => this.destroyed = true)
         this.destroyed = false
+        // TODO Note that destructible does make it possible to make
+        // constructors start doing work. You should add a `destroy` so the user
+        // can destroy you without having to hold onto the `Destructible`.
+        this._conduit = new Conduit(destructible.durable('conduit'), shifter, queue, this._request.bind(this))
+        const request = this._conduit.queue({ method: 'connect' })
+        this._queue = request.queue
+        // **TODO** Let the messages swim to exit.
+        destructible.destruct(() => request.shifter.destroy())
+        destructible.durable('shift', this._shift(request.shifter))
+        this._broadcast = new Future
+        // TODO What do you need to export and why?
+        this.exports = {
+            consumed: this.consumed,
+            events: this.events,
+            broadcast: this._broadcast.promise
+        }
+    }
+
+    async _shift (shifter) {
+        const broadcast = (message) => {
+            const cookie = this._nextCookie()
+            const uniqueId = this._government.arrived.promise[this.id]
+            const key = method + '[' + uniqueId + '](' + cookie + ')'
+            queue.push({
+                module: 'conference',
+                method: 'broadcast',
+                request: {
+                    key: key,
+                    from: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                    method: method,
+                    body: message
+                }
+            })
+        }
+        for await (const entry of shifter.iterator()) {
+            await this._entry(entry, broadcast)
+        }
     }
 
     destroy () {
-        this.destroyed = true
+        this._destructible.destroy()
     }
 
-    async connect (request, inbox, outbox) {
+    async _request (request, inbox, outbox) {
         switch (request.method) {
         case 'broadcasts':
             return await this._cubbyhole.broadcasts.wait(request.promise)
@@ -55,11 +91,10 @@ class Conference {
         }
     }
 
-    async _entry (envelope) {
+    async _entry (entry, queue, broadcast) {
         if (this.destroyed) {
             return
         }
-        var entry = envelope.body
         Interrupt.assert(entry != null, 'entry eos')
         this.events.push({ type: 'entry', id: this.id, body: envelope.body })
         assert(entry != null)
@@ -79,7 +114,7 @@ class Conference {
                     }, async())
                 } else if (arrival.id == this.id) {
                     console.log('snapshotting!', this.id, this._government)
-                    var request = this._conduit.connect({
+                    var request = this._conduit.request({
                         method: 'snapshot',
                         promise: this._government.promise,
                         inbox: true
@@ -110,7 +145,7 @@ class Conference {
                     }
                     this._snapshots.set(this._government.promise, null, broadcasts)
                 } else if (this._government.promise != '1/0') {
-                    const broacasts = await this._conduit.connect({
+                    const broacasts = await this._conduit.request({
                             method: 'broadcasts',
                             promise: this._government.promise
                     })
@@ -277,10 +312,6 @@ class Conference {
         this.consumed.push(entry)
     }
 
-    entry (envelope) {
-        this._entries.add(() => this._entry(envelope))
-    }
-
     async _checkReduced (broadcast) {
         var complete = true
         for (var promise in this._government.arrived.id) {
@@ -325,20 +356,19 @@ class Conference {
         }
     }
 
-    broadcast (method, message) {
-        var cookie = this._nextCookie()
-        var uniqueId = this._government.arrived.promise[this.id]
-        var key = method + '[' + uniqueId + '](' + cookie + ')'
-        this._outbox.push({
-            module: 'conference',
-            method: 'broadcast',
-            request: {
-                key: key,
-                from: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                method: method,
-                body: message
+    async connect (destructible) {
+        const { queue, shifter } = await this._conduit.request({ island: this.island, id: this.id, queue: true, shifter: true })
+
+
+        async function shift () {
+            for await (const entry of shifter.iterator()) {
+                await this._entry(entry, queue, broadcast)
             }
-        })
+        }
+
+        destructible.destruct(() => queue.push(null))
+        destructible.destruct(() => shifter.destroy())
+        destructible.durable('shift', shift())
     }
 
     _nextCookie () {

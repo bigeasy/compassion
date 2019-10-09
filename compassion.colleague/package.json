@@ -22,7 +22,7 @@
     {
                             "axios":                        "0.19.x",
                             "byline":                       "5.0.x",
-                            "conduit":                      "6.0.x",
+                            "conduit":                      ">=7.0.0-alpha.0",
                             "extant":                       "1.0.x",
                             "foremost":                     "1.0.x",
                             "happenstance":                 "12.0.x",
@@ -37,6 +37,7 @@
     },
     "devDependencies":
     {
+    "proof": "8.0.0-alpha.7"
     },
     "scripts":
     {

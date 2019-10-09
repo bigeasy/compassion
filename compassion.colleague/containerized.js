@@ -1,11 +1,8 @@
-const Local = require('./local')
-const Networked = require('./networked')
+const Colleague = require('./colleague')
 
 module.exports = async function (destructible, options) {
-    const colleagues = { island: {}, token: {} }
-    const local = new Local(destructible.durable('local'), colleagues, options)
-    const networked = new Networked(destructible.durable('networked'), colleagues)
-    await networked.reactor.fastify.listen(options.bind.port, options.bind.iface)
-    destructible.destruct(() => networked.reactor.fastify.close())
-    return { local, networked }
+    const colleague = new Colleague(destructible.durable('colleague'))
+    await colleague.reactor.fastify.listen(options.bind.port, options.bind.iface)
+    destructible.destruct(() => colleague.reactor.fastify.close())
+    return colleague
 }

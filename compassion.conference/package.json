@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "conduit":                      "6.0.x",
+                            "conduit":                      ">=7.0.0-alpha.0",
                             "cubbyhole":                    "2.0.x",
                             "extant":                       "1.0.x",
                             "interrupt":                    "8.0.x",

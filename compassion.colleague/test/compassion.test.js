@@ -14,7 +14,7 @@ describe('compassion', () => {
         const Population = require('../population')
         const Resolver = { Static: require('../resolver/static') }
 
-        const { local: containerized } = await Containerized(destructible.durable('containerized'), {
+        const colleague = await Containerized(destructible.durable('containerized'), {
             Conference: Conference,
             population: {
                 called: 0,
@@ -48,7 +48,7 @@ describe('compassion', () => {
         const writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
 
         const merged = new Avenue()
-        const events = containerized.events.shifter()
+        const events = colleague.events.shifter()
         destructible.durable('events', events.pump(merge), () => events.destroy())
 
         function merge (envelope) {
@@ -62,18 +62,20 @@ describe('compassion', () => {
         const applications = {}
         async function createApplication (destructible, id) {
             const application = new Application
-            const { conference } = Counterfeiter(destructible.durable('counterfeiter'), application, {
+            const conference = await
+            Counterfeiter(destructible.durable('counterfeiter'), colleague, entry => application.dipatch(entry), {
                     island: 'island',
                     id: id
             })
-                const events = conference.events.shifter()
-            destructible.durable('events', shifter.pump(merge), () => shifter.destroy())
+            const events = conference.events.shifter()
             applications[id] = {
                 application: application,
                 conference: conference
             }
             return []
         }
+
+        await createApplication(destructible.durable('first'), 'first')
 
         destructible.destroy()
 

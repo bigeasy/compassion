@@ -39,7 +39,7 @@ module.exports = cadence(function (async, destructible, olio, properties) {
 // Sketch.
 module.exports = async function (destructible, olio, properties) {
     const assert = require('assert')
-    await Compassion(destructible.durable('compassion'), olio, async (envelope, conference) => {
+    const broadcast = await Compassion(destructible.durable('compassion'), olio, async (envelope, broadcast) => {
         switch (envelope.method) {
         case 'bootstrap':
             break
