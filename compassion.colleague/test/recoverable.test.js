@@ -1,16 +1,15 @@
-describe('recoverable', () => {
-    const assert = require('assert')
+require('proof')(5, (okay) => {
     const recoverable = require('../recoverable')
-    it('can retry on empty set', () => {
-        assert.deepStrictEqual(recoverable('x', []), { action: 'retry' }, 'empty')
-    })
-    it('can retry on not found', () => {
-        assert.deepStrictEqual(recoverable('x', [{
+    {
+        okay(recoverable('x', []), { action: 'retry' }, 'empty')
+    }
+    {
+        okay(recoverable('x', [{
             id: 'a'
         }]), { action: 'retry' }, 'not found')
-    })
-    it('can become unrecoverable on a new republic', () => {
-        assert.deepStrictEqual(recoverable('a', [{
+    }
+    {
+        okay(recoverable('a', [{
             id: 'a',
             government: {
                 republic: 1
@@ -21,9 +20,9 @@ describe('recoverable', () => {
                 republic: 2
             }
         }]), { action: 'unrecoverable', definitive: true }, 'superseded')
-    })
-    it('can become unrecoverable when the majority is missing', () => {
-        assert.deepStrictEqual(recoverable('a', [{
+    }
+    {
+        okay(recoverable('a', [{
             id: 'a',
             government: {
                 republic: 1,
@@ -38,9 +37,9 @@ describe('recoverable', () => {
                 promise: '2/0'
             }
         }]), { action: 'unrecoverable', definitive: false }, 'majority missing')
-    })
-    it('can detect a recoverable consensus', () => {
-        assert.deepStrictEqual(recoverable('a', [{
+    }
+    {
+        okay(recoverable('a', [{
             id: 'a',
             government: {
                 republic: 1,
@@ -55,5 +54,5 @@ describe('recoverable', () => {
                 promise: '2/0'
             }
         }]), { action: 'retry' }, 'recoverable')
-    })
+    }
 })

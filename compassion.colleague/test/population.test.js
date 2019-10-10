@@ -1,4 +1,4 @@
-describe('population', () => {
+require('proof')(1, async (okay) => {
     const Reactor = require('reactor')
     const Resolver = { Static: require('../resolver/static') }
     const Population = require('../population')
@@ -32,12 +32,29 @@ describe('population', () => {
 
     const service = new Service
 
-    before(() => service.reactor.fastify.listen(8888))
-    after(() => service.reactor.fastify.close())
+    await service.reactor.fastify.listen(8888)
 
-    it('can perform a census', async () => {
+    try {
         const resolver = new Resolver.Static([ 'http://127.0.0.1:8888/', 'http://127.0.0.1:8888/' ])
         const population = new Population(resolver)
         const census = await population.census('island')
-    })
+        okay(census, {
+            islanders: [{
+                id: 'first',
+                government: {},
+                cookie: 0,
+                url: 'http://127.0.0.1:8888/island/island/first/',
+                createdAt: 0
+            }, {
+                id: 'second',
+                government: {},
+                cookie: 0,
+                url: 'http://127.0.0.1:8888/island/island/second/',
+                createdAt: 1
+            }],
+            complete: false
+        }, 'census')
+    } finally {
+        service.reactor.fastify.close()
+    }
 })

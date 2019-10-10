@@ -1,86 +1,89 @@
-describe('compassion', () => {
-    it('can compassion', async () => {
-        const path = require('path')
-        const fs = require('fs')
+require('proof')(1, async (okay) => {
+    const path = require('path')
+    const fs = require('fs')
 
-        const Avenue = require('avenue')
+    const Avenue = require('avenue')
 
-        const Conference = require('../../compassion.conference/conference')
-        const Counterfeiter = require('../../compassion.counterfeiter')(Conference)
-        const Application = require('./application')
-        const Containerized = require('../containerized')
-        const Destructible = require('destructible')
-        const destructible = new Destructible(1000, 't/compassion.t.js')
-        const Population = require('../population')
-        const Resolver = { Static: require('../resolver/static') }
+    const Conference = require('../../compassion.conference/conference')
+    const Counterfeiter = require('../../compassion.counterfeiter')(Conference)
+    const Application = require('./application')
+    const Containerized = require('../containerized')
+    const Destructible = require('destructible')
+    const destructible = new Destructible(1000, 't/compassion.t.js')
+    const Population = require('../population')
+    const Resolver = { Static: require('../resolver/static') }
 
-        const colleague = await Containerized(destructible.durable('containerized'), {
-            Conference: Conference,
-            population: {
-                called: 0,
-                census: function (island, id) {
-                    if (this.called++ != 0) {
-                        if (id == 'racer') {
-                            containerized.terminate('island', 'racer')
-                        }
-                        return population.census(island, id, callback)
-                    } else {
-                        return Promise.resolve([])
+    const colleague = await Containerized(destructible.durable('containerized'), {
+        Conference: Conference,
+        population: {
+            called: 0,
+            census: function (island, id) {
+                if (this.called++ != 0) {
+                    if (id == 'racer') {
+                        containerized.terminate('island', 'racer')
                     }
-                },
+                    return population.census(island, id, callback)
+                } else {
+                    return Promise.resolve([])
+                }
             },
-            ping: {
-                chaperon: 150,
-                paxos: 150,
-                application: 150
-            },
-            timeout: {
-                chaperon: 450,
-                paxos: 450,
-                http: 500
-            },
-            bind: {
-                iface: '127.0.0.1',
-                port: 8486
-            }
-        })
-
-        const writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
-
-        const merged = new Avenue()
-        const events = colleague.events.shifter()
-        destructible.durable('events', events.pump(merge), () => events.destroy())
-
-        function merge (envelope) {
-            if (envelope != null) {
-                merged.push(envelope)
-            } else {
-                console.log('intercepted null')
-            }
+        },
+        ping: {
+            chaperon: 150,
+            paxos: 150,
+            application: 150
+        },
+        timeout: {
+            chaperon: 450,
+            paxos: 450,
+            http: 500
+        },
+        bind: {
+            iface: '127.0.0.1',
+            port: 8486
         }
-
-        const applications = {}
-        async function createApplication (destructible, id) {
-            const application = new Application
-            const conference = await
-            Counterfeiter(destructible.durable('counterfeiter'), colleague, entry => application.dipatch(entry), {
-                    island: 'island',
-                    id: id
-            })
-            const events = conference.events.shifter()
-            applications[id] = {
-                application: application,
-                conference: conference
-            }
-            return []
-        }
-
-        await createApplication(destructible.durable('first'), 'first')
-
-        destructible.destroy()
-
-        await destructible.promise
     })
+
+    const writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
+
+    const merged = new Avenue()
+    const events = colleague.events.shifter()
+    destructible.durable('events', events.pump(merge))
+    destructible.destruct(() => events.destroy())
+
+    function merge (envelope) {
+        if (envelope != null) {
+            merged.push(envelope)
+        } else {
+            console.log('intercepted null')
+        }
+    }
+
+    const applications = {}
+    async function createApplication (destructible, id) {
+        const application = new Application
+        const conference = await
+        Counterfeiter(destructible.durable('counterfeiter'), colleague, entry => application.dipatch(entry), {
+                island: 'island',
+                id: id
+        })
+        const events = conference.events.shifter()
+        applications[id] = {
+            application: application,
+            conference: conference
+        }
+        return []
+    }
+
+    await createApplication(destructible.durable('first'), 'first')
+
+    destructible.destroy()
+
+    console.log('destroying')
+
+    await destructible.destructed
+
+    okay('ran')
 })
 return
 require('proof')(3, prove)

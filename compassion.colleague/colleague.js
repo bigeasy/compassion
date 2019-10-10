@@ -15,9 +15,11 @@ class Connection {
         this._destructible = destructible
     }
 
-    async request (request, shifter, queue) {
+    async request (request, queue, shifter) {
         switch (request.method) {
         case 'connect':
+            console.log(request)
+            console.log(queue)
             for await (const entry of shifter.iterator()) {
                 await this._entry(entry, queue)
             }
@@ -133,11 +135,12 @@ class Colleague {
     _connect (destructible, shifter, queue) {
         const connection = new Connection
         const conduit = new Conduit(destructible.durable('conduit'), shifter, queue, connection.request.bind(connection))
+        destructible.destruct(() => shifter.destroy())
         return connection.ready.promise
     }
 
     connect (shifter, queue) {
-       const destructible = this._destructible.durable([ 'conduit', this._instance++])
+        const destructible = this._destructible.durable([ 'conduit', this._instance++])
         return this._connect(destructible, shifter, queue)
     }
 }

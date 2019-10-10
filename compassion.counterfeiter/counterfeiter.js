@@ -6,7 +6,6 @@ module.exports = function (Conference) {
         const promise = colleague.connect(inbox.shifter(), outbox)
         destructible.destruct(() => outbox.push(null))
         const conference = new Conference(destructible.durable([ 'conference', registration.island, registration.id ]), outbox.shifter(), inbox, application)
-
         return conference.exports
     }
 }
