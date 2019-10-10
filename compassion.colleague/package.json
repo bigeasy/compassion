@@ -30,7 +30,7 @@
                             "kibitz":                       "2.0.x",
                             "monotonic":                    "3.0.x",
                             "olio":                         "6.0.x",
-                            "reactor":                      "16.0.x",
+                            "reactor":                      "17.0.0-alpha.1",
                             "avenue":                       "0.1.x",
                             "prolific.logger":              "10.0.x",
                             "server-destroy":               "1.0.1"
