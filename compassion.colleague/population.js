@@ -1,6 +1,6 @@
 const axios = require('axios')
 const url = require('url')
-const logger = require('prolific.logger').createLogger('compassion.colleague')
+const logger = require('prolific.logger').create('compassion.colleague')
 
 class Population {
     constructor (resolver) {

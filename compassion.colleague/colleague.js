@@ -3,7 +3,7 @@ const Avenue = require('avenue')
 const Conduit = require('conduit')
 const Future = require('prospective/future')
 
-const logger = require('prolific.logger').createLogger('compassion.networked')
+const logger = require('prolific.logger').create('compassion.networked')
 
 const coalesce = require('extant')
 

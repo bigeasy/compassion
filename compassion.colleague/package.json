@@ -32,7 +32,7 @@
                             "olio":                         "6.0.x",
                             "reactor":                      "17.0.0-alpha.1",
                             "avenue":                       "0.2.0-alpha.0",
-                            "prolific.logger":              "10.0.x",
+                            "prolific.logger":              "11.0.0",
                             "server-destroy":               "1.0.1"
     },
     "devDependencies":
