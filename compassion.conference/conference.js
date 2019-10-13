@@ -5,8 +5,6 @@ const Interrupt = require('interrupt').create('compassion.conference')
 const Avenue = require('avenue')
 const Conduit = require('conduit')
 
-const Monotonic = require('monotonic').asString
-
 const Future = require('prospective/future')
 
 const coalesce = require('extant')
@@ -370,7 +368,7 @@ class Conference {
     }
 
     _nextCookie () {
-        return this._cookie = Monotonic.increment(this._cookie, 0)
+        return this._cookie = (BigInt(`0x${this._cookie}`) + 1n).toString(16)
     }
 }
 
