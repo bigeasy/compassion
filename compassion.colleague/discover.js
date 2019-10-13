@@ -1,4 +1,4 @@
-const Monotonic  = require('monotonic').asString
+const Paxos  = require('paxos')
 const coalesce = require('extant')
 
 module.exports =  function (id, members, complete) {
@@ -41,7 +41,7 @@ module.exports =  function (id, members, complete) {
     })
 
     unsplit.sort(function (a, b) {
-        return -Monotonic.compare(a.government.promise, b.government.promise)
+        return -Paxos.compare(a.government.promise, b.government.promise)
     })
 
     const government = unsplit[0].government
