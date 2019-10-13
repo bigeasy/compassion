@@ -25,7 +25,7 @@
                             "conduit":                      "^7.0.0-alpha.5",
                             "extant":                       "^1.0.15",
                             "foremost":                     "^1.0.5",
-                            "happenstance":                 "12.0.x",
+                            "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",
                             "olio":                         "^7.0.0-alpha.0",
