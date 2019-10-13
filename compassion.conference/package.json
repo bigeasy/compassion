@@ -26,7 +26,7 @@
                             "interrupt":                    "9.0.0-alpha.1",
                             "monotonic":                    "3.0.x",
                             "p-queue":                      "6.1.0",
-                            "avenue":                       "0.1.x"
+                            "avenue":                       "0.2.0-alpha.1"
     },
     "devDependencies":
     {
