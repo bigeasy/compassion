@@ -13,8 +13,6 @@ const coalesce = require('extant')
 
 const Cubbyhole = require('cubbyhole')
 
-const { default: Queue } = require('p-queue')
-
 class Conference {
     constructor (destructible, shifter, queue, application, replaying) {
         this._application = application
