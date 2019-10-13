@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "conduit":                      ">=7.0.0-alpha.0",
-                            "cubbyhole":                    "2.0.x",
+                            "cubbyhole":                    "3.0.0-alpha.2",
                             "extant":                       "1.0.x",
                             "interrupt":                    "9.0.0-alpha.1",
                             "monotonic":                    "3.0.x",
