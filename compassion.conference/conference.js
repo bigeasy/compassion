@@ -1,99 +1,138 @@
+// Node.js API.
 const assert = require('assert')
 
+// Exceptions that report nested exceptions that you can catch by type.
 const Interrupt = require('interrupt').create('compassion.conference')
 
-const Avenue = require('avenue')
+// An `async`/`await` in-process message queue.
+const Queue = require('avenue')
+
+// An `async`/`await` socket multiplexer.
 const Conduit = require('conduit')
 
-const Future = require('prospective/future')
-
+// Like SQL COALESCE, return the first defined value.
 const coalesce = require('extant')
 
+// An `async`/`await` map of future values.
 const Cubbyhole = require('cubbyhole')
 
+// **TODO** Tempted to make this a connection object and make `Conference` a
+// sub-object of the connection. Avoiding this for now to prevent too much
+// refactoring at once. Not certain that I'll want to do it when everything is
+// working. Not loving the names of these things any longer, either.
+//
+// Might want to make this a `Compassion` object so that the names are not all
+// over the place. I've already replacing `broadcast` with `enqueue`. The next
+// refactor will reduce the number of objects in this architecture. The primary
+// change is removing HTTP as a layer and requiring communication to go through
+// `Conduit`s. If we want an HTTP layer, we can build it at a different layer,
+// but we're probably going to build a key/value store and service mesh with
+// this library and it will not expose a raw interface to the atomic log.
+
+//
 class Conference {
-    constructor (destructible, shifter, queue, application, replaying) {
-        this._application = application
+    // Construct a `Conference`.
+
+    //
+    constructor (destructible, replaying, island, id, properties, shifter, queue, Application, vargs) {
+        // A bouquet of `Promise`s monitored by this `Conference` instance.
         this._destructible = destructible
-        this.log = new Avenue
-        this.events = new Avenue
-        this.consumed = new Avenue
-        this._government = null
-        this._replaying = !! replaying
-        this._cookie = '0'
-        this._snapshots = new Cubbyhole
-        this._postbacks = { reduced: {}, receive: {} }
-        this._broadcasts = {}
-        this._snapshot = new Avenue
-        this._backlog = new Avenue
-        this._destructible.destruct(() => this.destroyed = true)
+
+        this.id = id
+
+        // The Paxos event log.
+        this.log = new Queue
+
+        // Network events received by this `Conference` instance.
+        this.events = new Queue
+
+        // Network events consumed by this `Conference` instance.
+        this.consumed = new Queue
+
+        // Whether or not this `Conference` instance has destructed.
         this.destroyed = false
-        // TODO Note that destructible does make it possible to make
-        // constructors start doing work. You should add a `destroy` so the user
-        // can destroy you without having to hold onto the `Destructible`.
+
+        // Current Paxos government.
+        this._government = null
+
+        // Whether or not we are replaying a captured log of network events.
+        this._replaying = !! replaying
+
+        // Previous embarkation cookie used to create next cookie.
+        this._cookie = -1
+
+        // Map of promises to initialization snapshots.
+        this._snapshots = new Cubbyhole
+
+        // All messages are broadcast, so maybe we rename this.
+        this._broadcasts = {}
+
+        // Mark ourselves as destroyed on destruction.
+        this._destructible.destruct(() => this.destroyed = true)
+
+        // Start a `Conduit` around the streams we've been given.
         this._conduit = new Conduit(destructible.durable('conduit'), shifter, queue, this._request.bind(this))
-        const request = this._conduit.queue({ method: 'connect' })
+
+        // Connect to `Colleague` via our `Conduit`.
+        const request = this._conduit.queue({ method: 'connect', island, id, properties })
+
+        // Note the queue for use with `enqueue`.
         this._queue = request.queue
+
+        // Read responses from the conduit
+        destructible.durable('shift', async () => {
+            for await (const entry of request.shifter.iterator()) {
+                await this._entry(entry)
+            }
+        })
+
         // **TODO** Let the messages swim to exit.
         destructible.destruct(() => request.shifter.destroy())
-        destructible.durable('shift', this._shift(request.shifter))
-        this._broadcast = new Future
-        // TODO What do you need to export and why?
-        this.exports = {
-            consumed: this.consumed,
-            events: this.events,
-            broadcast: this._broadcast.promise
-        }
+
+        // A promise that resolves to true when ready.
+        this.ready = new Promise(resolve => this._ready = resolve)
+
+        // Construct our application passing ourselves as the first argument.
+        this.application = new (Function.prototype.bind.apply(Application, [ null, this ].concat(vargs)))
     }
 
-    async _shift (shifter) {
-        const broadcast = (message) => {
-            const cookie = this._nextCookie()
-            const uniqueId = this._government.arrived.promise[this.id]
-            const key = method + '[' + uniqueId + '](' + cookie + ')'
-            queue.push({
-                module: 'conference',
-                method: 'broadcast',
-                request: {
-                    key: key,
-                    from: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                    method: method,
-                    body: message
-                }
-            })
-        }
-        for await (const entry of shifter.iterator()) {
-            await this._entry(entry, broadcast)
-        }
+    enqueue (message) {
+        const cookie = (this._cookie = BigInt(this._cookie) + 1n).toString(16)
+        const arrived = this._government.arrived.promise[this.id]
+        this._queue.push({
+            module: 'conference',
+            method: 'broadcast',
+            request: {
+                key: '[' + arrived + '](' + cookie + ')',
+                from: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                method: method,
+                body: message
+            }
+        })
     }
 
     destroy () {
         this._destructible.destroy()
     }
 
-    async _request (request, inbox, outbox) {
+    async _request (request, queue) {
+        // **TODO** Here we await the arrival of the requested promise so that
+        // we can snapshot the backlog and the user can snapshot their
+        // application state for a snapshot request.
         switch (request.method) {
         case 'broadcasts':
             return await this._cubbyhole.broadcasts.wait(request.promise)
-            break
         case 'snapshot':
             await this._cubbyhole.snapshots.wait(request.promise)
-            // TODO Maybe if outbox can be null and we just return something.
-            await this._application.call(null, {
-                method: 'snapshot',
-                promise: request.promise
-            }, outbox)
+            // TODO Maybe queue can be null and we just return something.
+            await this.application.snapshot(request.promise, queue)
             break
         }
     }
 
     async _entry (entry, queue, broadcast) {
-        if (this.destroyed) {
-            return
-        }
         Interrupt.assert(entry != null, 'entry eos')
-        this.events.push({ type: 'entry', id: this.id, body: envelope.body })
-        assert(entry != null)
+        this.events.push({ type: 'entry', id: this.id, entry })
         this.log.push(entry)
         if (entry.method == 'government') {
             this._government = entry.government
@@ -101,16 +140,16 @@ class Conference {
             if (entry.body.arrive) {
                 var arrival = entry.body.arrive
                 if (entry.body.promise == '1/0') {
-                    this._application.call(null, {
+                    await this.application.dispatch({
                         method: 'bootstrap',
                         self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                         entry: entry.body,
                         replaying: this._replaying,
                         government: this._government
-                    }, async())
+                    })
                 } else if (arrival.id == this.id) {
                     console.log('snapshotting!', this.id, this._government)
-                    var request = this._conduit.request({
+                    const request = this._conduit.inovke({
                         method: 'snapshot',
                         promise: this._government.promise,
                         inbox: true
@@ -118,7 +157,7 @@ class Conference {
                     this._destructible.ephemeral('snapshot', request.inbox.pump(this, function (envelope) {
                         this.events.push({ type: 'snapshot', id: this.id, body: envelope })
                     }), 'destructible', null)
-                    await this._application.call(null, {
+                    await this.application.dispatch({
                         method: 'join',
                         self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                         entry: entry.body,
@@ -127,7 +166,7 @@ class Conference {
                         snapshot: request.inbox
                     })
                 }
-                await this._application.call(null, {
+                await this.application.dispatch({
                     method: 'arrive',
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     entry: entry.body,
@@ -141,6 +180,7 @@ class Conference {
                     }
                     this._snapshots.set(this._government.promise, null, broadcasts)
                 } else if (this._government.promise != '1/0') {
+                    this._ready.call()
                     const broacasts = await this._conduit.request({
                             method: 'broadcasts',
                             promise: this._government.promise
@@ -194,10 +234,12 @@ class Conference {
                             })
                         }
                     }
+                } else {
+                    this._ready.call()
                 }
             } else if (entry.body.departed) {
                 async(function () {
-                    this._application.call(null, {
+                    this.application.dispatch({
                         self: {
                             id: this.id,
                             arrived: this._government.arrived.promise[this.id]
@@ -222,7 +264,7 @@ class Conference {
                 })
             }
             if (entry.body.acclimate != null) {
-                await this._application.call(null, {
+                await this.application.dispatch({
                     self: {
                         id: this.id,
                         arrived: this._government.arrived.promise[this.id]
@@ -233,7 +275,7 @@ class Conference {
                     government: this._government
                 })
             }
-            await this._application.call(null, {
+            await this.application.dispatch({
                 self: {
                     id: this.id,
                     arrived: this._government.arrived.promise[this.id]
@@ -243,7 +285,7 @@ class Conference {
                 replaying: this._replaying,
                 government: this._government
             })
-            this._outbox.push({
+            this._queue.push({
                 module: 'compassion',
                 method: 'acclimate',
                 body: null
@@ -267,7 +309,7 @@ class Conference {
                     body: envelope.request.body,
                     responses: {}
                 }
-                const response = await this._application.call(null, {
+                const response = await this.application.dispatch({
                     self: {
                         id: this.id,
                         arrived: this._government.arrived.promise[this.id]
@@ -278,7 +320,7 @@ class Conference {
                     government: this._government,
                     body: envelope.request.body
                 }, async())
-                this._outbox.push({
+                this._queue.push({
                     module: 'compassion',
                     method: 'reduce',
                     reduction: {
@@ -298,7 +340,7 @@ class Conference {
             }
         }
         if (this._replaying) {
-            this._outbox.push({
+            this._queue.push({
                 module: 'compassion',
                 method: 'consumed',
                 promise: entry.promise,
@@ -335,7 +377,7 @@ class Conference {
             // `reduced` postback with both the id and the arrived promise because
             // the only responses provided are those that are still present in the
             // government at the time of this postback.
-            await this._application.call(null, {
+            await this.application.dispatch({
                 self: {
                     id: this.id,
                     arrived: this._government.arrived.promise[this.id]
@@ -350,25 +392,6 @@ class Conference {
             })
             delete this._broadcasts[broadcast.key]
         }
-    }
-
-    async connect (destructible) {
-        const { queue, shifter } = await this._conduit.request({ island: this.island, id: this.id, queue: true, shifter: true })
-
-
-        async function shift () {
-            for await (const entry of shifter.iterator()) {
-                await this._entry(entry, queue, broadcast)
-            }
-        }
-
-        destructible.destruct(() => queue.push(null))
-        destructible.destruct(() => shifter.destroy())
-        destructible.durable('shift', shift())
-    }
-
-    _nextCookie () {
-        return this._cookie = (BigInt(`0x${this._cookie}`) + 1n).toString(16)
     }
 }
 

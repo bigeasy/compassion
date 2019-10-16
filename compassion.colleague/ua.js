@@ -10,8 +10,13 @@ module.exports = {
     json: async (location, path, body) => {
         const resolved = url.resolve(location, path)
         try {
-            return (await axios.post(resolved, body)).data
+            if (body == null) {
+                return (await axios.get(resolved)).data
+            } else {
+                return (await axios.post(resolved, body)).data
+            }
         } catch (error) {
+            console.log(error.stack)
             logger.error('ua', { url: resolved, stack: error.stack })
             return null
         }

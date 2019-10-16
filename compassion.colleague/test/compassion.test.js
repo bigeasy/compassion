@@ -10,8 +10,12 @@ require('proof')(1, async (okay) => {
     const Containerized = require('../containerized')
     const Destructible = require('destructible')
     const destructible = new Destructible(1000, 't/compassion.t.js')
+
     const Population = require('../population')
     const Resolver = { Static: require('../resolver/static') }
+
+    const resolver = new Resolver.Static([ 'http://127.0.0.1:8486' ])
+    const population = new Population(resolver)
 
     const colleague = await Containerized(destructible.durable('containerized'), {
         Conference: Conference,
@@ -22,9 +26,9 @@ require('proof')(1, async (okay) => {
                     if (id == 'racer') {
                         containerized.terminate('island', 'racer')
                     }
-                    return population.census(island, id, callback)
+                    return population.census(island, id)
                 } else {
-                    return Promise.resolve([])
+                    return []
                 }
             },
         },
@@ -60,22 +64,9 @@ require('proof')(1, async (okay) => {
     }
 
     const applications = {}
-    async function createApplication (destructible, id) {
-        const application = new Application
-        const conference = await
-        Counterfeiter(destructible.durable('counterfeiter'), colleague, entry => application.dipatch(entry), {
-                island: 'island',
-                id: id
-        })
-        const events = conference.events.shifter()
-        applications[id] = {
-            application: application,
-            conference: conference
-        }
-        return []
-    }
+    applications.first = colleague.construct('island', 'first', {}, Application)
 
-    await createApplication(destructible.durable('first'), 'first')
+    await applications.first.conference.ready
 
     destructible.destroy()
 

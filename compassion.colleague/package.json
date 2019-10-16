@@ -25,6 +25,7 @@
                             "conduit":                      "^7.0.0-alpha.5",
                             "extant":                       "^1.0.15",
                             "foremost":                     "^1.0.5",
+                            "fastify":                      "2.9.0",
                             "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",

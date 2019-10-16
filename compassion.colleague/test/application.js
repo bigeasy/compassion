@@ -1,46 +1,33 @@
-const Signal = require('signal')
-const Avenue = require('avenue')
 const assert = require('assert')
+const Queue = require('avenue')
 
 class Application {
-    constructor () {
-        this.arrived = new Signal
-        this.blocker = new Signal
-        this.envelopes = new Avenue
+    constructor (conference) {
+        this.conference = conference
+        this.arrived = new Promise(resolve => this._arrived = resolve)
+        this._blocker = new Promise(resolve => this.unblock = resolve)
+        this.envelopes = new Queue
     }
 
-    async dispatch (envelope) {
+    async dispatch (envelope, shifter) {
         this.envelopes.push(envelope)
         switch (envelope.method) {
         case 'bootstrap':
             break
         case 'join':
-            console.log('joining!!!')
-            async(function () {
-                console.log('dequeue')
-                envelope.snapshot.dequeue(async())
-            }, function (value) {
-                console.log('dequeued', value)
-            console.log('joining!!!', value)
-                envelope.snapshot.dequeue(async())
-            }, function (value) {
-                assert(value == null)
-            })
+            assert.equal(await shifter.shift(), 1)
+            assert.equal(await shifter.shift(), null)
             break
         case 'arrive':
             if (envelope.entry.arrive.id == envelope.self.id) {
-                setTimeout(function () { this.arrived.unlatch() }.bind(this), 0)
+                setImmediate(this._arrived)
             }
             break
         case 'receive':
-            async(function () {
-                if (envelope.self.id == 'second') {
-                    this.blocker.wait(async())
-                }
-            }, function () {
-                return { from: envelope.self.id }
-            })
-            break
+            if (envelope.self.id == 'second') {
+                await this._blocker
+            }
+            return { from: envelope.self.id }
         case 'reduce':
             break
         case 'depart':
@@ -48,10 +35,8 @@ class Application {
         }
     }
 
-    snapshot (promise, outbox) {
-        console.log('snapshot get')
-        outbox.push(1)
-        outbox.push(null)
+    async snapshot (promise, queue) {
+        await queue.enqueue([ 1, null ])
     }
 }
 
