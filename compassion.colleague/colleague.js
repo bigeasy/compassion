@@ -30,8 +30,11 @@ async function recorder (shifter, queue, id, type) {
 
 class Connection {
     constructor (destructible, colleague, shifter, queue) {
+        this._destructible = destructible
         this.ready = new Promise(resolve => this._ready = resolve)
         this.kibitzer = null
+        this.destroyed = false
+        destructible.destruct(() => this.destroyed = true)
         new Conduit(destructible.durable('conduit'), shifter, queue, (header, queue, shifter) => {
             switch (header.method) {
             case 'connect':
@@ -43,6 +46,10 @@ class Connection {
             }
         })
         destructible.destruct(() => shifter.destroy())
+    }
+
+    destroy () {
+        this._destructible.destroy()
     }
 
     async _connect (destructible, colleague, header, queue, shifter) {
@@ -372,17 +379,24 @@ class Colleague {
 
     connect (shifter, queue) {
         const instance = this._nextInstance('connection')
-        const destructible = this._destructible.durable([ 'connection', instance ])
+        const destructible = this._destructible.ephemeral([ 'connection', instance ])
         return new Connection(destructible, this, shifter, queue).ready
     }
 
     construct (island, id, properties, Application, ...vargs) {
         const instance = this._nextInstance('application')
-        const destructible = this._destructible.durable([ 'conference', instance ])
+        const destructible = this._destructible.ephemeral([ 'conference', instance ])
         const inbox = new Queue, outbox = new Queue
         this.connect(outbox.shifter(), inbox)
         return new this._Conference(destructible, false, island, id, properties,
                                     inbox.shifter(), outbox, Application, vargs).application
+    }
+
+    terminate (island, id) {
+        const connection = this._getConnection(island, id)
+        if (connection != null) {
+            connection.destroy()
+        }
     }
 }
 

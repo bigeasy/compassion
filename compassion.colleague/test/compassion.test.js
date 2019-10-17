@@ -21,12 +21,13 @@ require('proof')(1, async (okay) => {
         Conference: Conference,
         population: {
             called: 0,
-            census: function (island, id) {
+            census: function (island) {
                 if (this.called++ != 0) {
-                    if (id == 'racer') {
-                        containerized.terminate('island', 'racer')
+                    if (island == 'racer') {
+                        colleague.terminate(island, 'first')
+                        return []
                     }
-                    return population.census(island, id)
+                    return population.census(island)
                 } else {
                     return []
                 }
@@ -67,6 +68,11 @@ require('proof')(1, async (okay) => {
     applications.first = colleague.construct('island', 'first', {}, Application)
 
     await applications.first.conference.ready
+
+    const racer = colleague.construct('racer', 'first', {}, Application)
+
+    await racer.conference.ready
+
 
     destructible.destroy()
 

@@ -84,6 +84,7 @@ class Conference {
             for await (const entry of request.shifter.iterator()) {
                 await this._entry(entry)
             }
+            this._ready.call(null, false)
         })
 
         // **TODO** Let the messages swim to exit.
@@ -180,7 +181,7 @@ class Conference {
                     }
                     this._snapshots.set(this._government.promise, null, broadcasts)
                 } else if (this._government.promise != '1/0') {
-                    this._ready.call()
+                    this._ready.call(null, true)
                     const broacasts = await this._conduit.request({
                             method: 'broadcasts',
                             promise: this._government.promise
@@ -235,7 +236,7 @@ class Conference {
                         }
                     }
                 } else {
-                    this._ready.call()
+                    this._ready.call(null, false)
                 }
             } else if (entry.body.departed) {
                 async(function () {
