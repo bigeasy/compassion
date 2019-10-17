@@ -6,8 +6,9 @@ require('proof')(4, (okay) => {
             promise: '0/0',
             republic: 1
         }
-    }], 1), {
-        action: 'unrecoverable'
+    }], 1, true), {
+        action: 'unrecoverable',
+        definitive: true
     }, 'no members')
     okay(embark([{
         id: 'x',
@@ -23,8 +24,9 @@ require('proof')(4, (okay) => {
             majority: [ 'a', 'b' ],
             minority: [ 'c' ]
         }
-    }], 1), {
-        action: 'unrecoverable'
+    }], 1, false), {
+        action: 'unrecoverable',
+        definitive: false
     }, 'collapsed')
     okay(embark([{
         id: 'x',

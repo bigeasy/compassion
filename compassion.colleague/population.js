@@ -14,7 +14,6 @@ class Population {
     async census (island) {
         const islanders = []
         for (const location of (await this._resolver.resolve())) {
-            console.log(location)
             const data = await ua.json(location, `/island/${island}/islanders`)
             if (data == null) {
                 islanders.push(null)

@@ -38,22 +38,19 @@ require('proof')(1, async (okay) => {
         const resolver = new Resolver.Static([ 'http://127.0.0.1:8888/', 'http://127.0.0.1:8888/' ])
         const population = new Population(resolver)
         const census = await population.census('island')
-        okay(census, {
-            islanders: [{
-                id: 'first',
-                government: {},
-                cookie: 0,
-                url: 'http://127.0.0.1:8888/island/island/first/',
-                createdAt: 0
-            }, {
-                id: 'second',
-                government: {},
-                cookie: 0,
-                url: 'http://127.0.0.1:8888/island/island/second/',
-                createdAt: 1
-            }],
-            complete: false
-        }, 'census')
+        okay(census, [{
+            id: 'first',
+            government: {},
+            cookie: 0,
+            url: 'http://127.0.0.1:8888/island/island/islander/first/',
+            createdAt: 0
+        }, {
+            id: 'second',
+            government: {},
+            cookie: 0,
+            url: 'http://127.0.0.1:8888/island/island/islander/second/',
+            createdAt: 1
+        }, null ], 'census')
     } finally {
         service.reactor.fastify.close()
     }

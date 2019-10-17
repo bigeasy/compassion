@@ -163,7 +163,7 @@ class Colleague {
                 const connection = this._getConnection(island, id)
                 const census = await options.population.census(island)
                 const islanders = census.filter(islander => islander != null)
-                const complete = islanders.length == census.length
+                const complete = islanders.length == census.length && islanders.length != 0
                 if (!connection.destroyed) {
                     await this._chaperon(connection, event, islanders, complete)
                 }
@@ -294,7 +294,7 @@ class Colleague {
             action = discover(id, islanders, complete)
             break
         case 'embark':
-            action = embark(islanders, event.republic)
+            action = embark(islanders, event.republic, complete)
             break
         case 'recoverable':
             action = recoverable(id, islanders)
@@ -361,7 +361,7 @@ class Colleague {
             this.scheduler.schedule(Date.now() + this._ping.chaperon, event.key, event)
             break
         case 'unrecoverable':
-            this._destructible.destroy()
+            connection.destroy()
             break
         }
     }

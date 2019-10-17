@@ -1,13 +1,18 @@
 const Paxos = require('paxos')
 
-module.exports = function (members, republic) {
+// **TODO** If you read, we're not basing definitive on complete, so either we
+// completely trust our inventory, or we introduce some sort of mechanism to
+// timeout. I believe we should modify our inventory to return an empty list if
+// it is itself indecisive, which it may be in the case of Gossip and SWIM, but
+// it should be authoritive in the case of case of using a hosting service API.
+module.exports = function (members, republic, complete) {
     const unsplit = members.filter(function (member) {
         return member.government.promise != '0/0' && member.government.republic == republic
     })
 
     // The entire island has disappeared.
     if (unsplit.length == 0) {
-        return { action: 'unrecoverable' }
+        return { action: 'unrecoverable', definitive: complete }
     }
 
     unsplit.sort(function (a, b) {
@@ -22,7 +27,7 @@ module.exports = function (members, republic) {
     if (government.majority.concat(government.minority).filter(function (id) {
         return ~ids.indexOf(id)
     }).length < government.majority.length) {
-        return { action: 'unrecoverable' }
+        return { action: 'unrecoverable', definitive: complete }
     }
 
     if (government.majority.filter(function (id) {
