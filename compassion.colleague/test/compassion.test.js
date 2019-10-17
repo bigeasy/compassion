@@ -1,4 +1,6 @@
-require('proof')(1, async (okay) => {
+require('proof')(2, async (okay) => {
+    const axios = require('axios')
+
     const path = require('path')
     const fs = require('fs')
 
@@ -48,6 +50,9 @@ require('proof')(1, async (okay) => {
             port: 8486
         }
     })
+
+    const response = await axios.get('http://127.0.0.1:8486')
+    okay(response.data, 'Compassion Colleague API\n', 'index')
 
     const writable = fs.createWriteStream(path.resolve(__dirname, 'entries.jsons'))
 
