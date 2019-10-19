@@ -26,7 +26,7 @@ require('proof')(2, async (okay) => {
             census: function (island) {
                 if (this.called++ != 0) {
                     if (island == 'racer') {
-                        colleague.terminate(island, 'first')
+                        colleague.terminate(island, 'racer')
                         return []
                     }
                     return population.census(island)
@@ -70,14 +70,16 @@ require('proof')(2, async (okay) => {
     }
 
     const applications = {}
-    applications.first = colleague.construct('island', 'first', {}, Application)
+    applications.first = colleague.construct('island', 'first', { value: 1 }, Application)
 
     await applications.first.conference.ready
 
-    const racer = colleague.construct('racer', 'first', {}, Application)
+    const racer = colleague.construct('racer', 'racer', {}, Application)
 
     await racer.conference.ready
 
+    applications.second = colleague.construct('island', 'second', { value: 2 }, Application)
+    await applications.second.conference.ready
 
     destructible.destroy()
 

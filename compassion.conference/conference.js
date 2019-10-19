@@ -67,6 +67,8 @@ class Conference {
         // All messages are broadcast, so maybe we rename this.
         this._broadcasts = {}
 
+        this._cubbyholes = { snapshots: new Cubbyhole, broadcasts: new Cubbyhole }
+
         // Mark ourselves as destroyed on destruction.
         this._destructible.destruct(() => this.destroyed = true)
 
@@ -82,8 +84,11 @@ class Conference {
         // Read responses from the conduit
         destructible.durable('shift', async () => {
             for await (const entry of request.shifter.iterator()) {
+                console.log('got', this.id, entry.promise)
                 await this._entry(entry)
+                console.log('done', this.id, entry.promise)
             }
+            console.log('entries done', id)
             this._ready.call(null, false)
         })
 
@@ -120,11 +125,12 @@ class Conference {
         // **TODO** Here we await the arrival of the requested promise so that
         // we can snapshot the backlog and the user can snapshot their
         // application state for a snapshot request.
+        console.log(request)
         switch (request.method) {
         case 'broadcasts':
-            return await this._cubbyhole.broadcasts.wait(request.promise)
+            return await this._cubbyholes.broadcasts.get(request.promise)
         case 'snapshot':
-            await this._cubbyhole.snapshots.wait(request.promise)
+            await this._cubbyholes.snapshots.get(request.promise)
             // TODO Maybe queue can be null and we just return something.
             await this.application.snapshot(request.promise, queue)
             break
@@ -150,22 +156,20 @@ class Conference {
                     })
                 } else if (arrival.id == this.id) {
                     console.log('snapshotting!', this.id, this._government)
-                    const request = this._conduit.inovke({
+                    const { shifter } = this._conduit.shifter({
                         method: 'snapshot',
-                        promise: this._government.promise,
-                        inbox: true
+                        promise: this._government.promise
                     })
-                    this._destructible.ephemeral('snapshot', request.inbox.pump(this, function (envelope) {
-                        this.events.push({ type: 'snapshot', id: this.id, body: envelope })
-                    }), 'destructible', null)
+                    this._destructible.ephemeral('snapshot', shifter.shifter().pump(body => {
+                        return this.events.push({ type: 'snapshot', id: this.id, body })
+                    }))
                     await this.application.dispatch({
                         method: 'join',
                         self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                         entry: entry.body,
                         replaying: this._replaying,
-                        government: this._government,
-                        snapshot: request.inbox
-                    })
+                        government: this._government
+                    }, shifter)
                 }
                 await this.application.dispatch({
                     method: 'arrive',
@@ -179,13 +183,14 @@ class Conference {
                     for (var key in this._broadcasts) {
                         broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                     }
-                    this._snapshots.set(this._government.promise, null, broadcasts)
+                    console.log('set broadcasts', this.id, this._government.promise, broadcasts)
+                    this._cubbyholes.broadcasts.set(this._government.promise, broadcasts)
                 } else if (this._government.promise != '1/0') {
-                    this._ready.call(null, true)
-                    const broacasts = await this._conduit.request({
-                            method: 'broadcasts',
-                            promise: this._government.promise
+                    const broadcasts = await this._conduit.invoke({
+                        method: 'broadcasts',
+                        promise: this._government.promise
                     })
+                    console.log('broadcasts done', broadcasts)
                     // TODO Would be nice to throw a particular type of message
                     // and have it logged as a warning and not an error, so use
                     // `Rescue` to filter out anything that is just a warning or
@@ -198,8 +203,8 @@ class Conference {
                     // This would be part of the mess that gets reporting in the
                     // exception bouquet and hopfully it would be seen as a
                     // symptom and not a cause. Maybe these comments will help.
-                    Interrupt.assert(body != null, 'disconnected', { level: 'warn' })
-                    this.events.push({ type: 'broadcasts', id: this.id, body: body })
+                    Interrupt.assert(broadcasts != null, 'disconnected', { level: 'warn' })
+                    this.events.push({ type: 'broadcasts', id: this.id, broadcasts })
                     for (const boradcast in broadcasts) {
                         await this._entry({
                             body: { // turnstile
@@ -235,9 +240,13 @@ class Conference {
                             })
                         }
                     }
+                    this._ready.call(null, true)
                 } else {
                     this._ready.call(null, false)
                 }
+                // **TODO** Throw an exception here and determine why this fails
+                // siletly.
+                this._cubbyholes.snapshots.set(entry.promise, true)
             } else if (entry.body.departed) {
                 async(function () {
                     this.application.dispatch({
@@ -264,7 +273,9 @@ class Conference {
                     })
                 })
             }
+                    console.log('dispatch arrive', this.id)
             if (entry.body.acclimate != null) {
+                    console.log('dispatch arrive', this.id)
                 await this.application.dispatch({
                     self: {
                         id: this.id,
@@ -276,6 +287,8 @@ class Conference {
                     government: this._government
                 })
             }
+                    console.log('dispatched arrive', this.id)
+            console.log('almost done', this.id)
             await this.application.dispatch({
                 self: {
                     id: this.id,

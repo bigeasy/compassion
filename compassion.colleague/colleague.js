@@ -1,3 +1,5 @@
+const stream = require('stream')
+
 const Reactor = require('reactor')
 const Queue = require('avenue')
 const Conduit = require('conduit')
@@ -12,12 +14,16 @@ const logger = require('prolific.logger').create('compassion.networked')
 const coalesce = require('extant')
 
 const Serialize = require('avenue/serialize')
+const Deserialize = require('avenue/deserialize')
 
 const Keyify = require('keyify')
 const Kibitzer = require('kibitz')
 
 const ua = require('./ua')
 const discover = require('./discover')
+const embark = require('./embark')
+
+const Staccato = require('staccato')
 
 async function recorder (shifter, queue, id, type) {
     for await (const body of shifter.iterator()) {
@@ -28,6 +34,8 @@ async function recorder (shifter, queue, id, type) {
     }
 }
 
+let instance = 0
+
 class Connection {
     constructor (destructible, colleague, shifter, queue) {
         this._destructible = destructible
@@ -35,12 +43,12 @@ class Connection {
         this.kibitzer = null
         this.destroyed = false
         destructible.destruct(() => this.destroyed = true)
-        new Conduit(destructible.durable('conduit'), shifter, queue, (header, queue, shifter) => {
+        this.conduit = new Conduit(destructible.durable('conduit'), shifter, queue, (header, queue, shifter) => {
             switch (header.method) {
             case 'connect':
-                return this._connect(destructible, colleague, header, queue, shifter)
-            case 'broadcast':
-                return this._connect(header)
+                return this._connect(destructible.durable([ header.island, header.id ]), colleague, header, queue, shifter)
+            case 'broadcasts':
+                return this._broadcast(header)
             case 'snapshot':
                 return this._snapshot(header, queue)
             }
@@ -70,12 +78,14 @@ class Connection {
 
         // **TODO** Paxos.destroy
         destructible.destruct(() => {
-            console.log('DESTROYING!!!')
+            console.log('DESTROYING!!!', id)
+            // entries.destroy()
+            kibitzer.paxos.log.push(null)
             kibitzer.paxos.pinged.push(null)
             kibitzer.paxos.outbox.push(null)
-            kibitzer.paxos.log.push(null)
             kibitzer.played.push(null)
             kibitzer.islander.outbox.push(null)
+            console.log('DESTROYED!!!', id)
         })
 
         // **TODO** Any way to make this a one-liner?
@@ -110,11 +120,18 @@ class Connection {
 
         this.createdAt = Date.now()
 
+        const entries = kibitzer.paxos.log.async.shifter()
+
+        // entries.shifter().pump(entry => console.log('!!!', id, entry && entry.promise))
+
         // Forward Paxos log entries to our `Conference`.
         destructible.durable('entries', async () => {
-            for await (const entry of kibitzer.paxos.log.async.shifter().iterator()) {
+            for await (const entry of entries.iterator()) {
                 await queue.push(entry)
+                console.log('pushed', id, entry.promise)
             }
+            console.log('exit entries loop', id)
+            await queue.push(null)
         })
         destructible.durable('receive', async () => {
             for await (const envelope of shifter.iterator()) {
@@ -135,18 +152,22 @@ class Connection {
         })
     }
 
-    _broadcast () {
+    async _broadcast (header) {
         const government = this.kibitzer.paxos.government
         const leader = government.properties[government.majority[0]].url
-        return ua.json(leader, './broadcasts', { promise })
+        const { promise } = header
+        console.log('callling!!!!', leader, './broadcasts', promise)
+        const got = await ua.json(leader, './broadcasts', { promise })
+        console.log('______', got)
+        return got
     }
 
-    async _snapshot () {
+    async _snapshot (header, queue) {
         const government = this.kibitzer.paxos.government
         const leader = government.properties[government.majority[0]].url
-        const { promise } = envelope
+        const { promise } = header
         const stream = await ua.stream(leader, './snapshot', { promise })
-        await Deserialize(response.data, queue)
+        await Deserialize(new Staccato.Readable(stream), queue)
     }
 }
 
@@ -255,15 +276,19 @@ class Colleague {
     }
 
     async broadcasts (request) {
+        console.log('http post broadcasts')
         const { island, id } = request.params
-        return await this._getConnection404(island, id).conduit.request({
+        const got = await this._getConnection404(island, id).conduit.invoke({
             method: 'broadcasts',
             promise: request.body.promise
         })
+        console.log('>>>>', got)
+        return got
     }
 
     async snapshot (request, reply) {
-        const { queue } = this._getConnection404(reply.params.island, reply.params.id).conduit.request({
+        const { island, id } = request.params
+        const { shifter } = this._getConnection404(island, id).conduit.shifter({
             method: 'snapshot',
             promise: request.body.promise,
             inbox: true
@@ -272,7 +297,8 @@ class Colleague {
         reply.code(200)
         reply.header('content-type', 'application/octet-stream')
         reply.send(through)
-        await Serialize(queue, through)
+        console.log('serializing')
+        await Serialize(shifter, new Staccato.Writable(through))
     }
 
     islanders (request) {
@@ -292,7 +318,7 @@ class Colleague {
         return islanders
     }
 
-    async _chaperon (colleague, event, islanders, complete) {
+    async _chaperon (connection, event, islanders, complete) {
         let action
         const { island, id } = event
         const scheduleKey = Keyify.stringify({ island, id })
@@ -307,7 +333,6 @@ class Colleague {
             action = recoverable(id, islanders)
             break
         }
-        console.log('>>>', islanders, action)
         logger.notice('overwatch', {
             $islanders: islanders,
             $event: event,
@@ -318,10 +343,10 @@ class Colleague {
         case 'bootstrap':
             // **TODO** Remove defensive copy.
             var properties = { ...event.properties, url: action.url }
-            colleague.kibitzer.bootstrap(Date.now(), properties)
+            connection.kibitzer.bootstrap(Date.now(), properties)
             break
         case 'join':
-            colleague.kibitzer.join(action.republic)
+            connection.kibitzer.join(action.republic)
             this.scheduler.schedule(Date.now(), scheduleKey, {
                 name: 'embark',
                 island: event.island,
@@ -347,22 +372,13 @@ class Colleague {
             // maybe it doesn't. You'll know when the Paxos object starts working.
             // Until then, keep sending embarkation requests. The leader knows how
             // to deal with duplicate or in-process requests.
-            var properties = JSON.parse(JSON.stringify(coalesce(colleague.properties, {})))
-            properties.url = event.url
-            this._ua.fetch({
-                url: action.url,
-                timeout: this._timeout.http,
-                nullify: true,
-                parse: 'json'
-            }, {
-                url: './embark',
-                post: {
-                    republic: event.republic,
-                    id: colleague.kibitzer.paxos.id,
-                    cookie: colleague.kibitzer.paxos.cookie,
-                    properties: properties
-                }
-            }, async())
+            event.properties.url = event.url
+            await ua.json(action.url, './embark', {
+                republic: event.republic,
+                id: connection.kibitzer.paxos.id,
+                cookie: connection.kibitzer.paxos.cookie,
+                properties: event.properties
+            })
             break
         case 'retry':
             this.scheduler.schedule(Date.now() + this._ping.chaperon, event.key, event)
@@ -380,7 +396,7 @@ class Colleague {
     connect (shifter, queue) {
         const instance = this._nextInstance('connection')
         const destructible = this._destructible.ephemeral([ 'connection', instance ])
-        return new Connection(destructible, this, shifter, queue).ready
+        new Connection(destructible, this, shifter, queue)
     }
 
     construct (island, id, properties, Application, ...vargs) {
