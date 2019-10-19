@@ -80,6 +80,14 @@ require('proof')(2, async (okay) => {
 
     applications.second = colleague.construct('island', 'second', { value: 2 }, Application)
     await applications.second.conference.ready
+    const received = applications.second.envelopes.join(event => {
+        return event.method == 'receive'
+    })
+    applications.second.conference.enqueue('name', { value: 1 })
+
+    await received
+
+    applications.second.unblock.call()
 
     destructible.destroy()
 

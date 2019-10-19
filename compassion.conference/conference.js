@@ -102,7 +102,7 @@ class Conference {
         this.application = new (Function.prototype.bind.apply(Application, [ null, this ].concat(vargs)))
     }
 
-    enqueue (message) {
+    enqueue (method, message) {
         const cookie = (this._cookie = BigInt(this._cookie) + 1n).toString(16)
         const arrived = this._government.arrived.promise[this.id]
         this._queue.push({
@@ -212,7 +212,6 @@ class Conference {
                                     body: { // islander
                                         module: 'conference',
                                         method: 'broadcast',
-                                        internal: broadcast.internal,
                                         request: {
                                             key: broadcast.key,
                                             method: broadcast.method,
@@ -312,33 +311,30 @@ class Conference {
             // operates.
 
             //
-            var envelope = entry.body.body
+            const envelope = entry.body.body
             switch (envelope.method) {
             case 'broadcast':
-                this._broadcasts[envelope.request.key] = {
-                    key: envelope.request.key,
-                    internal: coalesce(envelope.internal, false),
-                    from: envelope.request.from,
-                    method: envelope.request.method,
-                    body: envelope.request.body,
+                const request = envelope.request
+                this._broadcasts[request.key] = {
+                    key: request.key,
+                    from: request.from,
+                    method: request.method,
+                    body: request.body,
                     responses: {}
                 }
                 const response = await this.application.dispatch({
-                    self: {
-                        id: this.id,
-                        arrived: this._government.arrived.promise[this.id]
-                    },
+                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     method: 'receive',
-                    from: envelope.request.from,
+                    from: request.from,
                     replaying: this._replaying,
                     government: this._government,
-                    body: envelope.request.body
-                }, async())
+                    body: request.body
+                })
                 this._queue.push({
                     module: 'compassion',
                     method: 'reduce',
                     reduction: {
-                        key: envelope.request.key,
+                        key: request.key,
                         from: this._government.arrived.promise[this.id],
                         body: coalesce(response)
                     }
@@ -349,7 +345,7 @@ class Conference {
             case 'reduce':
                 var broadcast = this._broadcasts[envelope.reduction.key]
                 broadcast.responses[envelope.reduction.from] = envelope.reduction.body
-                this._checkReduced(broadcast, async())
+                await this._checkReduced(broadcast)
                 break
             }
         }
@@ -365,47 +361,40 @@ class Conference {
     }
 
     async _checkReduced (broadcast) {
-        var complete = true
-        for (var promise in this._government.arrived.id) {
+        for (const promise in this._government.arrived.id) {
             if (!(promise in broadcast.responses)) {
-                complete = false
-                break
+                return
             }
         }
 
-        if (complete) {
-            var reduced = []
-            for (var promise in broadcast.responses) {
-                reduced.push({
-                    promise: promise,
-                    id: this._government.arrived.id[promise],
-                    value: broadcast.responses[promise]
-                })
-            }
-            // We provide both the id and arrived promise of the member that
-            // initiated the request. We need to do this becaause the broadcast
-            // could have been initiated by a member that has since departed so we
-            // would not be able to derived id from arrived promise nor vice-versa.
-            //
-            // Unlike the request, the response does not need to provide the
-            // `reduced` postback with both the id and the arrived promise because
-            // the only responses provided are those that are still present in the
-            // government at the time of this postback.
-            await this.application.dispatch({
-                self: {
-                    id: this.id,
-                    arrived: this._government.arrived.promise[this.id]
-                },
-                method: 'reduced',
-                from: broadcast.from,
-                replaying: this._replaying,
-                government: this._government,
-                request: broadcast.body,
-                arrayed: reduced,
-                mapped: broadcast.responses
+        const reduced = []
+        for (const promise in broadcast.responses) {
+            reduced.push({
+                promise: promise,
+                id: this._government.arrived.id[promise],
+                value: broadcast.responses[promise]
             })
-            delete this._broadcasts[broadcast.key]
         }
+        // We provide both the id and arrived promise of the member that
+        // initiated the request. We need to do this becaause the broadcast
+        // could have been initiated by a member that has since departed so we
+        // would not be able to derived id from arrived promise nor vice-versa.
+        //
+        // Unlike the request, the response does not need to provide the
+        // `reduced` postback with both the id and the arrived promise because
+        // the only responses provided are those that are still present in the
+        // government at the time of this postback.
+        await this.application.dispatch({
+            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+            method: 'reduced',
+            from: broadcast.from,
+            replaying: this._replaying,
+            government: this._government,
+            request: broadcast.body,
+            arrayed: reduced,
+            mapped: broadcast.responses
+        })
+        delete this._broadcasts[broadcast.key]
     }
 }
 

@@ -1,3 +1,12 @@
+## Sat Oct 19 13:35:38 CDT 2019
+
+Should Islander unwrap the message so it isn't inside `body.body`? I want to
+reduce the noise inside Compassion Conference where I need to double wrap a
+cached message in order to replay it. Perhaps I keep the entire message in the
+backlog? But then I'm doing `entry.body.body` in other parts of the log.
+
+Feel like this might be the right thing to do.
+
 ## Sun Oct 13 20:57:44 CDT 2019
 
 The user application is going to be an object. It is going to be constructed by
