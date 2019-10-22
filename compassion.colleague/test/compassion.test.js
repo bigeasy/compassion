@@ -81,9 +81,13 @@ require('proof')(2, async (okay) => {
     applications.second = colleague.construct('island', 'second', { value: 2 }, Application)
     await applications.second.conference.ready
     const received = applications.second.envelopes.join(event => {
+        console.log(require('util').inspect(event, { depth: null }))
         return event.method == 'receive'
     })
     applications.second.conference.enqueue('name', { value: 1 })
+
+    applications.third = colleague.construct('island', 'third', { value: 3 }, Application)
+    await applications.third.conference.ready
 
     await received
 

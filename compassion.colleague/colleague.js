@@ -340,51 +340,51 @@ class Colleague {
             complete: complete
         })
         switch (action.action) {
-        case 'bootstrap':
-            // **TODO** Remove defensive copy.
-            var properties = { ...event.properties, url: action.url }
-            connection.kibitzer.bootstrap(Date.now(), properties)
+        case 'bootstrap': {
+                // **TODO** Remove defensive copy.
+                const properties = { ...event.properties, url: action.url }
+                connection.kibitzer.bootstrap(Date.now(), properties)
+            }
             break
-        case 'join':
-            connection.kibitzer.join(action.republic)
-            this.scheduler.schedule(Date.now(), scheduleKey, {
-                name: 'embark',
-                island: event.island,
-                id: event.id,
-                url: action.url,
-                republic: action.republic,
-                properties: event.properties
-            })
+        case 'join': {
+                connection.kibitzer.join(action.republic)
+                const properties = { ...event.properties, url: action.url }
+                this.scheduler.schedule(Date.now(), scheduleKey, {
+                    name: 'embark',
+                    island: event.island,
+                    id: event.id,
+                    url: action.url,
+                    republic: action.republic,
+                    properties: properties
+                })
+            }
             break
-        case 'embark':
-            // Schedule a subsequent embarkation. Once our Paxos object starts
-            // receiving message, the embarkation is cleared and replaced with a
-            // recoverable check.
-            this.scheduler.schedule(Date.now() + this._ping.chaperon, scheduleKey, {
-                name: 'embark',
-                island: event.island,
-                id: event.id,
-                url: event.url,
-                republic: event.republic
-            })
-            // If this fails, we don't care. Embarkation is designed to be
-            // asynchronous in the macro. You send a message. Maybe it gets there,
-            // maybe it doesn't. You'll know when the Paxos object starts working.
-            // Until then, keep sending embarkation requests. The leader knows how
-            // to deal with duplicate or in-process requests.
-            event.properties.url = event.url
-            await ua.json(action.url, './embark', {
-                republic: event.republic,
-                id: connection.kibitzer.paxos.id,
-                cookie: connection.kibitzer.paxos.cookie,
-                properties: event.properties
-            })
+        case 'embark': {
+                // Schedule a subsequent embarkation. Once our Paxos object
+                // starts receiving message, the embarkation is cleared and
+                // replaced with a recoverable check.
+                this.scheduler.schedule(Date.now() + this._ping.chaperon, scheduleKey, event)
+                // If this fails, we don't care. Embarkation is designed to be
+                // asynchronous in the macro. You send a message. Maybe it gets
+                // there, maybe it doesn't. You'll know when the Paxos object
+                // starts working. Until then, keep sending embarkation
+                // requests. The leader knows how to deal with duplicate or
+                // in-process requests.
+                await ua.json(action.url, './embark', {
+                    republic: event.republic,
+                    id: connection.kibitzer.paxos.id,
+                    cookie: connection.kibitzer.paxos.cookie,
+                    properties: event.properties
+                })
+            }
             break
-        case 'retry':
-            this.scheduler.schedule(Date.now() + this._ping.chaperon, event.key, event)
+        case 'retry': {
+                this.scheduler.schedule(Date.now() + this._ping.chaperon, event.key, event)
+            }
             break
-        case 'unrecoverable':
-            connection.destroy()
+        case 'unrecoverable': {
+                connection.destroy()
+            }
             break
         }
     }

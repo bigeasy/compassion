@@ -179,8 +179,8 @@ class Conference {
                     government: this._government
                 })
                 if (arrival.id != this.id) {
-                    var broadcasts = []
-                    for (var key in this._broadcasts) {
+                    const broadcasts = []
+                    for (const key in this._broadcasts) {
                         broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                     }
                     console.log('set broadcasts', this.id, this._government.promise, broadcasts)
@@ -205,34 +205,30 @@ class Conference {
                     // symptom and not a cause. Maybe these comments will help.
                     Interrupt.assert(broadcasts != null, 'disconnected', { level: 'warn' })
                     this.events.push({ type: 'broadcasts', id: this.id, broadcasts })
-                    for (const boradcast in broadcasts) {
+                    for (const broadcast of broadcasts) {
                         await this._entry({
-                            body: { // turnstile
-                                body: { // paxos
-                                    body: { // islander
-                                        module: 'conference',
-                                        method: 'broadcast',
-                                        request: {
-                                            key: broadcast.key,
-                                            method: broadcast.method,
-                                            body: broadcast.body
-                                        }
+                            body: {
+                                body: { // islander
+                                    module: 'conference',
+                                    method: 'broadcast',
+                                    request: {
+                                        key: broadcast.key,
+                                        method: broadcast.method,
+                                        body: broadcast.body
                                     }
                                 }
                             }
                         })
                         for (const promise in broadcast.responses) {
                             await this._entry({
-                                body: { // turnstile
-                                    body: { // paxos
-                                        body: { // islander
-                                            module: 'conference',
-                                            method: 'reduce',
-                                            reduction: {
-                                                from: promise,
-                                                key: broadcast.key,
-                                                body: broadcast.responses[promise]
-                                            }
+                                body: {
+                                    body: { // islander
+                                        module: 'conference',
+                                        method: 'reduce',
+                                        reduction: {
+                                            from: promise,
+                                            key: broadcast.key,
+                                            body: broadcast.responses[promise]
                                         }
                                     }
                                 }
