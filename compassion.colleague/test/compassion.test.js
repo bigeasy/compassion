@@ -93,6 +93,18 @@ require('proof')(2, async (okay) => {
 
     applications.second.unblock.call()
 
+    await applications.second.envelopes.join(event => {
+        console.log('>>>', event)
+        return (event.body || event.entry || event.government).promise == '6/0'
+    })
+
+    colleague.terminate('island', 'second')
+
+    const reduced = await applications.third.envelopes.join(event => {
+        console.log('>>>', event)
+        return (event.body || event.entry || event.government).promise == 'a/0'
+    })
+
     destructible.destroy()
 
     console.log('destroying')

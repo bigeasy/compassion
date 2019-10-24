@@ -84,11 +84,8 @@ class Conference {
         // Read responses from the conduit
         destructible.durable('shift', async () => {
             for await (const entry of request.shifter.iterator()) {
-                console.log('got', this.id, entry.promise)
                 await this._entry(entry)
-                console.log('done', this.id, entry.promise)
             }
-            console.log('entries done', id)
             this._ready.call(null, false)
         })
 
@@ -125,7 +122,6 @@ class Conference {
         // **TODO** Here we await the arrival of the requested promise so that
         // we can snapshot the backlog and the user can snapshot their
         // application state for a snapshot request.
-        console.log(request)
         switch (request.method) {
         case 'broadcasts':
             return await this._cubbyholes.broadcasts.get(request.promise)
@@ -155,7 +151,6 @@ class Conference {
                         government: this._government
                     })
                 } else if (arrival.id == this.id) {
-                    console.log('snapshotting!', this.id, this._government)
                     const { shifter } = this._conduit.shifter({
                         method: 'snapshot',
                         promise: this._government.promise
@@ -183,14 +178,12 @@ class Conference {
                     for (const key in this._broadcasts) {
                         broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                     }
-                    console.log('set broadcasts', this.id, this._government.promise, broadcasts)
                     this._cubbyholes.broadcasts.set(this._government.promise, broadcasts)
                 } else if (this._government.promise != '1/0') {
                     const broadcasts = await this._conduit.invoke({
                         method: 'broadcasts',
                         promise: this._government.promise
                     })
-                    console.log('broadcasts done', broadcasts)
                     // TODO Would be nice to throw a particular type of message
                     // and have it logged as a warning and not an error, so use
                     // `Rescue` to filter out anything that is just a warning or
@@ -243,34 +236,29 @@ class Conference {
                 // siletly.
                 this._cubbyholes.snapshots.set(entry.promise, true)
             } else if (entry.body.departed) {
-                async(function () {
-                    this.application.dispatch({
-                        self: {
-                            id: this.id,
-                            arrived: this._government.arrived.promise[this.id]
-                        },
-                        method: 'depart',
-                        body: entry.body,
-                        replaying: this._replaying,
-                        government: this._government
-                    }, async())
-                }, function () {
-                    var depart = entry.body.departed
-                    var promise = depart.promise
-                    var broadcasts = []
-                    for (var key in this._broadcasts) {
-                        delete this._broadcasts[key].responses[promise]
-                        broadcasts.push(this._broadcasts[key])
-                    }
-                    this._snapshots.remove(promise)
-                    async.forEach([ broadcasts ], function (broadcast) {
-                        this._checkReduced(broadcast, async())
-                    })
+                await this.application.dispatch({
+                    self: {
+                        id: this.id,
+                        arrived: this._government.arrived.promise[this.id]
+                    },
+                    method: 'depart',
+                    body: entry.body,
+                    replaying: this._replaying,
+                    government: this._government
                 })
+                var depart = entry.body.departed
+                var promise = depart.promise
+                var broadcasts = []
+                for (var key in this._broadcasts) {
+                    delete this._broadcasts[key].responses[promise]
+                    broadcasts.push(this._broadcasts[key])
+                }
+                this._snapshots.remove(promise)
+                for (const broadcast of broadcasts) {
+                    await this._checkReduced(broadcast)
+                }
             }
-                    console.log('dispatch arrive', this.id)
             if (entry.body.acclimate != null) {
-                    console.log('dispatch arrive', this.id)
                 await this.application.dispatch({
                     self: {
                         id: this.id,
@@ -282,8 +270,6 @@ class Conference {
                     government: this._government
                 })
             }
-                    console.log('dispatched arrive', this.id)
-            console.log('almost done', this.id)
             await this.application.dispatch({
                 self: {
                     id: this.id,

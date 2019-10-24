@@ -31,6 +31,7 @@ class Application {
         case 'reduce':
             break
         case 'depart':
+            console.log('--- application depart ---')
             break
         }
     }
