@@ -1,9 +1,11 @@
-function Procedure (conduit) {
-    this._conduit = conduit
+class Resolver {
+    constructor (conduit) {
+        this._conduit = conduit
+    }
+
+    resolve (callback) {
+        return this._conduit.invoke({})
+    }
 }
 
-Procedure.prototype.resolve = function (callback) {
-    this._conduit.connect({}).inbox.dequeue(callback)
-}
-
-module.exports = Procedure
+module.exports = Resolver

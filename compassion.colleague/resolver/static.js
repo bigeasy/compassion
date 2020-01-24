@@ -3,7 +3,7 @@ class Static {
         this._urls = urls
     }
 
-    resolve (callback) {
+    resolve () {
         return this._urls
     }
 }
