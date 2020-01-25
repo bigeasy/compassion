@@ -34,7 +34,7 @@ class Conference {
     // Construct a `Conference`.
 
     //
-    constructor (destructible, replaying, island, id, properties, shifter, queue, Application, vargs) {
+    constructor (destructible, conduit, application, island, id, properties, replaying = false) {
         // A bouquet of `Promise`s monitored by this `Conference` instance.
         this._destructible = destructible
 
@@ -72,7 +72,10 @@ class Conference {
         // Mark ourselves as destroyed on destruction.
         this._destructible.destruct(() => this.destroyed = true)
 
-        // Start a `Conduit` around the streams we've been given.
+        // Open a new connection to the colleague.
+        const { shifter, queue } = conduit.queue({})
+
+        // Start a `Conduit` around the colleague connection.
         this._conduit = new Conduit(destructible.durable('conduit'), shifter, queue, this._request.bind(this))
 
         // Connect to `Colleague` via our `Conduit`.
@@ -96,7 +99,7 @@ class Conference {
         this.ready = new Promise(resolve => this._ready = resolve)
 
         // Construct our application passing ourselves as the first argument.
-        this.application = new (Function.prototype.bind.apply(Application, [ null, this ].concat(vargs)))
+        this.application = application
     }
 
     enqueue (method, message) {
@@ -230,6 +233,7 @@ class Conference {
                     }
                     this._ready.call(null, true)
                 } else {
+                    console.log('!!!! did not become ready')
                     this._ready.call(null, false)
                 }
                 // **TODO** Throw an exception here and determine why this fails

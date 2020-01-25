@@ -1,26 +1,41 @@
-require('proof')(2, async (okay) => {
+require('proof')(2, prove)
+
+async function prove (okay) {
+    const Destructible = require('destructible')
+    const destructible = new Destructible(1000, 't/compassion.t')
+    try {
+        await test(destructible, okay)
+    } finally {
+        console.log('----- will destroy')
+        destructible.destroy()
+    }
+}
+
+async function test (destructible, okay) {
     const axios = require('axios')
 
+    const assert = require('assert')
     const path = require('path')
     const fs = require('fs')
 
     const Avenue = require('avenue')
 
-    const Conference = require('../../compassion.conference/conference')
-    const Counterfeiter = require('../../compassion.counterfeiter')(Conference)
+    const Conduit = require('conduit')
+
+    const Colleague = require('../colleague')
     const Application = require('./application')
     const Containerized = require('../containerized')
-    const Destructible = require('destructible')
-    const destructible = new Destructible(1000, 't/compassion.t.js')
 
     const Population = require('../population')
     const Resolver = { Static: require('../resolver/static') }
 
+    const inbox = new Avenue
+    const outbox = new Avenue
+
     const resolver = new Resolver.Static([ 'http://127.0.0.1:8486' ])
     const population = new Population(resolver)
 
-    const colleague = await Containerized(destructible.durable('containerized'), {
-        Conference: Conference,
+    const colleague = new Colleague(destructible.durable('colleague'), {
         population: {
             called: 0,
             census: function (island) {
@@ -44,12 +59,18 @@ require('proof')(2, async (okay) => {
             chaperon: 450,
             paxos: 450,
             http: 500
-        },
-        bind: {
-            iface: '127.0.0.1',
-            port: 8486
         }
     })
+    new Conduit(destructible.durable('colleague'), inbox.shifter(), outbox, (header, queue, shifter) => {
+        colleague.connect(shifter, queue)
+    })
+    await colleague.reactor.fastify.listen(8486, '127.0.0.1')
+    destructible.destruct(() => colleague.reactor.fastify.close())
+
+    const source = new Conduit(destructible.durable('conference'), outbox.shifter(), inbox)
+
+    destructible.destruct(() => inbox.push(null))
+    destructible.destruct(() => outbox.push(null))
 
     const response = await axios.get('http://127.0.0.1:8486')
     okay(response.data, 'Compassion Colleague API\n', 'index')
@@ -70,23 +91,23 @@ require('proof')(2, async (okay) => {
     }
 
     const applications = {}
-    applications.first = colleague.construct('island', 'first', { value: 1 }, Application)
+    applications.first = new Application(destructible, source, 'island', 'first', { value: 1 })
 
     await applications.first.conference.ready
 
-    const racer = colleague.construct('racer', 'racer', {}, Application)
+    const racer = new Application(destructible, source, 'racer', 'racer', {})
 
     await racer.conference.ready
 
-    applications.second = colleague.construct('island', 'second', { value: 2 }, Application)
-    await applications.second.conference.ready
+    applications.second = new Application(destructible, source, 'island', 'second', { value: 2 })
+    assert(await applications.second.conference.ready)
     const received = applications.second.envelopes.join(event => {
         console.log(require('util').inspect(event, { depth: null }))
         return event.method == 'receive'
     })
     applications.second.conference.enqueue('name', { value: 1 })
 
-    applications.third = colleague.construct('island', 'third', { value: 3 }, Application)
+    applications.third = new Application(destructible, source, 'island', 'third', { value: 3 })
     await applications.third.conference.ready
 
     await received
@@ -112,11 +133,11 @@ require('proof')(2, async (okay) => {
     await destructible.destructed
 
     okay('ran')
-})
+}
 return
 require('proof')(3, prove)
 
-function prove (okay, callback) {
+function _prove (okay, callback) {
     cadence(function (async) {
         async(function () {
             containerized = $containerized

@@ -400,6 +400,7 @@ class Colleague {
     }
 
     construct (island, id, properties, Application, ...vargs) {
+        throw new Error
         const instance = this._nextInstance('application')
         const destructible = this._destructible.ephemeral([ 'conference', instance ])
         const inbox = new Queue, outbox = new Queue
