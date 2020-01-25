@@ -399,16 +399,6 @@ class Colleague {
         new Connection(destructible, this, shifter, queue)
     }
 
-    construct (island, id, properties, Application, ...vargs) {
-        throw new Error
-        const instance = this._nextInstance('application')
-        const destructible = this._destructible.ephemeral([ 'conference', instance ])
-        const inbox = new Queue, outbox = new Queue
-        this.connect(outbox.shifter(), inbox)
-        return new this._Conference(destructible, false, island, id, properties,
-                                    inbox.shifter(), outbox, Application, vargs).application
-    }
-
     terminate (island, id) {
         const connection = this._getConnection(island, id)
         if (connection != null) {
