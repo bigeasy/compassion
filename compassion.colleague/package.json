@@ -37,7 +37,9 @@
     },
     "devDependencies":
     {
-                            "proof":                        "^8.0.0-alpha.7"
+                            "proof":                        "^8.0.0-alpha.7",
+                            "mingle":                       "^6.1.0",
+                            "mingle.static":                "2.0.1"
     },
     "scripts":
     {

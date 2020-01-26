@@ -1,51 +1,26 @@
-var cadence = require('cadence')
+const coalesce = require('extant')
 
-var coalesce = require('extant')
+const Colleague = require('./colleague')
+const Population = require('./population')
+const Resolver = require('./resolver/conduit')
 
-var Conduit = require('conduit/conduit')
-var Population = require('./population')
-var Resolver = require('./resolver/conduit')
-var Containerized = require('./containerized')
-var Signal = require('signal')
-var UserAgent = require('vizsla')
-
-function Listener (colleague) {
-    this.colleague = colleague
-}
-
-Listener.prototype.connect = cadence(function (async, destructible, inbox, outbox) {
-    this.colleague.connect(inbox, outbox, async())
-})
-
-module.exports = cadence(function (async, destructible, olio, properties) {
-    var ua = new UserAgent
-    var ready = new Signal
-    async(function () {
-        olio.sender('mingle', cadence(function (async, destructible, inbox, outbox) {
-            destructible.durable('conduit', Conduit, inbox, outbox, null, async())
-        }), async())
-    }, function (sender) {
-        var ping = coalesce(properties.ping, {})
-        var timeout = coalesce(properties.timeout, {})
-        var resolver = new Resolver(sender.processes[0].conduit)
-        var bind = coalesce(properties.bind, {})
-        destructible.durable('containerized', Containerized, {
-            population: new Population(resolver, ua),
-            ping: {
-                chaperon: coalesce(ping.chaperon, 150),
-                paxos: coalesce(ping.paxos, 150)
-            },
-            timeout: {
-                chaperon: coalesce(timeout.chaperon, 450),
-                paxos: coalesce(timeout.paxos, 450),
-                http: coalesce(timeout.http, 500)
-            },
-            bind: {
-                iface: coalesce(bind.iface, '127.0.0.1'),
-                port: coalesce(bind.port, 8486)
-            }
-        }, async())
-    }, function (colleague) {
-        return new Listener(colleague)
+module.exports = async function (destructible, olio, properties) {
+    const sender = await olio.sender('mingle')
+    const resolver = new Resolver(sender.processes[0].conduit)
+    const ping = coalesce(properties.ping, {})
+    const timeout = coalesce(properties.timeout, {})
+    const bind = coalesce(properties.bind, {})
+    const colleague = new Colleague(destructible.durable('containerized'), {
+        population: new Population(resolver),
+        ping: coalesce(properties.ping, null),
+        timeout: coalesce(properties.timeout, null)
     })
-})
+    await colleague.reactor.fastify.listen(properties.bind.port, properties.bind.iface)
+    console.log(properties.bind)
+    const axios = require('axios')
+    const got = await axios.get('http://127.0.0.1:8486/')
+    console.log(got.data)
+    return function (header, queue, shifter) {
+        colleague.connect(shifter, queue)
+    }
+}
