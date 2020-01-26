@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.conference",
-    "version":              "2.0.0",
+    "version":              "3.0.0-alpha.0",
     "description":
 
       "Framework communicating using a Compassion atomic log.",
@@ -20,11 +20,11 @@
     },
     "dependencies":
     {
+                            "avenue":                       "^0.2.0-alpha.1",
                             "conduit":                      "^7.0.0-alpha.5",
                             "cubbyhole":                    "^3.0.0-alpha.2",
                             "extant":                       "^1.0.15",
-                            "interrupt":                    "^9.0.0-alpha.1",
-                            "avenue":                       "^0.2.0-alpha.1"
+                            "interrupt":                    "^9.0.0-alpha.1"
     },
     "devDependencies":
     {
