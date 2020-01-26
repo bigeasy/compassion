@@ -1,6 +1,6 @@
 {
     "name":                 "compassion.colleague",
-    "version":              "4.0.10",
+    "version":              "5.0.0-alpha.0",
     "description":
 
       "Instance of a compassion island participant.",
@@ -20,26 +20,26 @@
     },
     "dependencies":
     {
+                            "avenue":                       "^0.2.0-alpha.0",
                             "axios":                        "0.19.0",
                             "byline":                       "5.0.0",
                             "conduit":                      "^7.0.0-alpha.5",
                             "extant":                       "^1.0.15",
-                            "foremost":                     "^1.0.5",
                             "fastify":                      "2.9.0",
+                            "foremost":                     "^1.0.5",
                             "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",
                             "olio":                         "^7.0.0-alpha.0",
-                            "reactor":                      "^17.0.0-alpha.1",
-                            "avenue":                       "^0.2.0-alpha.0",
                             "prolific.logger":              "^11.0.0",
+                            "reactor":                      "^17.0.0-alpha.1",
                             "server-destroy":               "1.0.1"
     },
     "devDependencies":
     {
-                            "proof":                        "^8.0.0-alpha.7",
                             "mingle":                       "^6.1.0",
-                            "mingle.static":                "2.0.1"
+                            "mingle.static":                "2.0.1",
+                            "proof":                        "^8.0.0-alpha.7"
     },
     "scripts":
     {
