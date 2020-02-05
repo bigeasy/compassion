@@ -27,6 +27,7 @@ class Application {
         case 'receive':
             if (envelope.self.id == 'second') {
                 await this._blocker
+                this._blocker = new Promise(resolve => this.unblock = resolve)
             }
             return { from: envelope.self.id }
         case 'reduce':

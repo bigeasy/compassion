@@ -1,4 +1,4 @@
-require('proof')(2, prove)
+require('proof')(3, prove)
 
 async function prove (okay) {
     const Destructible = require('destructible')
@@ -6,7 +6,6 @@ async function prove (okay) {
     try {
         await test(destructible, okay)
     } finally {
-        console.log('----- will destroy')
         destructible.destroy()
     }
 }
@@ -99,6 +98,9 @@ async function test (destructible, okay) {
 
     await racer.conference.ready
 
+    // Here we test backlogs. Both arriving and accepting a backlogged count
+    // down and leaving and removing a participant from a backlog.
+
     applications.second = new Application(destructible, source, 'island', 'second', { value: 2 })
     assert(await applications.second.conference.ready)
     const received = applications.second.envelopes.join(event => {
@@ -114,17 +116,19 @@ async function test (destructible, okay) {
 
     applications.second.unblock.call()
 
-    await applications.second.envelopes.join(event => {
-        console.log('>>>', event)
-        return (event.body || event.entry || event.government).promise == '6/0'
-    })
-
     colleague.terminate('island', 'second')
 
     const reduced = await applications.third.envelopes.join(event => {
-        console.log('>>>', event)
-        return (event.body || event.entry || event.government).promise == 'a/0'
+        return (event.body || event.entry || event.government).promise == '6/0'
     })
+
+    okay({
+        majority: reduced.government.majority,
+        constituents: reduced.government.constituents
+    }, {
+        majority: [ 'first' ],
+        constituents: [ 'third' ]
+    }, 'enqueue')
 
     destructible.destroy()
 
