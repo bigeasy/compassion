@@ -23,7 +23,6 @@ async function test (destructible, okay) {
 
     const Colleague = require('../colleague')
     const Application = require('./application')
-    const Containerized = require('../containerized')
 
     const Population = require('../population')
     const Resolver = { Static: require('../resolver/static') }
