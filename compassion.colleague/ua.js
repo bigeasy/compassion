@@ -25,13 +25,10 @@ module.exports = {
     stream: async (location, path, body) => {
         const resolved = url.resolve(location, path)
         try {
-            const response = await axios.post(resolved, body, {
+            return (await axios.post(resolved, body, {
                 responseType: 'stream',
                 adapter: httpAdapter
-            })
-            if (Math.floor(response.status / 100) == 2) {
-                return response.data
-            }
+            })).data
         } catch (error) {
             logger.error('ua', { url: resolved, stack: error.stack })
         }
