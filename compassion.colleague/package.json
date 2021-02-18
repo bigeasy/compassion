@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "avenue":                       "^0.2.0-alpha.0",
-                            "axios":                        "0.19.0",
+                            "axios":                        "0.21.1",
                             "byline":                       "5.0.0",
                             "conduit":                      "^7.0.0-alpha.5",
                             "extant":                       "^1.0.15",
