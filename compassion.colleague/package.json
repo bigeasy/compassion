@@ -30,7 +30,7 @@
                             "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",
-                            "olio":                         "^7.0.0-alpha.0",
+                            "olio":                         "^7.0.0-alpha.5",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.1",
                             "server-destroy":               "1.0.1"
