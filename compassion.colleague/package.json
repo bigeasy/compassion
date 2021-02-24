@@ -39,7 +39,7 @@
     {
                             "mingle":                       "^7.0.0-alpha.2",
                             "mingle.static":                "3.0.0-alpha.1",
-                            "proof":                        "^8.0.0-alpha.7"
+                            "proof":                        "^9.0.3"
     },
     "scripts":
     {
