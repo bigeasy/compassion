@@ -37,7 +37,7 @@
     },
     "devDependencies":
     {
-                            "mingle":                       "^7.0.0-alpha.2",
+                            "mingle":                       "^7.0.0-alpha.5",
                             "mingle.static":                "3.0.0-alpha.1",
                             "proof":                        "^9.0.3"
     },
