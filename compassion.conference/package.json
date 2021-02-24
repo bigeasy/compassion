@@ -22,7 +22,7 @@
     {
                             "avenue":                       "^0.2.0-alpha.1",
                             "conduit":                      "^7.0.0-alpha.5",
-                            "cubbyhole":                    "^3.0.0-alpha.2",
+                            "cubbyhole":                    "^4.0.2",
                             "extant":                       "^1.0.15",
                             "interrupt":                    "^9.0.0-alpha.1"
     },
