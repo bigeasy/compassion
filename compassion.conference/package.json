@@ -23,7 +23,7 @@
                             "avenue":                       "^0.2.0-alpha.1",
                             "conduit":                      "^7.0.0-alpha.5",
                             "cubbyhole":                    "^4.0.2",
-                            "extant":                       "^1.0.15",
+                            "extant":                       "^2.0.0-alpha.0",
                             "interrupt":                    "^9.0.0-alpha.1"
     },
     "devDependencies":
