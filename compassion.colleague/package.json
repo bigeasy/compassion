@@ -24,7 +24,7 @@
                             "axios":                        "0.21.1",
                             "byline":                       "5.0.0",
                             "conduit":                      "^7.0.0-alpha.5",
-                            "extant":                       "^1.0.15",
+                            "extant":                       "^2.0.0-alpha.0",
                             "fastify":                      "2.12.1",
                             "foremost":                     "^1.0.5",
                             "happenstance":                 "^12.0.1",
