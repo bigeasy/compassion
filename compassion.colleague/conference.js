@@ -11,7 +11,7 @@ const { Queue } = require('avenue')
 const Conduit = require('conduit')
 
 // Like SQL COALESCE, return the first defined value.
-const coalesce = require('extant')
+const { coalesce } = require('extant')
 
 // An `async`/`await` map of future values.
 const Cubbyhole = require('cubbyhole')
@@ -281,30 +281,31 @@ class Conference {
             // operates.
 
             //
-            const envelope = entry.body.body
+            const envelope = entry.body
             switch (envelope.method) {
             case 'broadcast':
                 const request = envelope.request
-                this._broadcasts[request.key] = {
-                    key: request.key,
-                    from: request.from,
-                    method: request.method,
-                    body: request.body,
+                this._broadcasts[envelope.key] = {
+                    key: envelope.key,
+                    from: envelope.from,
+                    method: envelope.method,
+                    body: envelope.body,
                     responses: {}
                 }
-                const response = await this.application.dispatch({
+                const response = await this.consumer.consume({
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     method: 'receive',
-                    from: request.from,
+                    from: envelope.from,
                     replaying: this._replaying,
                     government: this._government,
-                    body: request.body
+                    body: envelope.body
                 })
-                this._queue.push({
-                    module: 'compassion',
-                    method: 'reduce',
-                    reduction: {
-                        key: request.key,
+                this.messages.push({
+                    republic: this._government.republic,
+                    body: {
+                        module: 'compassion',
+                        method: 'reduce',
+                        key: envelope.key,
                         from: this._government.arrived.promise[this.id],
                         body: coalesce(response)
                     }
@@ -313,8 +314,8 @@ class Conference {
             // Tally our responses and if they match the number of participants,
             // then invoke the reduction method.
             case 'reduce':
-                var broadcast = this._broadcasts[envelope.reduction.key]
-                broadcast.responses[envelope.reduction.from] = envelope.reduction.body
+                var broadcast = this._broadcasts[envelope.key]
+                broadcast.responses[envelope.from] = envelope.body
                 await this._checkReduced(broadcast)
                 break
             }
@@ -337,6 +338,9 @@ class Conference {
             }
         }
 
+        // Feel like all ids should just be hidden from the user, but I dunno,
+        // simplified? Maybe the user is doing some sort of system management
+        // and address properties of paxos are meaningful?
         const reduced = []
         for (const promise in broadcast.responses) {
             reduced.push({
@@ -354,7 +358,7 @@ class Conference {
         // `reduced` postback with both the id and the arrived promise because
         // the only responses provided are those that are still present in the
         // government at the time of this postback.
-        await this.application.dispatch({
+        await this.consumer.consume({
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             method: 'reduced',
             from: broadcast.from,
