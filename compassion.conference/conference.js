@@ -2,10 +2,10 @@
 const assert = require('assert')
 
 // Exceptions that report nested exceptions that you can catch by type.
-const Interrupt = require('interrupt').create('compassion.conference')
+const { Interrupt } = require('interrupt')
 
 // An `async`/`await` in-process message queue.
-const Queue = require('avenue')
+const { Queue } = require('avenue')
 
 // An `async`/`await` socket multiplexer.
 const Conduit = require('conduit')
@@ -31,7 +31,13 @@ const Cubbyhole = require('cubbyhole')
 
 //
 class Conference {
+    static Error = Interrupt.create('compassion.conference', {
+    })
     // Construct a `Conference`.
+
+    static async create (conduit, application, island, id, properties, replaying = false) {
+        const { shifter, queue } = await conduit.queue({})
+    }
 
     //
     constructor (destructible, conduit, application, island, id, properties, replaying = false) {
@@ -73,8 +79,8 @@ class Conference {
         this._destructible.destruct(() => this.destroyed = true)
 
         // Open a new connection to the colleague.
-        const { shifter, queue } = conduit.queue({})
 
+        destructible.ephemeral('initialize', async () => {
         // Start a `Conduit` around the colleague connection.
         this._conduit = new Conduit(destructible.durable('conduit'), shifter, queue, this._request.bind(this))
 
