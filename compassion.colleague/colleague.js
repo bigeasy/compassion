@@ -1,7 +1,7 @@
 const stream = require('stream')
 
 const Reactor = require('reactor')
-const Queue = require('avenue')
+const { Queue } = require('avenue')
 const Conduit = require('conduit')
 
 const { Timer, Scheduler } = require('happenstance')
@@ -12,9 +12,6 @@ const httpAdapter = require('axios/lib/adapters/http')
 const logger = require('prolific.logger').create('compassion.networked')
 
 const coalesce = require('extant')
-
-const Serialize = require('avenue/serialize')
-const Deserialize = require('avenue/deserialize')
 
 const Keyify = require('keyify')
 const Kibitzer = require('kibitz')
@@ -173,6 +170,7 @@ class Connection {
 
 class Colleague {
     constructor (destructible, options) {
+        destructible.destruct(() => console.log('DID DESTRUCT!!!!'))
         this.events = new Queue
         this._Conference = options.Conference
         this._instance = { connection: -1, application: -1 }
@@ -395,7 +393,8 @@ class Colleague {
 
     connect (shifter, queue) {
         const instance = this._nextInstance('connection')
-        const destructible = this._destructible.ephemeral([ 'connection', instance ])
+        console.log(this._destructible.id, this._destructible.destroyed)
+        const destructible = this._destructible.ephemeral(`connection.${instance}`)
         new Connection(destructible, this, shifter, queue)
     }
 

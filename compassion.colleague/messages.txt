@@ -1,0 +1,1479 @@
+1..27
+ok 1 bootstrap
+ok 2 arrive
+ok 3 leader and constituent pair
+ok 4 arrive without acclimation
+ok 5 three member parliament
+ok 6 already arrived
+ok 7 enqueue not leader
+ok 8 arrive not leader
+ok 9 post collapsed
+ok 10 recover from collapse
+ok 11 depart
+ok 12 enqueued
+ok 13 remapped
+ok 14 remap
+ok 15 add fourth
+ok 16 reboot, depart and double arrive
+ok 17 usurper
+ok 18 minimum unreduced
+ok 19 arrive without acclimation
+ok 20 acclimated
+ok 21 not yet acclimated
+ok 22 departed before acclimated
+ok 23 disappeared cleared
+ok 24 use latest arrival to onboard
+ok 25 a lot of paxos
+ok 26 arrived
+ok 27 bad embark cookie
+{
+  module: 'paxos',
+  government: null,
+  method: 'entry',
+  promise: 'b/1',
+  body: 1,
+  previous: 'b/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: 'c/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [ '0', '2', '3', '4' ],
+    constituents: [ '4' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '4': { location: '4' }
+    },
+    arrived: {
+      id: { '1/0': '0', '3/0': '2', '6/0': '3', 'c/0': '4' },
+      promise: { '0': '1/0', '2': '3/0', '3': '6/0', '4': 'c/0' }
+    }
+  },
+  method: 'government',
+  promise: 'c/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    arrive: { id: '4', properties: { location: '4' }, cookie: 13 },
+    acclimate: '4',
+    promise: 'c/0',
+    map: { 'b/2': 'c/1', 'b/3': 'c/2' }
+  },
+  previous: 'b/1'
+}
+{
+  module: 'paxos',
+  government: null,
+  method: 'entry',
+  promise: 'c/1',
+  body: 2,
+  previous: 'c/0'
+}
+{
+  module: 'paxos',
+  government: null,
+  method: 'entry',
+  promise: 'c/2',
+  body: 3,
+  previous: 'c/1'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: 'd/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [ '0', '2', '3', '4', '5' ],
+    constituents: [ '4', '5' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '4': { location: '4' },
+      '5': { location: '5' }
+    },
+    arrived: {
+      id: { '1/0': '0', '3/0': '2', '6/0': '3', 'c/0': '4', 'd/0': '5' },
+      promise: { '0': '1/0', '2': '3/0', '3': '6/0', '4': 'c/0', '5': 'd/0' }
+    }
+  },
+  method: 'government',
+  promise: 'd/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    arrive: { id: '5', properties: { location: '5' }, cookie: 15 },
+    acclimate: '5',
+    promise: 'd/0',
+    map: {}
+  },
+  previous: 'c/2'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: 'e/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [ '0', '2', '3', '4', '5', '6' ],
+    constituents: [ '4', '5', '6' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '4': { location: '4' },
+      '5': { location: '5' },
+      '6': { location: '6' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'c/0': '4',
+        'd/0': '5',
+        'e/0': '6'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '4': 'c/0',
+        '5': 'd/0',
+        '6': 'e/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: 'e/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    arrive: { id: '6', properties: { location: '6' }, cookie: 16 },
+    acclimate: '6',
+    promise: 'e/0',
+    map: {}
+  },
+  previous: 'd/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: 'f/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [
+      '0', '2', '3',
+      '4', '5', '6',
+      '7'
+    ],
+    constituents: [ '4', '5', '6', '7' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '4': { location: '4' },
+      '5': { location: '5' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'c/0': '4',
+        'd/0': '5',
+        'e/0': '6',
+        'f/0': '7'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '4': 'c/0',
+        '5': 'd/0',
+        '6': 'e/0',
+        '7': 'f/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: 'f/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    arrive: { id: '7', properties: { location: '7' }, cookie: 15 },
+    acclimate: '7',
+    promise: 'f/0',
+    map: {}
+  },
+  previous: 'e/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '10/0',
+    majority: [ '0', '2', '3' ],
+    minority: [ '4', '5' ],
+    acclimated: [
+      '0', '2', '3',
+      '4', '5', '6',
+      '7'
+    ],
+    constituents: [ '6', '7' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '4': { location: '4' },
+      '5': { location: '5' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'c/0': '4',
+        'd/0': '5',
+        'e/0': '6',
+        'f/0': '7'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '4': 'c/0',
+        '5': 'd/0',
+        '6': 'e/0',
+        '7': 'f/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '10/0',
+  body: {
+    majority: [ '0', '2', '3' ],
+    minority: [ '4', '5' ],
+    promote: [ { id: '5', index: 1 }, { id: '4', index: 0 } ],
+    promise: '10/0',
+    map: {}
+  },
+  previous: 'f/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '11/0',
+    majority: [ '0', '2', '3' ],
+    minority: [ '5' ],
+    acclimated: [ '0', '2', '3', '5', '6', '7' ],
+    constituents: [ '6', '7' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '5': { location: '5' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'd/0': '5',
+        'e/0': '6',
+        'f/0': '7'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '5': 'd/0',
+        '6': 'e/0',
+        '7': 'f/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '11/0',
+  body: {
+    majority: [ '0', '2', '3' ],
+    minority: [ '5' ],
+    departed: {
+      id: '4',
+      promise: 'c/0',
+      properties: { location: '4' },
+      index: { acclimated: 3 }
+    },
+    promise: '11/0',
+    map: {}
+  },
+  previous: '10/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '12/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [ '0', '2', '3', '5', '6', '7' ],
+    constituents: [ '5', '6', '7' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '5': { location: '5' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'd/0': '5',
+        'e/0': '6',
+        'f/0': '7'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '5': 'd/0',
+        '6': 'e/0',
+        '7': 'f/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '12/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    demote: '5',
+    promise: '12/0',
+    map: {}
+  },
+  previous: '11/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '13/0',
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    acclimated: [ '0', '2', '3', '6', '7' ],
+    constituents: [ '6', '7' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: { '1/0': '0', '3/0': '2', '6/0': '3', 'e/0': '6', 'f/0': '7' },
+      promise: { '0': '1/0', '2': '3/0', '3': '6/0', '6': 'e/0', '7': 'f/0' }
+    }
+  },
+  method: 'government',
+  promise: '13/0',
+  body: {
+    majority: [ '0', '2' ],
+    minority: [ '3' ],
+    departed: {
+      id: '5',
+      promise: 'd/0',
+      properties: { location: '5' },
+      index: { constituents: 0, acclimated: 3 }
+    },
+    promise: '13/0',
+    map: {}
+  },
+  previous: '12/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '14/0',
+    majority: [ '0', '2', '3' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7' ],
+    constituents: [],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: { '1/0': '0', '3/0': '2', '6/0': '3', 'e/0': '6', 'f/0': '7' },
+      promise: { '0': '1/0', '2': '3/0', '3': '6/0', '6': 'e/0', '7': 'f/0' }
+    }
+  },
+  method: 'government',
+  promise: '14/0',
+  body: {
+    majority: [ '0', '2', '3' ],
+    minority: [ '6', '7' ],
+    promote: [ { id: '7', index: 1 }, { id: '6', index: 0 } ],
+    promise: '14/0',
+    map: {}
+  },
+  previous: '13/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '15/0',
+    majority: [ '0', '2', '3' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7', '8' ],
+    constituents: [ '8' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '8': { location: '8' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '15/0': '8'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '8': '15/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '15/0',
+  body: {
+    majority: [ '0', '2', '3' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '8', properties: { location: '8' }, cookie: 23 },
+    acclimate: '8',
+    promise: '15/0',
+    map: {}
+  },
+  previous: '14/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '18/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7', '8' ],
+    constituents: [ '8' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '8': { location: '8' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '15/0': '8'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '8': '15/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '18/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    promise: '18/0',
+    map: null
+  },
+  previous: '15/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '19/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7', '8' ],
+    constituents: [ '8' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '8': { location: '8' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '15/0': '8'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '8': '15/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '19/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    promise: '19/0',
+    map: {}
+  },
+  previous: '18/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1a/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7' ],
+    constituents: [],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' }
+    },
+    arrived: {
+      id: { '1/0': '0', '3/0': '2', '6/0': '3', 'e/0': '6', 'f/0': '7' },
+      promise: { '0': '1/0', '2': '3/0', '3': '6/0', '6': 'e/0', '7': 'f/0' }
+    }
+  },
+  method: 'government',
+  promise: '1a/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    departed: {
+      id: '8',
+      promise: '15/0',
+      properties: { location: '8' },
+      index: { constituents: 0, acclimated: 5 }
+    },
+    promise: '1a/0',
+    map: {}
+  },
+  previous: '19/0'
+}
+{
+  module: 'paxos',
+  government: null,
+  method: 'entry',
+  promise: '1a/1',
+  body: 4,
+  previous: '1a/0'
+}
+{
+  module: 'paxos',
+  government: null,
+  method: 'entry',
+  promise: '1a/2',
+  body: 5,
+  previous: '1a/1'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1b/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7' ],
+    constituents: [ '9' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '1b/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '9', properties: { location: '9' }, cookie: 43 },
+    acclimate: null,
+    promise: '1b/0',
+    map: {}
+  },
+  previous: '1a/2'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1c/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7' ],
+    constituents: [ '9', '10' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '1c/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '10', properties: { location: '10' }, cookie: 43 },
+    acclimate: null,
+    promise: '1c/0',
+    map: {}
+  },
+  previous: '1b/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1d/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [ '0', '2', '3', '6', '7', '9' ],
+    constituents: [ '9', '10' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '1d/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimate: '9',
+    promise: '1d/0',
+    map: {}
+  },
+  previous: '1c/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1e/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2', '3',
+      '6',  '7', '9',
+      '10'
+    ],
+    constituents: [ '9', '10' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '1e/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimate: '10',
+    promise: '1e/0',
+    map: {}
+  },
+  previous: '1d/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '1f/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2', '3',
+      '6',  '7', '9',
+      '10'
+    ],
+    constituents: [ '9', '10', '11' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '11': { location: '11' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '1f/0': '11'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '11': '1f/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '1f/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '11', properties: { location: '11' }, cookie: 45 },
+    acclimate: null,
+    promise: '1f/0',
+    map: {}
+  },
+  previous: '1e/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '20/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2', '3',
+      '6',  '7', '9',
+      '10'
+    ],
+    constituents: [ '9', '10' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '20/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    departed: {
+      id: '11',
+      promise: '1f/0',
+      properties: { location: '11' },
+      index: { constituents: 2 }
+    },
+    promise: '20/0',
+    map: {}
+  },
+  previous: '1f/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '21/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '21/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '21/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '21/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '12', properties: { location: '12' }, cookie: 50 },
+    acclimate: '12',
+    promise: '21/0',
+    map: {}
+  },
+  previous: '20/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '22/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2', '3',
+      '6',  '7', '9',
+      '10'
+    ],
+    constituents: [ '9', '10' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '22/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    departed: {
+      id: '12',
+      promise: '21/0',
+      properties: { location: '12' },
+      index: { constituents: 2, acclimated: 7 }
+    },
+    promise: '22/0',
+    map: {}
+  },
+  previous: '21/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '23/0',
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '23/0',
+  body: {
+    majority: [ '3', '0', '2' ],
+    minority: [ '6', '7' ],
+    arrive: { id: '12', properties: { location: '12' }, cookie: 57 },
+    acclimate: '12',
+    promise: '23/0',
+    map: {}
+  },
+  previous: '22/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '25/0',
+    majority: [ '0', '6', '7' ],
+    minority: [ '3', '2' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '25/0',
+  body: {
+    majority: [ '0', '6', '7' ],
+    minority: [ '3', '2' ],
+    promise: '25/0',
+    map: null
+  },
+  previous: '23/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '27/0',
+    majority: [ '3', '6', '7' ],
+    minority: [ '0', '2' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '27/0',
+  body: {
+    majority: [ '3', '6', '7' ],
+    minority: [ '0', '2' ],
+    promise: '27/0',
+    map: null
+  },
+  previous: '25/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '28/0',
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '28/0',
+  body: {
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    promise: '28/0',
+    map: null
+  },
+  previous: '27/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '29/0',
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '29/0',
+  body: {
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    promise: '29/0',
+    map: {}
+  },
+  previous: '28/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '2a/0',
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12', '13'
+    ],
+    constituents: [ '9', '10', '12', '13' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' },
+      '13': { location: '13' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12',
+        '2a/0': '13'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0',
+        '13': '2a/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '2a/0',
+  body: {
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    arrive: { id: '13', properties: { location: '13' }, cookie: 1 },
+    acclimate: '13',
+    promise: '2a/0',
+    map: {}
+  },
+  previous: '29/0'
+}
+{
+  module: 'paxos',
+  government: {
+    republic: 1,
+    promise: '2b/0',
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    acclimated: [
+      '0',  '2',  '3',
+      '6',  '7',  '9',
+      '10', '12'
+    ],
+    constituents: [ '9', '10', '12' ],
+    properties: {
+      '0': { location: '0' },
+      '2': { location: '2' },
+      '3': { location: '3' },
+      '6': { location: '6' },
+      '7': { location: '7' },
+      '9': { location: '9' },
+      '10': { location: '10' },
+      '12': { location: '12' }
+    },
+    arrived: {
+      id: {
+        '1/0': '0',
+        '3/0': '2',
+        '6/0': '3',
+        'e/0': '6',
+        'f/0': '7',
+        '1b/0': '9',
+        '1c/0': '10',
+        '23/0': '12'
+      },
+      promise: {
+        '0': '1/0',
+        '2': '3/0',
+        '3': '6/0',
+        '6': 'e/0',
+        '7': 'f/0',
+        '9': '1b/0',
+        '10': '1c/0',
+        '12': '23/0'
+      }
+    }
+  },
+  method: 'government',
+  promise: '2b/0',
+  body: {
+    majority: [ '2', '6', '7' ],
+    minority: [ '3', '0' ],
+    departed: {
+      id: '13',
+      promise: '2a/0',
+      properties: { location: '13' },
+      index: { constituents: 3, acclimated: 8 }
+    },
+    promise: '2b/0',
+    map: {}
+  },
+  previous: '2a/0'
+}
+# expected   27
+# passed     27
