@@ -1,3 +1,6 @@
+const axios = require('axios')
+const Reactor = require('reactor')
+
 module.exports = function (Conference) {
     const assert = require('assert')
 

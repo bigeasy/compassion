@@ -16,18 +16,18 @@ const { coalesce } = require('extant')
 // An `async`/`await` map of future values.
 const Cubbyhole = require('cubbyhole')
 
-// **TODO** Tempted to make this a connection object and make `Conference` a
-// sub-object of the connection. Avoiding this for now to prevent too much
-// refactoring at once. Not certain that I'll want to do it when everything is
-// working. Not loving the names of these things any longer, either.
-//
-// Might want to make this a `Compassion` object so that the names are not all
-// over the place. I've already replacing `broadcast` with `enqueue`. The next
-// refactor will reduce the number of objects in this architecture. The primary
-// change is removing HTTP as a layer and requiring communication to go through
-// `Conduit`s. If we want an HTTP layer, we can build it at a different layer,
-// but we're probably going to build a key/value store and service mesh with
-// this library and it will not expose a raw interface to the atomic log.
+// Whenever you see this, you want to refactor it so that initialization takes
+// place in the constructor, with the constructor accepting the first entry,
+// snapshot and backlog of broadcasts. Don't do it. This of this as a state
+// machine and the iniital state is waiting for an entry. Construction is not
+// about initializing the application, it's about hooking up all the message
+// plumbing which is already a challenge. You don't want to introduce what is
+// essentially a factory object or function.
+
+// It's in for a penny, in for a pound. That is why there is an initialize
+// function which you're going to hate because you're going to imagine the
+// GitHub Issues filling up with Redditors clucking like wet hens about
+// immutability, but this code is righteous and pure.
 
 //
 class Conference {
@@ -36,11 +36,13 @@ class Conference {
     // Construct a `Conference`.
 
     //
-    constructor (destructible, { id, entry, log, broadcasts, snapshot, consumer, replaying = false }) {
+    constructor (destructible, { id, entry, log, ua, consumer, replaying = false }) {
         // A bouquet of `Promise`s monitored by this `Conference` instance.
         this.destructible = destructible
 
         this.id = id
+
+        this._ua = ua
 
         // The Paxos event log.
         this.log = new Queue
@@ -63,9 +65,6 @@ class Conference {
         // Previous embarkation cookie used to create next cookie.
         this._cookie = -1
 
-        // Map of promises to initialization snapshots.
-        this._snapshots = new Cubbyhole
-
         // All messages are broadcast, so maybe we rename this.
         this._broadcasts = {}
 
@@ -77,18 +76,16 @@ class Conference {
         // Outbound messages.
         this.messages = new Queue()
 
-        // Out Paxos event log.
-        this._log = log
-
         // **TODO** Let the messages swim to exit. Why? We're leaving. The log
         // is supposed to just truncate anyway.
         destructible.destruct(() => log.destroy())
 
         // Construct our application passing ourselves as the first argument.
-        this.consumer = consumer
+        this.application = consumer
+
+        this.application.initialize(this)
 
         this.destructible.ephemeral('consume', async () => {
-            await this._arrive(entry, broadcasts, snapshot)
             for await (const entry of log.iterator()) {
                 await this._entry(entry)
             }
@@ -129,14 +126,9 @@ class Conference {
             var properties = entry.properties
             if (entry.body.arrive) {
                 var arrival = entry.body.arrive
+                console.log('>>>>', entry.body.promise)
                 if (entry.body.promise == '1/0') {
-                    await this.application.dispatch({
-                        method: 'bootstrap',
-                        self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                        entry: entry.body,
-                        replaying: this._replaying,
-                        government: this._government
-                    })
+                    await this.application.bootstrap()
                 } else if (arrival.id == this.id) {
                     const { shifter } = this._conduit.shifter({
                         method: 'snapshot',
@@ -153,10 +145,9 @@ class Conference {
                         government: this._government
                     }, shifter)
                 }
-                await this.application.dispatch({
-                    method: 'arrive',
+                await this.application.arrive({
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                    entry: entry.body,
+                    arrival: entry.body,
                     replaying: this._replaying,
                     government: this._government
                 })
@@ -215,14 +206,8 @@ class Conference {
                             })
                         }
                     }
-                    this._ready.call(null, true)
-                } else {
-                    console.log('!!!! did not become ready')
-                    this._ready.call(null, false)
                 }
-                // **TODO** Throw an exception here and determine why this fails
-                // siletly.
-                this._cubbyholes.snapshots.set(entry.promise, true)
+                this._cubbyholes.snapshots.resolve(entry.promise, true)
             } else if (entry.body.departed) {
                 await this.application.dispatch({
                     self: {
@@ -247,7 +232,7 @@ class Conference {
                 }
             }
             if (entry.body.acclimate != null) {
-                await this.application.dispatch({
+                await this.application.acclimated({
                     self: {
                         id: this.id,
                         arrived: this._government.arrived.promise[this.id]
@@ -258,7 +243,9 @@ class Conference {
                     government: this._government
                 })
             }
-            await this.application.dispatch({
+            // TODO Is this necessary?
+            /*
+            await this.application.government({
                 self: {
                     id: this.id,
                     arrived: this._government.arrived.promise[this.id]
@@ -273,6 +260,7 @@ class Conference {
                 method: 'acclimate',
                 body: null
             })
+            */
         } else {
             // Bombs on a flush!
             assert(entry.body.body)

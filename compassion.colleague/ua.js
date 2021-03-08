@@ -16,6 +16,7 @@ module.exports = {
                 return (await axios.post(resolved, body)).data
             }
         } catch (error) {
+            console.log(error.message)
             logger.error('ua', { url: resolved, stack: error.stack })
             return null
         }
