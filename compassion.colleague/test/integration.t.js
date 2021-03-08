@@ -1,4 +1,4 @@
-require('proof')(1, async okay => {
+require('proof')(3, async okay => {
     const Future = require('perhaps')
     const Destructible = require('destructible')
     const { Queue } = require('avenue')
@@ -9,6 +9,7 @@ require('proof')(1, async okay => {
             this.client = null
             this.events = new Queue
             this._future = Future.resolve(true)
+            this._snapshots = {}
         }
 
         initialize (client) {
@@ -22,26 +23,28 @@ require('proof')(1, async okay => {
 
         async arrive ({ arrival }) {
             await this._future.promise
-            console.log(arrival)
+            this._snapshots[arrival.promise] = JSON.stringify(this._values)
             return true
         }
 
-        async acclimated () {
+        async acclimated ({ promise }) {
             await this._future.promise
             this.events.push({ method: 'acclimated' })
+            delete this._snapshots[promise]
             return true
         }
 
-        async map ({ message }) {
+        async map ({ body }) {
             await this._future.promise
-            invocations.push({ method: 'map', message })
-            this._values[message.key] = message.value
+            this.events.push({ method: 'map', body })
+            console.log('body', body)
+            this._values[body.key] = body.value
             return true
         }
 
         async reduce ({ arrayed }) {
             await this._future.promise
-            invocations.push({ method: 'reduce', arrayed })
+            this.events.push({ method: 'reduce', arrayed })
         }
 
         pause (future) {
@@ -49,7 +52,7 @@ require('proof')(1, async okay => {
         }
 
         set (key, value) {
-            conference.enqueue({ key, value })
+            this.client.enqueue({ key, value })
         }
 
         get (key) {
@@ -76,6 +79,15 @@ require('proof')(1, async okay => {
         islanders.push(`http://127.0.0.1:${address.port}`)
 
         okay(await shifter.join(entry => entry.method == 'acclimated'), { method: 'acclimated' }, 'acclimated')
+
+        kv.set('x', 1)
+
+        okay(await shifter.join(entry => entry.method == 'reduce'), {
+            method: 'reduce',
+            arrayed: [{ promise: '1/0', id: `${address.address}:${address.port}`, value: true }]
+        }, 'reduce')
+
+        okay(kv.get('x'), 1, 'set')
 
         destructible.destroy()
     })

@@ -233,6 +233,7 @@ class Conference {
             }
             if (entry.body.acclimate != null) {
                 await this.application.acclimated({
+                    promise: entry.body.promise,
                     self: {
                         id: this.id,
                         arrived: this._government.arrived.promise[this.id]
@@ -280,7 +281,7 @@ class Conference {
                     body: envelope.body,
                     responses: {}
                 }
-                const response = await this.consumer.consume({
+                const response = await this.application.map({
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     method: 'receive',
                     from: envelope.from,
@@ -346,7 +347,7 @@ class Conference {
         // `reduced` postback with both the id and the arrived promise because
         // the only responses provided are those that are still present in the
         // government at the time of this postback.
-        await this.consumer.consume({
+        await this.application.reduce({
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             method: 'reduced',
             from: broadcast.from,

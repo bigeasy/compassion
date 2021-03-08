@@ -19,26 +19,6 @@ class Compassion {
         this._republic = Date.now()
     }
 
-    _spawn (destructible, id, application) {
-        const state = {
-            destructible: destructible,
-            conference: null,
-            kibitzer: new Kibitzer(destructible.durable('kibitzer', {
-                id: id,
-                // TODO Configurable.
-                ping: 1000,
-                timeout: 3000,
-                ua: { send: async envelope => ua.json(envelope.to.url, './kibitz', envelope) }
-            }))
-        }
-        // TODO Maybe kibitzer.destroy() ?
-        destructible.destruct(() => state.kibitzer.paxos.log.push(null))
-        destructible.destruct(() => state.kibitzer.paxos.pinged.push(null))
-        destructible.destruct(() => state.kibitzer.paxos.outbox.push(null))
-        destructible.destruct(() => state.kibitzer.played.push(null))
-        destructible.destruct(() => state.kibitzer.islander.outbox.push(null))
-    }
-
     _bound (destructible, { address, port }, { census, applications }) {
         this.destructible = destructible
         this._createdAt = Date.now()
@@ -65,6 +45,13 @@ class Compassion {
                 log: kibitzer.paxos.log.shifter().async,
                 consumer: applications[application]
             })
+            const messages = conference.messages.shifter()
+            subDestructible.ephemeral('enqueue', async () => {
+                for await (const message of messages) {
+                    kibitzer.paxos.enqueue(Date.now(), message.republic, message.body)
+                }
+            })
+            subDestructible.destruct(() => messages.destroy())
             subDestructible.destruct(() => {
                 kibitzer.paxos.log.push(null)
                 kibitzer.paxos.pinged.push(null)
