@@ -160,10 +160,7 @@ class Conference {
                         const player = new Player(function () { return '0' })
                         for await (const buffer of staccato.readable) {
                             for (const message of player.split(buffer)) {
-                                const json = Verbatim.deserialize(message.parts)
-                                console.log(message.parts, json)
-                                console.log(typeof json)
-                                snapshot.queue.push(json)
+                                snapshot.queue.push(Verbatim.deserialize(message.parts))
                             }
                         }
                         snapshot.queue.push(null)
@@ -358,19 +355,16 @@ class Compassion {
 
     constructor () {
         this.destructible = null
-        this._census = null
-        this._applications = new Map
+        this._applications = {}
         this._republic = Date.now()
     }
 
-    _bound (destructible, { address, port }, { census, applications }) {
+    _bound (destructible, { address, port }, { applications, census }) {
         this.destructible = destructible
         this._createdAt = Date.now()
-        this._census = census
         this._applications = applications
         this._scheduler = new Scheduler
         const id = `${address}:${port}`
-        const events = new Queue
         // TODO For now, we can crash restart on unrecoverable.
         for (const application in applications) {
             const scheduleKey = Keyify.stringify({ application, id })
@@ -412,37 +406,49 @@ class Compassion {
                 conference:  conference,
                 kibitzer:    kibitzer
             }
-            this._scheduler.on('data', data => events.push(data.body))
+            this._events = new Queue
+            this._scheduler.on('data', data => this._events.push(data.body))
             const timer = new Timer(this._scheduler)
             destructible.destruct(() => timer.destroy())
             destructible.destruct(() => this._scheduler.clear())
-            destructible.destruct(() => events.push(null))
-            destructible.durable('chaperon', this._chaperon(events.shifter(), census))
+            destructible.destruct(() => this._events.push(null))
+            destructible.durable('chaperon', this._chaperon(this._events.shifter()))
             this._scheduler.schedule(Date.now(), scheduleKey, {
                 // TODO Configure location for proxies and such.
                 name: 'discover', application, id, properties: {}
             })
+            destructible.durable('census', async () => {
+                for await (const population of census) {
+                    this._population = population
+                    this._events.push({ name: 'census' })
+                }
+            })
         }
     }
 
-    async _chaperon (events, census) {
+    async _chaperon (events) {
         for await (const event of events) {
+            if (event.name == 'census') {
+                for (const { key, body } of this._scheduler.calendar()) {
+                    this._scheduler.schedule(Date.now(), key, body)
+                }
+                continue
+            }
             const { application, id } = event
             const islanders = []
-            const population = await census.population(application)
-            for (const location of population) {
-                const islander = await ua.json(location, `/compassion/${application}/paxos`)
+            for (const location of this._population) {
+                const islander = await ua.json(location, `./compassion/${application}/paxos`)
                 if (islander != null) {
                     islanders.push({
                         id: islander.id,
                         government: islander.government,
                         cookie: islander.cookie,
-                        url: url.resolve(location, `/compassion/${application}/`),
+                        url: url.resolve(location, `./compassion/${application}/`),
                         createdAt: this._createdAt
                     })
                 }
             }
-            const complete = islanders.length == population.length && islanders.length != 0
+            const complete = islanders.length == this._population.length && islanders.length != 0
             const scheduleKey = Keyify.stringify({ application, id })
             let action = null
             switch (event.name) {
@@ -496,7 +502,7 @@ class Compassion {
                 }
                 break
             case 'retry': {
-                    this.scheduler.schedule(Date.now() + this._ping.chaperon, event.key, event)
+                    this._scheduler.schedule(Date.now() + 5000 /* this._ping.chaperon */, event.key, event)
                 }
                 break
             case 'unrecoverable': {
@@ -519,7 +525,7 @@ class Compassion {
         return this._applications[application]
     }
 
-    async paxos ({ params }) {
+    async paxos ({ params, url }) {
         const islanders = []
         const application = this._applications[params.application]
         if (application != null) {

@@ -81,15 +81,11 @@ require('proof')(4, async okay => {
             this.url = `http://127.0.0.1:${port}`
         }
 
-        static async create (islanders) {
+        static async create (census) {
             const kv = new KeyValueStore
             const shifter = kv.events.shifter()
             const address = await Compassion.listen(destructible.durable('compassion'), {
-                census: {
-                    async population (island) {
-                        return islanders
-                    }
-                },
+                census: census,
                 applications: { kv },
                 bind: { host: '127.0.0.1', port: 0 }
             })
@@ -98,10 +94,12 @@ require('proof')(4, async okay => {
     }
 
     destructible.ephemeral('test', async () => {
-        const islanders = []
+        const census = new Queue()
         const participants = []
-        participants.push(await Participant.create(islanders))
-        islanders.push(participants[0].url)
+        participants.push(await Participant.create(census.shifter()))
+        census.push([ participants[0].url + '/missing/' ])
+        await new Promise(resolve => setTimeout(resolve, 500))
+        census.push([ participants[0].url ])
 
         okay(await participants[0].shifter.join(entry => entry.method == 'acclimated'), { method: 'acclimated' }, 'acclimated')
 
@@ -114,8 +112,8 @@ require('proof')(4, async okay => {
 
         okay(participants[0].kv.get('x'), 1, 'set')
 
-        participants.push(await Participant.create(islanders))
-        islanders.push(participants[1].url)
+        participants.push(await Participant.create(census.shifter()))
+        census.push([ participants[0].url, participants[1].url ])
 
         console.log('waiting')
         okay(await participants[0].shifter.join(entry => {
@@ -125,6 +123,7 @@ require('proof')(4, async okay => {
 
         console.log('waiting')
 
+        census.push(null)
         destructible.destroy()
     })
 
