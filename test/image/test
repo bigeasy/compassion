@@ -1,7 +1,0 @@
-#!/bin/bash
-
-dir=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
-
-$dir/base
-
-tar cz Dockerfile.test t | docker build -f Dockerfile.test -t bigeasy/compassion:test -

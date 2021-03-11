@@ -1,13 +1,5 @@
-/.dots
 /.nyc_output
 /.wiseguy
 /coverage
 /docs
-/node_modules/*
-/*/node_modules/*
-/*/coverage
-/*/.nyc_output
-!/compassion.channel/node_modules/example.js
-!/compassion.root/node_modules/compassion.test.js
-/compassion.colleague/test/*.jsons
-/compassion.counterfeiter/test/counterfeiter.*.jsons
+/node_modules

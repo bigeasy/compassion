@@ -2,5 +2,6 @@
 /*.md
 /Dockerfile
 /Dockerfile.*
+/docs
 /coverage
 /test
