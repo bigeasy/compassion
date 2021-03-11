@@ -31,6 +31,7 @@ module.exports = {
                 adapter: httpAdapter
             })).data
         } catch (error) {
+            console.log(error.stack)
             logger.error('ua', { url: resolved, stack: error.stack })
         }
         const empty = new stream.PassThrough

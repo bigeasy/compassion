@@ -1,11 +1,13 @@
-require('proof')(3, async okay => {
+require('proof')(4, async okay => {
     const Future = require('perhaps')
     const Destructible = require('destructible')
     const { Queue } = require('avenue')
 
+    let instance = 0
     class KeyValueStore {
         constructor () {
             this._values = {}
+            this._instance = instance++
             this.client = null
             this.events = new Queue
             this._future = Future.resolve(true)
@@ -21,9 +23,19 @@ require('proof')(3, async okay => {
             this.events.push({ method: 'bootstrap' })
         }
 
+        async snapshot ({ queue, promise }) {
+            queue.push(this._snapshots[promise])
+            queue.push(null)
+        }
+
+        async join ({ snapshot }) {
+            this._values = await snapshot.shift()
+            await snapshot.shift()
+        }
+
         async arrive ({ arrival }) {
             await this._future.promise
-            this._snapshots[arrival.promise] = JSON.stringify(this._values)
+            this._snapshots[arrival.promise] = JSON.parse(JSON.stringify(this._values))
             return true
         }
 
@@ -37,7 +49,6 @@ require('proof')(3, async okay => {
         async map ({ body }) {
             await this._future.promise
             this.events.push({ method: 'map', body })
-            console.log('body', body)
             this._values[body.key] = body.value
             return true
         }
@@ -63,34 +74,60 @@ require('proof')(3, async okay => {
     const destructible = new Destructible('test/integration.t.js')
     const Compassion = require('../redux')
 
+    class Participant {
+        constructor (kv, shifter, { address, port }) {
+            this.kv = kv
+            this.shifter = kv.events.shifter()
+            this.url = `http://127.0.0.1:${port}`
+        }
+
+        static async create (islanders) {
+            const kv = new KeyValueStore
+            const shifter = kv.events.shifter()
+            const address = await Compassion.listen(destructible.durable('compassion'), {
+                census: {
+                    async population (island) {
+                        return islanders
+                    }
+                },
+                applications: { kv },
+                bind: { host: '127.0.0.1', port: 0 }
+            })
+            return new Participant(kv, shifter, address)
+        }
+    }
+
     destructible.ephemeral('test', async () => {
         const islanders = []
-        const kv = new KeyValueStore
-        const shifter = kv.events.shifter()
-        const address = await Compassion.listen(destructible.durable('compassion'), {
-            census: {
-                async population (island) {
-                    return islanders
-                }
-            },
-            applications: { kv },
-            bind: { host: '127.0.0.1', port: 0 }
-        })
-        islanders.push(`http://127.0.0.1:${address.port}`)
+        const participants = []
+        participants.push(await Participant.create(islanders))
+        islanders.push(participants[0].url)
 
-        okay(await shifter.join(entry => entry.method == 'acclimated'), { method: 'acclimated' }, 'acclimated')
+        okay(await participants[0].shifter.join(entry => entry.method == 'acclimated'), { method: 'acclimated' }, 'acclimated')
 
-        kv.set('x', 1)
+        participants[0].kv.set('x', 1)
 
-        okay(await shifter.join(entry => entry.method == 'reduce'), {
+        okay(await participants[0].shifter.join(entry => entry.method == 'reduce'), {
             method: 'reduce',
-            arrayed: [{ promise: '1/0', id: `${address.address}:${address.port}`, value: true }]
+            arrayed: [{ promise: '1/0', id: participants[0].kv.client.id, value: true }]
         }, 'reduce')
 
-        okay(kv.get('x'), 1, 'set')
+        okay(participants[0].kv.get('x'), 1, 'set')
+
+        participants.push(await Participant.create(islanders))
+        islanders.push(participants[1].url)
+
+        console.log('waiting')
+        okay(await participants[0].shifter.join(entry => {
+            console.log(entry)
+            return entry.method == 'acclimated'
+        }), { method: 'acclimated' }, 'acclimated')
+
+        console.log('waiting')
 
         destructible.destroy()
     })
 
     await destructible.promise
+    console.log('done')
 })

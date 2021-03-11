@@ -16,6 +16,8 @@ const { coalesce } = require('extant')
 // An `async`/`await` map of future values.
 const Cubbyhole = require('cubbyhole')
 
+const eject = require('once')
+
 // Whenever you see this, you want to refactor it so that initialization takes
 // place in the constructor, with the constructor accepting the first entry,
 // snapshot and backlog of broadcasts. Don't do it. This of this as a state
@@ -130,6 +132,28 @@ class Conference {
                 if (entry.body.promise == '1/0') {
                     await this.application.bootstrap()
                 } else if (arrival.id == this.id) {
+                    const subDestructible = this.destructible.ephemeral('snapshot')
+                    const leader          = this._government.properties[this._government.majority[0]].url
+                    const promise         = this._government.promise
+                    const stream          = await this._ua.stream(leader, './snapshot', { promise })
+                    const staccato        = new Staccato(stream)
+                    const snapshot        = new Queue().shifter().paired
+                    // TODO destructible.error() ?
+                    subDestructible.durable('stream', async () => {
+                        const errors = []
+                        stream.on('error', errors.push.bind(errors))
+                        await new Promise(resolve => stream.once('close', resolve))
+                        Compassion.Error.assert(errors.length == 0, 'SNAPSHOT_STREAM_ERROR', errors)
+                    })
+                    // TODO CRC32 or FNV.
+                    subDestructible.durable('
+                    const player = new Player(function () { return '0' })
+                    for await (const buffer of staccato.readable) {
+                        for (const message of player.split(buffer)) {
+                            const json = JSON.parse(entry.parts.shift())
+                            snapshot.queue.push(json)
+                        }
+                    }
                     const { shifter } = this._conduit.shifter({
                         method: 'snapshot',
                         promise: this._government.promise
@@ -156,7 +180,7 @@ class Conference {
                     for (const key in this._broadcasts) {
                         broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
                     }
-                    this._cubbyholes.broadcasts.set(this._government.promise, broadcasts)
+                    this._cubbyholes.broadcasts.resolve(this._government.promise, broadcasts)
                 } else if (this._government.promise != '1/0') {
                     const broadcasts = await this._conduit.invoke({
                         method: 'broadcasts',
