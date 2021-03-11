@@ -3,7 +3,10 @@ sudo: false
 language: node_js
 
 node_js:
+  - '10'
   - '12'
+  - '14'
+  - '15'
 
 branches:
   only:
@@ -11,7 +14,6 @@ branches:
     - travis-ci
 
 install:
-  - for dir in compassion.*; do (cd $dir && npm install --no-package-lock --no-save); done
   - npm install --no-package-lock --no-save
   - npm install -g nyc prove
 

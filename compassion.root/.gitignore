@@ -1,4 +1,0 @@
-/node_modules/*
-!/node_modules/compassion.test.js
-/.proof.out
-/coverage
