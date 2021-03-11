@@ -1,5 +1,5 @@
 const assert = require('assert')
-const Queue = require('avenue')
+const { Queue } = require('avenue')
 const Conference = require('../../compassion.conference/conference')
 
 class Application {
@@ -7,7 +7,7 @@ class Application {
         this.arrived = new Promise(resolve => this._arrived = resolve)
         this._blocker = new Promise(resolve => this.unblock = resolve)
         this.envelopes = new Queue
-        this.conference = new Conference(destructible.ephemeral([ 'conference', island, id ]), conduit, this, island, id, properties)
+        this.conference = new Conference(destructible.ephemeral(`conference.${island}.${id}`), conduit, this, island, id, properties)
     }
 
     async dispatch (envelope, shifter) {

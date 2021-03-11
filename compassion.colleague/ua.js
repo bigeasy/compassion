@@ -16,6 +16,7 @@ module.exports = {
                 return (await axios.post(resolved, body)).data
             }
         } catch (error) {
+            console.log(error.message)
             logger.error('ua', { url: resolved, stack: error.stack })
             return null
         }
@@ -30,6 +31,7 @@ module.exports = {
                 adapter: httpAdapter
             })).data
         } catch (error) {
+            console.log(error.stack)
             logger.error('ua', { url: resolved, stack: error.stack })
         }
         const empty = new stream.PassThrough

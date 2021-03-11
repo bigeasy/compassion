@@ -1,5 +1,5 @@
 const Paxos  = require('paxos')
-const coalesce = require('extant')
+const { coalesce } = require('extant')
 
 module.exports =  function (id, members, complete) {
     // Never mind.

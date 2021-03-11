@@ -7,7 +7,7 @@ async function prove (okay) {
     const children = require('child_process')
     const Destructible = require('destructible')
     const destructible = new Destructible('t/olio.t')
-    const once = require('prospective/once')
+    const once = require('eject')
     try {
         await fs.unlink(path.join(__dirname, 'socket'))
     } catch (error) {

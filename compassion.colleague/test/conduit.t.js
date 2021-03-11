@@ -5,8 +5,8 @@ async function prove (okay) {
     const Resolver = require('../resolver/conduit')
     const Destructible = require('destructible')
     const destructible = new Destructible('conduit.t')
-    const Avenue = require('avenue')
-    const inbox = new Avenue, outbox = new Avenue
+    const { Queue } = require('avenue')
+    const inbox = new Queue, outbox = new Queue
     const destination = new Conduit(destructible.durable('destination'), inbox.shifter(), outbox, () => {
         return [ '127.0.0.1:8080' ]
     })

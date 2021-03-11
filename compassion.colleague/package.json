@@ -24,6 +24,7 @@
                             "axios":                        "0.21.1",
                             "byline":                       "5.0.0",
                             "conduit":                      "^7.0.0-alpha.10",
+                            "eject":                        "0.2.3",
                             "extant":                       "^2.0.0-alpha.0",
                             "fastify":                      "3.12.0",
                             "foremost":                     "^1.0.5",
@@ -31,9 +32,13 @@
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",
                             "olio":                         "^7.0.0-alpha.5",
+                            "perhaps":                      "0.0.6",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.4",
-                            "server-destroy":               "1.0.1"
+                            "server-destroy":               "1.0.1",
+                            "staccato":                     "13.0.0-alpha.3",
+                            "transcript":                   "0.1.4",
+                            "verbatim":                     "0.1.2"
     },
     "devDependencies":
     {
