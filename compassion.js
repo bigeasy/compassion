@@ -592,9 +592,8 @@ class Compassion {
     async _snapshot ({ params, body: { promise } }, reply) {
         const application = this._getApplication404(params.application).application
         const snapshot = new Queue().shifter().paired
-        const subDestructible = this.destructible.ephemeral(`snapshot.${promise.replace('/', '.')}`)
-        console.log('>> CALLED', !! application, !! subDestructible)
-        const through = new stream.PassThrough
+        const subDestructible = this.destructible.ephemeral(`snapshot.send.${params.application}.${promise.replace('/', '.')}`)
+        const through = new stream.PassThrough({ emitClose: true })
         subDestructible.durable('stream', async () => {
             const errors = []
             through.on('error', errors.push.bind(errors))
@@ -607,6 +606,7 @@ class Compassion {
                 await staccato.writable.write([ recorder([ Verbatim.serialize(object) ]) ])
             }
             await staccato.writable.end()
+            through.destroy()
             subDestructible.destroy()
         })
         subDestructible.durable('snapshot', async () => {
