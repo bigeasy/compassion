@@ -1,6 +1,6 @@
 {
     "name":                 "compassion",
-    "version":              "1.6.0",
+    "version":              "2.0.0-alpha.0",
     "description":
 
       "A paxos-backed atomic log.",
@@ -35,9 +35,9 @@
     },
     "devDependencies":
     {
-                            "perhaps":                      "0.0.6",
                             "mingle":                       "^7.0.0-alpha.5",
                             "mingle.static":                "3.0.0-alpha.1",
+                            "perhaps":                      "0.0.6",
                             "proof":                        "^9.0.3"
     },
     "main":                 "compassion",
