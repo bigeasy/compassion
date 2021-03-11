@@ -54,7 +54,7 @@ class Conference {
     // Construct a `Conference`.
 
     //
-    constructor (destructible, { id, entry, kibitzer, ua, consumer, replaying = false }) {
+    constructor (destructible, { id, entry, kibitzer, ua, consumer }) {
         // A bouquet of `Promise`s monitored by this `Conference` instance.
         this.destructible = destructible
 
@@ -76,9 +76,6 @@ class Conference {
 
         // Current Paxos government.
         this._government = null
-
-        // Whether or not we are replaying a captured log of network events.
-        this._replaying = !! replaying
 
         // Previous embarkation cookie used to create next cookie.
         this._cookie = -1
@@ -129,15 +126,6 @@ class Conference {
         })
     }
 
-    async _arrive (entry, broadcasts, snapshot) {
-        this._government = entry.government
-        if (entry.body.promise == '1/0') {
-            this.consumer.bootstrap()
-        } else {
-            this.consumer.arrive(snapshot)
-        }
-    }
-
     async broadcasts (promise) {
         return await this._cubbyholes.broadcasts.get(promise)
     }
@@ -186,7 +174,6 @@ class Conference {
                         self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                         snapshot: snapshot.shifter,
                         entry: entry.body,
-                        replaying: this._replaying,
                         government: this._government
                     })
                     await subDestructible.done
@@ -194,7 +181,6 @@ class Conference {
                 await this.application.arrive({
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     arrival: entry.body,
-                    replaying: this._replaying,
                     government: this._government
                 })
                 if (arrival.id != this.id) {
@@ -249,7 +235,6 @@ class Conference {
                     },
                     method: 'depart',
                     body: entry.body,
-                    replaying: this._replaying,
                     government: this._government
                 })
                 const depart = entry.body.departed
@@ -273,28 +258,9 @@ class Conference {
                     },
                     method: 'acclimated',
                     body: entry.body,
-                    replaying: this._replaying,
                     government: this._government
                 })
             }
-            // TODO Is this necessary?
-            /*
-            await this.application.government({
-                self: {
-                    id: this.id,
-                    arrived: this._government.arrived.promise[this.id]
-                },
-                method: 'government',
-                body: entry.body,
-                replaying: this._replaying,
-                government: this._government
-            })
-            this._queue.push({
-                module: 'compassion',
-                method: 'acclimate',
-                body: null
-            })
-            */
             this._kibitzer.paxos.acclimate()
         } else {
             // Bombs on a flush!
@@ -319,7 +285,6 @@ class Conference {
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                     method: 'receive',
                     from: envelope.from,
-                    replaying: this._replaying,
                     government: this._government,
                     body: envelope.body
                 })
@@ -342,14 +307,6 @@ class Conference {
                 await this._checkReduced(broadcast)
                 break
             }
-        }
-        if (this._replaying) {
-            this._queue.push({
-                module: 'compassion',
-                method: 'consumed',
-                promise: entry.promise,
-                body: null
-            })
         }
         this.consumed.push(entry)
     }
@@ -385,7 +342,6 @@ class Conference {
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             method: 'reduced',
             from: broadcast.from,
-            replaying: this._replaying,
             government: this._government,
             request: broadcast.body,
             arrayed: reduced,
@@ -618,12 +574,6 @@ class Compassion {
         reply.send(through)
         await subDestructible.done
         return null
-    }
-
-    async listen (options) {
-        await reactor.fastify.listen(options)
-        this.destructible.destruct(() => reactor.fastify.close())
-        return reactor.fastify.server.address()
     }
 }
 
