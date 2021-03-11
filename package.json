@@ -46,6 +46,7 @@
                             "mingle.static":                "3.0.0-alpha.1",
                             "proof":                        "^9.0.3"
     },
+    "main":                 "compassion",
     "scripts":
     {
                             "test": "proof test/*.t.js"

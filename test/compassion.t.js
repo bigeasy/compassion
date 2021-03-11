@@ -72,7 +72,7 @@ require('proof')(4, async okay => {
     }
 
     const destructible = new Destructible('test/integration.t.js')
-    const Compassion = require('../redux')
+    const Compassion = require('..')
 
     class Participant {
         constructor (kv, shifter, { address, port }) {
