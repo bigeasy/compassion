@@ -23,7 +23,7 @@
                             "avenue":                       "^0.6.13",
                             "axios":                        "0.21.1",
                             "extant":                       "^2.0.0-alpha.0",
-                            "fastify":                      "3.12.0",
+                            "fastify":                      "3.13.0",
                             "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.1",
