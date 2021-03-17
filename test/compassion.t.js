@@ -75,7 +75,7 @@ require('proof')(4, async okay => {
     const Compassion = require('..')
 
     class Participant {
-        constructor (kv, shifter, { address, port }) {
+        constructor (kv, { address, port }) {
             this.kv = kv
             this.shifter = kv.events.shifter()
             this.url = `http://127.0.0.1:${port}`
@@ -83,13 +83,12 @@ require('proof')(4, async okay => {
 
         static async create (census) {
             const kv = new KeyValueStore
-            const shifter = kv.events.shifter()
             const address = await Compassion.listen(destructible.durable('compassion'), {
                 census: census,
                 applications: { kv },
                 bind: { host: '127.0.0.1', port: 0 }
             })
-            return new Participant(kv, shifter, address)
+            return new Participant(kv, address)
         }
     }
 
