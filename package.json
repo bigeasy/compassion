@@ -24,7 +24,7 @@
                             "axios":                        "0.21.1",
                             "cubbyhole":                    "^4.0.3",
                             "extant":                       "^2.0.0-alpha.0",
-                            "fastify":                      "3.13.0",
+                            "fastify":                      "3.14.0",
                             "interrupt":                    "11.0.0-alpha.20",
                             "happenstance":                 "^12.0.1",
                             "keyify":                       "^2.0.2",
