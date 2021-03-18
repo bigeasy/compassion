@@ -19,9 +19,6 @@ const Interrupt = require('interrupt')
 // An `async`/`await` in-process message queue.
 const { Queue } = require('avenue')
 
-// An `async`/`await` socket multiplexer.
-const Conduit = require('conduit')
-
 // Like SQL COALESCE, return the first defined value.
 const { coalesce } = require('extant')
 
