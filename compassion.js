@@ -14,7 +14,7 @@ const embark = require('./embark')
 const assert = require('assert')
 
 // Exceptions that report nested exceptions that you can catch by type.
-const { Interrupt } = require('interrupt')
+const Interrupt = require('interrupt')
 
 // An `async`/`await` in-process message queue.
 const { Queue } = require('avenue')
