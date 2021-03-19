@@ -609,13 +609,13 @@ exports.listen = async function (destructible, options) {
         f: compassion._snapshot.bind(compassion)
     }])
     await reactor.fastify.listen(options.bind)
-        reactor.on('reply', ({ code, stack, url, path }) => {
-            if (stack != null) {
-                console.log(code, url, path, stack)
-            } else if (Math.floor(code / 100) != 2) {
-                console.log(code, url, path)
-            }
-        })
+    reactor.on('reply', ({ code, stack, url, path }) => {
+        if (stack != null) {
+            console.log(code, url, path, stack)
+        } else if (Math.floor(code / 100) != 2) {
+            console.log(code, url, path)
+        }
+    })
     destructible.destruct(() => reactor.fastify.close())
     const address = reactor.fastify.server.address()
     compassion._bound(destructible, address, options)
