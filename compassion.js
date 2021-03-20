@@ -616,7 +616,7 @@ exports.listen = async function (destructible, options) {
             console.log(code, url, path)
         }
     })
-    destructible.destruct(() => reactor.fastify.close())
+    destructible.destruct(() => destructible.ephemeral('close', () => reactor.fastify.close()))
     const address = reactor.fastify.server.address()
     compassion._bound(destructible, address, options)
     return address
