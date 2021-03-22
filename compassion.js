@@ -354,6 +354,7 @@ class Compassion {
         this.destructible = null
         this._applications = {}
         this._republic = Date.now()
+        this._population = []
     }
 
     _bound (destructible, { address, port }, { applications, census }) {
