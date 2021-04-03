@@ -30,7 +30,7 @@
                             "keyify":                       "^2.0.2",
                             "kibitz":                       "^3.0.0-alpha.10",
                             "prolific.logger":              "^11.0.0",
-                            "reactor":                      "^17.0.0-alpha.8",
+                            "reactor":                      "^17.0.0-alpha.9",
                             "staccato":                     "13.0.0-alpha.6",
                             "transcript":                   "0.1.4",
                             "verbatim":                     "0.1.2"
