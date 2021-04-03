@@ -1,5 +1,5 @@
 require('proof')(4, async okay => {
-    const Future = require('perhaps')
+    const { Future } = require('perhaps')
     const Destructible = require('destructible')
     const { Queue } = require('avenue')
 
