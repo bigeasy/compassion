@@ -27,7 +27,7 @@
                             "fastify":                      "3.19.2",
                             "happenstance":                 "^12.0.1",
                             "interrupt":                    "11.0.0-alpha.20",
-                            "keyify":                       "^2.0.2",
+                            "keyify":                       "^3.0.0",
                             "kibitz":                       "^3.0.0-alpha.11",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.10",
