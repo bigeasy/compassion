@@ -26,7 +26,7 @@
                             "extant":                       "^2.0.0-alpha.2",
                             "fastify":                      "3.19.2",
                             "happenstance":                 "^12.0.1",
-                            "interrupt":                    "11.0.0-alpha.20",
+                            "interrupt":                    "11.0.0-alpha.23",
                             "keyify":                       "^3.0.0",
                             "kibitz":                       "^3.0.0-alpha.11",
                             "prolific.logger":              "^11.0.0",
