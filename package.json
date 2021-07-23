@@ -33,7 +33,7 @@
                             "reactor":                      "^17.0.0-alpha.10",
                             "staccato":                     "13.0.0-alpha.10",
                             "transcript":                   "0.1.5",
-                            "verbatim":                     "0.1.4"
+                            "verbatim":                     "0.1.5"
     },
     "devDependencies":
     {
