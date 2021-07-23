@@ -25,7 +25,7 @@ const { coalesce } = require('extant')
 // An `async`/`await` map of future values.
 const Cubbyhole = require('cubbyhole')
 
-const { Staccato } = require('staccato')
+const Staccato = require('staccato')
 
 const { Player, Recorder } = require('transcript')
 
