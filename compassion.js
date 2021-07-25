@@ -121,6 +121,7 @@ class Conference {
                 body:     body
             }
         })
+        return cookie
     }
 
     async broadcasts (promise) {
@@ -305,6 +306,13 @@ class Conference {
         this.consumed.push(entry)
     }
 
+    // TODO Let's rename `broadcast` to `map`.
+
+    // TODO You want to move to an `async`/`await` interface as described in
+    // [Could this be more
+    // functional?](https://github.com/bigeasy/compassion/issues/497]
+    // so maybe a user defined `reduce` function gets phased out. Or perhaps
+    // that functionality should be a separate object?
     async _checkReduced (broadcast) {
         for (const promise in this._government.arrived.id) {
             if (!(promise in broadcast.responses)) {
@@ -334,6 +342,7 @@ class Conference {
         // government at the time of this postback.
         await this.application.reduce({
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+            cookie: broadcast.cookie,
             method: 'reduced',
             from: broadcast.from,
             government: this._government,
