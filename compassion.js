@@ -115,7 +115,7 @@ class Conference {
             republic: this._government.republic,
             body: {
                 module:   'conference',
-                method:   'broadcast',
+                method:   'map',
                 key:      '[' + arrived + '](' + cookie + ')',
                 from:     { id: this.id, arrived: this._government.arrived.promise[this.id] },
                 body:     body
@@ -195,7 +195,7 @@ class Conference {
                             body: {
                                 body: { // islander
                                     module: 'conference',
-                                    method: 'broadcast',
+                                    method: 'map',
                                     request: {
                                         key: broadcast.key,
                                         method: broadcast.method,
@@ -267,7 +267,7 @@ class Conference {
             //
             const envelope = entry.body
             switch (envelope.method) {
-            case 'broadcast':
+            case 'map':
                 const request = envelope.request
                 this._broadcasts[envelope.key] = {
                     key: envelope.key,
