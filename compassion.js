@@ -86,7 +86,7 @@ class Conference {
         this.destructible.destruct(() => this.destroyed = true)
 
         // Outbound messages.
-        this.messages = new Queue()
+        this._messages = new Queue().shifter().paired
 
         // **TODO** Let the messages swim to exit. Why? We're leaving. The log
         // is supposed to just truncate anyway.
@@ -108,18 +108,19 @@ class Conference {
         })
     }
 
+    // TODO We need to start these loops delayed, yes, but only after we've
+    // arrived.
     enqueue (body) {
-        const cookie = (this._cookie = BigInt(this._cookie) + 1n).toString(16)
-        const arrived = this._government.arrived.promise[this.id]
-        this.messages.push({
-            republic: this._government.republic,
-            body: {
-                module:   'conference',
-                method:   'map',
-                key:      '[' + arrived + '](' + cookie + ')',
-                from:     { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                body:     body
-            }
+        const cookie = `${this.id}/${(this._cookie = BigInt(this._cookie) + 1n).toString(16)}`
+        this._messages.queue.push({
+            module:   'conference',
+            method:   'map',
+            key:      cookie,
+            from:     {
+                id: this.id,
+                arrived: this._government.arrived.promise[this.id]
+            },
+            body:     body
         })
         return cookie
     }
@@ -137,6 +138,7 @@ class Conference {
             const properties = entry.properties
             if (entry.body.arrive) {
                 const arrival = entry.body.arrive
+                console.log(arrival, this.id, entry.body)
                 if (entry.body.promise == '1/0') {
                     await this.application.bootstrap()
                 } else if (arrival.id == this.id) {
@@ -172,6 +174,15 @@ class Conference {
                         government: this._government
                     })
                     await subDestructible.done
+                }
+                if (arrival.id == this.id) {
+                    this.destructible.durable('enqueue', async () => {
+                        for await (const message of this._messages.shifter) {
+                            console.log(message)
+                            this._kibitzer.publish(message)
+                        }
+                    })
+                    this.destructible.destruct(() => this._messages.shifter.destroy())
                 }
                 await this.application.arrive({
                     self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
@@ -259,13 +270,15 @@ class Conference {
             this._kibitzer.paxos.acclimate()
         } else {
             // Bombs on a flush!
-            assert(entry.body.body)
+
+            // Paxos body, Islander body, Conference body, user body.
+            assert(entry.body.body.body)
             // Reminder that if you ever want to do queued instead async then the
             // queue should be external and a property of the object the conference
             // operates.
 
             //
-            const envelope = entry.body
+            const envelope = entry.body.body
             switch (envelope.method) {
             case 'map':
                 const request = envelope.request
@@ -283,15 +296,12 @@ class Conference {
                     government: this._government,
                     body: envelope.body
                 })
-                this.messages.push({
-                    republic: this._government.republic,
-                    body: {
-                        module: 'compassion',
-                        method: 'reduce',
-                        key: envelope.key,
-                        from: this._government.arrived.promise[this.id],
-                        body: coalesce(response)
-                    }
+                this._messages.queue.push({
+                    module: 'compassion',
+                    method: 'reduce',
+                    key: envelope.key,
+                    from: this._government.arrived.promise[this.id],
+                    body: coalesce(response)
                 })
                 break
             // Tally our responses and if they match the number of participants,
@@ -371,9 +381,9 @@ class Compassion {
         this._createdAt = Date.now()
         this._applications = applications
         this._scheduler = new Scheduler
-        const id = `${address}:${port}`
         // TODO For now, we can crash restart on unrecoverable.
         for (const application in applications) {
+            const id = `${application}/${address}:${port}`
             const scheduleKey = Keyify.stringify({ application, id })
             const subDestructible = destructible.durable(`application.${application}`)
             subDestructible.destruct(() => this._scheduler.unschedule(scheduleKey))
@@ -394,13 +404,6 @@ class Compassion {
                 kibitzer: kibitzer,
                 consumer: applications[application]
             })
-            const messages = conference.messages.shifter()
-            subDestructible.ephemeral('enqueue', async () => {
-                for await (const message of messages) {
-                    kibitzer.paxos.enqueue(Date.now(), message.republic, message.body)
-                }
-            })
-            subDestructible.destruct(() => messages.destroy())
             subDestructible.destruct(() => {
                 kibitzer.paxos.log.push(null)
                 kibitzer.paxos.pinged.push(null)
@@ -533,7 +536,6 @@ class Compassion {
     }
 
     async paxos ({ params, url }) {
-        const islanders = []
         const application = this._applications[params.application]
         if (application != null) {
             return {
