@@ -29,16 +29,17 @@
                             "interrupt":                    "11.0.0-alpha.23",
                             "keyify":                       "^3.0.0",
                             "kibitz":                       "^3.0.0-alpha.11",
+                            "perhaps":                      "0.0.11",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.10",
                             "staccato":                     "13.0.0-alpha.10",
                             "transcript":                   "0.1.5",
-                            "verbatim":                     "0.1.5"
+                            "verbatim":                     "0.1.5",
+                            "vivifyer":                     "3.0.0"
     },
     "devDependencies":
     {
                             "destructible":                 "7.0.0-alpha.67",
-                            "perhaps":                      "0.0.11",
                             "proof":                        "^9.0.3"
     },
     "main":                 "compassion",

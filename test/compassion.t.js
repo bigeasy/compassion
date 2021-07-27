@@ -33,7 +33,7 @@ require('proof')(4, async okay => {
             await snapshot.shift()
         }
 
-        async arrive ({ arrival }) {
+        async arrive ({ self: { id }, arrival }) {
             await this._future.promise
             this._snapshots[arrival.promise] = JSON.parse(JSON.stringify(this._values))
             return true
@@ -46,11 +46,26 @@ require('proof')(4, async okay => {
             return true
         }
 
-        async map ({ body }) {
-            await this._future.promise
-            this.events.push({ method: 'map', body })
-            this._values[body.key] = body.value
-            return true
+        async map ({ self, government, body }) {
+            switch (body.method) {
+            case 'put': {
+                    await this._future.promise
+                    this.events.push({ method: 'map', body })
+                    this._values[body.key] = body.value
+                    return true
+                }
+                break
+            case 'leader': {
+                    if (self.id == government.majority[0]) {
+                        return true
+                    }
+                }
+                break
+            case 'map': {
+                    return self.arrived
+                }
+                break
+            }
         }
 
         async reduce ({ arrayed }) {
@@ -63,7 +78,7 @@ require('proof')(4, async okay => {
         }
 
         set (key, value) {
-            this.client.enqueue({ key, value })
+            this.client.enqueue({ method: 'put', key, value })
         }
 
         get (key) {
@@ -114,13 +129,31 @@ require('proof')(4, async okay => {
         participants.push(await Participant.create(census.shifter()))
         census.push([ participants[0].url, participants[1].url ])
 
-        console.log('waiting')
-        okay(await participants[0].shifter.join(entry => {
-            console.log(entry)
+        okay(await participants[1].shifter.join(entry => {
             return entry.method == 'acclimated'
         }), { method: 'acclimated' }, 'acclimated')
 
-        console.log('waiting')
+        const leader = await participants[1].kv.client.call({ method: 'leader' })
+        okay(leader.from, '1/0', 'call')
+
+        const called = await participants[1].kv.client.call({ method: 'unknown' })
+        okay(called, null, 'no answer')
+
+        const mapped = await participants[1].kv.client.mapped({ method: 'map' })
+        okay(mapped, { '1/0': '1/0', '2/0': '2/0' }, 'mapped')
+
+        const arrayed = await participants[1].kv.client.arrayed({ method: 'map' })
+        okay(arrayed.map(item => item.value), [ '1/0', '2/0' ], 'arrayed')
+
+        /*
+        const countdown = participants[1].kv.client.countdown('key')
+
+        for (const participant of participants) {
+            await participant.kv.client.call({ method: 'leader' }, 'key')
+        }
+
+        await countdown
+        */
 
         census.push(null)
         destructible.destroy()

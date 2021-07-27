@@ -5,6 +5,9 @@ const Reactor = require('reactor')
 const { Timer, Scheduler } = require('happenstance')
 const Kibitzer = require('kibitz')
 const Keyify = require('keyify')
+const { Future } = require('perhaps')
+
+const Vivifier = require('vivifyer')
 
 const ua = require('./ua')
 const discover = require('./discover')
@@ -88,8 +91,23 @@ class Conference {
         // Outbound messages.
         this._messages = new Queue().shifter().paired
 
+        // One-on-one messages.
+        this._calls = new Map()
+
+        // One-on-many messages.
+        this._maps = new Map()
+
+        // Countdowns can leak. If the other participants don't actually
+        // participate in the countdown, then the countdown will not resolve,
+        // but you'll probably notice the leak because you're waiting on a
+        // countdown that never resolved. So, it would hang also.
+
         // **TODO** Let the messages swim to exit. Why? We're leaving. The log
         // is supposed to just truncate anyway.
+        this._countdowns = {
+            tracking: new Map(),
+            awaiting: new Map()
+        }
 
         // Construct our application passing ourselves as the first argument.
         this.application = consumer
@@ -110,21 +128,132 @@ class Conference {
 
     // TODO We need to start these loops delayed, yes, but only after we've
     // arrived.
-    enqueue (body) {
+    enqueue (body, countdown = null) {
         const cookie = `${this.id}/${(this._cookie = BigInt(this._cookie) + 1n).toString(16)}`
         this._messages.queue.push({
-            module:   'conference',
-            method:   'map',
-            key:      cookie,
-            from:     {
+            module:     'conference',
+            method:     'map',
+            countdown:  countdown,
+            key:        cookie,
+            from: {
                 id: this.id,
                 arrived: this._government.arrived.promise[this.id]
             },
-            body:     body
+            body:       body
         })
         return cookie
     }
 
+    async call (body, countdown = null) {
+        const future = new Future
+        this._calls.set(this.enqueue(body, countdown), future)
+        return future.promise
+    }
+
+    async mapped (body, countdown = null) {
+        const future = new Future
+        this._maps.set(this.enqueue(body, countdown), { future, type: 'mapped' })
+        return future.promise
+    }
+
+    async arrayed (body, countdown = null) {
+        const future = new Future
+        this._maps.set(this.enqueue(body, countdown), { future, type: 'arrayed' })
+        return future.promise
+    }
+
+    // TODO You now have an interface issue. You can see that you can do
+    // everyone need to talk to everyone else using `countdown` and any of the
+    // above functions waiting for them to finish. The above functions would
+    // take an optional identifier that could be used to indicate that they are
+    // countdowns, and you can always use a promise to get a unique identifier
+    // shared by all the particiants.
+
+    // But should countdown return anything other than perhaps always `true`?
+    // What should it otherwise return? The results from the countdown? If so,
+    // should it be arrayed or mapped? Should we have `mappedCountdown` and
+    // `arrayedCountdown` (yuck!) or should we make the type or return a flag or
+    // should we return both arrayed and mapped in an object and have the caller
+    // destructure the desired result? (If you revisit this, it is the last that
+    // appeas to you. You can do a real `reduce with
+    // conference.map().arrayed.reduce()`.
+
+    // For now, you've decided that having an `async`/`await` of any sort is
+    // enough to build applications, so `countdown` will await and return
+    // nothing or simply `true`.
+
+    // TODO And another interface issue. Do we countdown by virtue of sending a
+    // message or do we countdown by virtue of invoking a call? That is, is a
+    // countdown waiting for everyone to simply send a message to the other, or
+    // is it waiting for a call?
+
+    // At this point there is no difference. We don't have a send that doesn't
+    // result in a round of paxos for each response, although everyone sending
+    // one message to be received by all would be more efficient.
+
+    // In the case of Diffuser redistributing a lookup table, we could do a map
+    // reduce were the entires for a shard are returned, or each participant
+    // could post their connections and the shard could pluck the relevant ones.
+
+    // But, then you start getting into trying to send a message and get a
+    // single result. You realize that in this case, it may be the case that the
+    // one participant who can handle that result, say adding a entry to a
+    // sharded key-value store, it may have crashed, disappeared and you're
+    // going to have to wait for a departure to rebalance. If it is the only
+    // place where that information is stored, you're in for a surprise. This is
+    // all hinting at creating the half-paxos that has a fail-over.
+
+    // And so, is it worth it to try to save the additional Paxos rounds?
+
+    // And yet another problem with countdown. When can we garbage collect a
+    // tracked countdown? Do we assume that everyone will reap it. We must,
+    // otherwise there will have to be a timeout to reap it. Oh, no, wait it
+    // can't complete until it is invoked by all, so we can insist that you
+    // create the wait before you throw your countdown into the ring.
+
+    // Ah, but isn't it the case that sending the message is almost never
+    // enough. You can't just send your entires and when you've seen that
+    // everyone has sent their entries proceed.
+
+    // So, let's hold off on all these brilliant performance brainstorms for a
+    // bit.
+
+    // Countdown counts down a call and a response, either a call, or arrayed,
+    // or mapped, annotated with the given key. If `manyToMany` is true,
+    // countdown will return true when all participants have made a call with
+    // the countdown annotation. If it is false, countdown will return when the
+    // first call with the annotation completes. But, wait, how do we know if a
+    // countdown is manyToMany or oneToMany?
+
+    // Oh, no. If it is one-to-one, we want to know that an arrival has made an
+    // initialization call, then we do have a problem with countdown where if
+    // you do not invoke countdown you will leak. You will await until the
+    // countdown is completed. This is true. It does need to be documented.
+
+    // Okay, so maybe the countdown is either always many-to-many, or else
+
+    // Okay, my goodness, okay. If there is some response to an event that
+    // requires a countdown, there is no need to worry about losing track of the
+    // countdown. You create the countdown promise first. Any counting down will
+    // be further along in the long. It cannot have already happened.
+
+    // Countdown awaits either a single call and response from any participant
+    // with the given countdown annotation or a call from all participants with
+    // the given countdown annotation. It is a way for one participant to await
+    // the realization of an entry in the event log by another participant that
+    // may not have received the entry or maybe it already processed the entry.
+
+    // If you want to count a many to many response, you should invoke countdown
+    // to create a promise prior to
+
+    //
+    async countdown (key, manyToMany = true) {
+        const future = new Future
+        this._countdowns.awaiting.set(this.enqueue(key), { future, manyToMany })
+        return future.promise
+    }
+
+    //
     async broadcasts (promise) {
         return await this._cubbyholes.broadcasts.get(promise)
     }
@@ -138,7 +267,6 @@ class Conference {
             const properties = entry.properties
             if (entry.body.arrive) {
                 const arrival = entry.body.arrive
-                console.log(arrival, this.id, entry.body)
                 if (entry.body.promise == '1/0') {
                     await this.application.bootstrap()
                 } else if (arrival.id == this.id) {
@@ -178,7 +306,6 @@ class Conference {
                 if (arrival.id == this.id) {
                     this.destructible.durable('enqueue', async () => {
                         for await (const message of this._messages.shifter) {
-                            console.log(message)
                             this._kibitzer.publish(message)
                         }
                     })
@@ -269,10 +396,9 @@ class Conference {
             }
             this._kibitzer.paxos.acclimate()
         } else {
-            // Bombs on a flush!
-
-            // Paxos body, Islander body, Conference body, user body.
-            assert(entry.body.body.body)
+            // Paxos body, Islander body, Conference body, user body. The user
+            // body can be null, but it should be there.
+            assert('body' in entry.body.body)
             // Reminder that if you ever want to do queued instead async then the
             // queue should be external and a property of the object the conference
             // operates.
@@ -284,6 +410,7 @@ class Conference {
                 const request = envelope.request
                 this._broadcasts[envelope.key] = {
                     key: envelope.key,
+                    countdown: envelope.countdown,
                     from: envelope.from,
                     method: envelope.method,
                     body: envelope.body,
@@ -309,6 +436,10 @@ class Conference {
             case 'reduce':
                 const broadcast = this._broadcasts[envelope.key]
                 broadcast.responses[envelope.from] = envelope.body
+                if (envelope.body != null && this._calls.has(envelope.key)) {
+                    this._calls.get(envelope.key).resolve({ from: envelope.from, body: envelope.body })
+                    this._calls.delete(envelope.key)
+                }
                 await this._checkReduced(broadcast)
                 break
             }
@@ -329,7 +460,6 @@ class Conference {
                 return
             }
         }
-
         // Feel like all ids should just be hidden from the user, but I dunno,
         // simplified? Maybe the user is doing some sort of system management
         // and address properties of paxos are meaningful?
@@ -350,6 +480,7 @@ class Conference {
         // `reduced` postback with both the id and the arrived promise because
         // the only responses provided are those that are still present in the
         // government at the time of this postback.
+        console.log(this._government)
         await this.application.reduce({
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
             cookie: broadcast.cookie,
@@ -360,6 +491,19 @@ class Conference {
             arrayed: reduced,
             mapped: broadcast.responses
         })
+
+        const call = this._calls.get(broadcast.key)
+        if (call != null) {
+            call.resolve(null)
+            this._calls.delete(broadcast.key)
+        }
+
+        const map = this._maps.get(broadcast.key)
+        if (map != null) {
+            map.future.resolve(map.type == 'mapped' ? broadcast.responses : reduced)
+            this._maps.delete(broadcast.key)
+        }
+
         delete this._broadcasts[broadcast.key]
     }
 }
