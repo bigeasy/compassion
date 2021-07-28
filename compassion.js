@@ -355,7 +355,7 @@ class Conference {
         // government at the time of this postback.
         await this.application.reduce({
             self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-            cookie: broadcast.cookie,
+            cookie: broadcast.key,
             method: 'reduced',
             from: broadcast.from,
             government: this._government,
