@@ -426,9 +426,10 @@ class Compassion {
             destructible.destruct(() => this._scheduler.clear())
             destructible.destruct(() => this._events.push(null))
             destructible.durable('chaperon', this._chaperon(this._events.shifter()))
+            const properties = applications[application].application.properties || {}
             this._scheduler.schedule(Date.now(), scheduleKey, {
                 // TODO Configure location for proxies and such.
-                name: 'discover', application, id, properties: {}
+                name: 'discover', application, id, properties
             })
             destructible.durable('census', async () => {
                 for await (const population of census) {
