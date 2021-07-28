@@ -46,10 +46,10 @@ require('proof')(4, async okay => {
             return true
         }
 
-        async map ({ body }) {
+        async map ({ request }) {
             await this._future.promise
-            this.events.push({ method: 'map', body })
-            this._values[body.key] = body.value
+            this.events.push({ method: 'map', request })
+            this._values[request.key] = request.value
             return true
         }
 

@@ -297,7 +297,7 @@ class Conference {
                     method: 'receive',
                     from: envelope.from,
                     government: this._government,
-                    body: envelope.body
+                    request: envelope.body
                 })
                 this._messages.queue.push({
                     module: 'compassion',
