@@ -140,7 +140,10 @@ class Conference {
                 const arrival = entry.body.arrive
                 console.log(arrival, this.id, entry.body)
                 if (entry.body.promise == '1/0') {
-                    await this.application.bootstrap()
+                    await this.application.bootstrap({
+                        self: { id: this.id, arrived: this._government.arrived.promise[this. id] },
+                        government: this._government
+                    })
                 } else if (arrival.id == this.id) {
                     const subDestructible = this.destructible.ephemeral('snapshot')
                     const leader          = this._government.properties[this._government.majority[0]].url
