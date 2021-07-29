@@ -1,3 +1,17 @@
+## Thu Jul 29 12:55:15 CDT 2021
+
+I don't believe there is a lot to gain by making this more functional. There may
+be some use in having a countdown utility, which could easily be provided as an
+additional class in the package. Otherwise, adding asynchronous functions only
+appears to make the implementations more complicated as I need to start new
+strands/fibers/green threads, I need to get more concurrent. When I'm
+implementing something using this library I'm already thinking in terms of the
+messaging and it is already complicated enough. This library will never be one
+where the difference between complex and elegant is a matter of streamlining the
+message passing through sequential statements. Let's through the words async and
+await in this comment in case I ever want to search them for notes. In fact, I
+believe I'm going to copy this into a `diary.md` so I can find it in the source.
+
 ## Sat Oct 19 13:35:38 CDT 2019
 
 Should Islander unwrap the message so it isn't inside `body.body`? I want to
