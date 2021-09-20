@@ -20,7 +20,7 @@
     },
     "dependencies":
     {
-                            "avenue":                       "^0.6.15",
+                            "avenue":                       "^0.6.16",
                             "axios":                        "0.21.4",
                             "cubbyhole":                    "^4.0.8",
                             "extant":                       "^2.0.0-alpha.4",
