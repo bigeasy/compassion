@@ -38,7 +38,7 @@
     "devDependencies":
     {
                             "destructible":                 "7.0.0-alpha.68",
-                            "perhaps":                      "0.0.11",
+                            "perhaps":                      "0.0.12",
                             "proof":                        "^9.0.3"
     },
     "main":                 "compassion",
