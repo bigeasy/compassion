@@ -31,7 +31,7 @@
                             "kibitz":                       "^3.0.0-alpha.11",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.10",
-                            "staccato":                     "13.0.0-alpha.11",
+                            "staccato":                     "13.0.0-alpha.12",
                             "transcript":                   "0.1.5",
                             "verbatim":                     "0.1.8"
     },
