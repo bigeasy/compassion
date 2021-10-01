@@ -74,14 +74,6 @@ class Conference {
         // Current Paxos government.
         this._government = null
 
-        // Previous embarkation cookie used to create next cookie.
-        this._cookie = -1
-
-        // All messages are broadcast, so maybe we rename this.
-        this._broadcasts = {}
-
-        this._cubbyholes = { snapshots: new Cubbyhole, broadcasts: new Cubbyhole }
-
         // Mark ourselves as destroyed on destruction.
         this.destructible.destruct(() => this.destroyed = true)
 
@@ -108,25 +100,16 @@ class Conference {
         })
     }
 
-    // TODO We need to start these loops delayed, yes, but only after we've
-    // arrived.
     enqueue (body) {
-        const cookie = `${this.id}/${(this._cookie = BigInt(this._cookie) + 1n).toString(16)}`
         this._messages.queue.push({
             module:   'conference',
-            method:   'map',
-            key:      cookie,
+            method:   'entry',
             from:     {
                 id: this.id,
                 arrived: this._government.arrived.promise[this.id]
             },
             body:     body
         })
-        return cookie
-    }
-
-    async broadcasts (promise) {
-        return await this._cubbyholes.broadcasts.get(promise)
     }
 
     async _entry (entry, queue, broadcast) {
@@ -192,50 +175,6 @@ class Conference {
                     arrival: entry.body,
                     government: this._government
                 })
-                if (arrival.id != this.id) {
-                    const broadcasts = []
-                    for (const key in this._broadcasts) {
-                        broadcasts.push(JSON.parse(JSON.stringify(this._broadcasts[key])))
-                    }
-                    this._cubbyholes.broadcasts.resolve(this._government.promise, broadcasts)
-                } else if (this._government.promise != '1/0') {
-                    const promise    = this._government.promise
-                    const leader     = this._government.properties[this._government.majority[0]].url
-                    const broadcasts = await this._ua.json(leader, './broadcasts', { promise })
-                    Compassion.Error.assert(broadcasts != null, 'BROADCAST_BACKLOG_ERROR', { level: 'warn' })
-                    this.events.push({ type: 'broadcasts', id: this.id, broadcasts })
-                    for (const broadcast of broadcasts) {
-                        await this._entry({
-                            body: {
-                                body: { // islander
-                                    module: 'conference',
-                                    method: 'map',
-                                    request: {
-                                        key: broadcast.key,
-                                        method: broadcast.method,
-                                        body: broadcast.body
-                                    }
-                                }
-                            }
-                        })
-                        for (const promise in broadcast.responses) {
-                            await this._entry({
-                                body: {
-                                    body: { // islander
-                                        module: 'conference',
-                                        method: 'reduce',
-                                        reduction: {
-                                            from: promise,
-                                            key: broadcast.key,
-                                            body: broadcast.responses[promise]
-                                        }
-                                    }
-                                }
-                            })
-                        }
-                    }
-                }
-                this._cubbyholes.snapshots.resolve(entry.promise, true)
             } else if (entry.body.departed) {
                 await this.application.dispatch({
                     self: {
@@ -246,17 +185,6 @@ class Conference {
                     body: entry.body,
                     government: this._government
                 })
-                const depart = entry.body.departed
-                const promise = depart.promise
-                const broadcasts = []
-                for (const key in this._broadcasts) {
-                    delete this._broadcasts[key].responses[promise]
-                    broadcasts.push(this._broadcasts[key])
-                }
-                this._snapshots.remove(promise)
-                for (const broadcast of broadcasts) {
-                    await this._checkReduced(broadcast)
-                }
             }
             if (entry.body.acclimate != null) {
                 await this.application.acclimated({
@@ -282,88 +210,16 @@ class Conference {
 
             //
             const envelope = entry.body.body
-            switch (envelope.method) {
-            case 'map':
-                const request = envelope.request
-                this._broadcasts[envelope.key] = {
-                    key: envelope.key,
-                    from: envelope.from,
-                    method: envelope.method,
-                    body: envelope.body,
-                    responses: {}
-                }
-                const response = await this.application.map({
-                    self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                    method: 'receive',
-                    from: envelope.from,
-                    government: this._government,
-                    request: envelope.body
-                })
-                this._messages.queue.push({
-                    module: 'compassion',
-                    method: 'reduce',
-                    key: envelope.key,
-                    from: this._government.arrived.promise[this.id],
-                    body: coalesce(response)
-                })
-                break
-            // Tally our responses and if they match the number of participants,
-            // then invoke the reduction method.
-            case 'reduce':
-                const broadcast = this._broadcasts[envelope.key]
-                broadcast.responses[envelope.from] = envelope.body
-                await this._checkReduced(broadcast)
-                break
-            }
-        }
-        this.consumed.push(entry)
-    }
-
-    // TODO Let's rename `broadcast` to `map`.
-
-    // TODO You want to move to an `async`/`await` interface as described in
-    // [Could this be more
-    // functional?](https://github.com/bigeasy/compassion/issues/497]
-    // so maybe a user defined `reduce` function gets phased out. Or perhaps
-    // that functionality should be a separate object?
-    async _checkReduced (broadcast) {
-        for (const promise in this._government.arrived.id) {
-            if (!(promise in broadcast.responses)) {
-                return
-            }
-        }
-
-        // Feel like all ids should just be hidden from the user, but I dunno,
-        // simplified? Maybe the user is doing some sort of system management
-        // and address properties of paxos are meaningful?
-        const reduced = []
-        for (const promise in broadcast.responses) {
-            reduced.push({
-                promise: promise,
-                id: this._government.arrived.id[promise],
-                value: broadcast.responses[promise]
+            assert.equal(envelope.method, 'entry', 'expected entry method')
+            await this.application.entry({
+                self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
+                method: 'entry',
+                from: envelope.from,
+                government: this._government,
+                request: envelope.body
             })
         }
-        // We provide both the id and arrived promise of the member that
-        // initiated the request. We need to do this becaause the broadcast
-        // could have been initiated by a member that has since departed so we
-        // would not be able to derived id from arrived promise nor vice-versa.
-        //
-        // Unlike the request, the response does not need to provide the
-        // `reduced` postback with both the id and the arrived promise because
-        // the only responses provided are those that are still present in the
-        // government at the time of this postback.
-        await this.application.reduce({
-            self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-            cookie: broadcast.key,
-            method: 'reduced',
-            from: broadcast.from,
-            government: this._government,
-            request: broadcast.body,
-            arrayed: reduced,
-            mapped: broadcast.responses
-        })
-        delete this._broadcasts[broadcast.key]
+        this.consumed.push(entry)
     }
 }
 
@@ -560,10 +416,6 @@ class Compassion {
         return this._getApplication404(application).kibitzer.request(body)
     }
 
-    async broadcasts ({ params: { application }, body: { promise } }) {
-        return await this._getApplication404(application).conference.broadcasts(promise)
-    }
-
     async _snapshot ({ params, body: { promise } }, reply) {
         const application = this._getApplication404(params.application).application
         const snapshot = new Queue().shifter().paired
@@ -614,10 +466,6 @@ exports.listen = async function (destructible, options) {
         path: '/compassion/:application/kibitz',
         method: 'post',
         f: compassion.kibitz.bind(compassion)
-    }, {
-        path: '/compassion/:application/broadcasts',
-        method: 'post',
-        f: compassion.broadcasts.bind(compassion)
     }, {
         path: '/compassion/:application/snapshot',
         method: 'post',

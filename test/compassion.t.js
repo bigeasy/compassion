@@ -46,6 +46,13 @@ require('proof')(4, async okay => {
             return true
         }
 
+        async entry ({ request }) {
+            await this._future.promise
+            this.events.push({ method: 'entry', request })
+            this._values[request.key] = request.value
+            return true
+        }
+
         async map ({ request }) {
             await this._future.promise
             this.events.push({ method: 'map', request })
@@ -96,17 +103,20 @@ require('proof')(4, async okay => {
         const census = new Queue()
         const participants = []
         participants.push(await Participant.create(census.shifter()))
+
+        // The timeout is just to ensure we test a missing endpoint.
         census.push([ participants[0].url + '/missing/' ])
         await new Promise(resolve => setTimeout(resolve, 500))
-        census.push([ participants[0].url ])
 
+        // Now we actually join.
+        census.push([ participants[0].url ])
         okay(await participants[0].shifter.join(entry => entry.method == 'acclimated'), { method: 'acclimated' }, 'acclimated')
 
         participants[0].kv.set('x', 1)
 
-        okay(await participants[0].shifter.join(entry => entry.method == 'reduce'), {
-            method: 'reduce',
-            arrayed: [{ promise: '1/0', id: participants[0].kv.client.id, value: true }]
+        okay(await participants[0].shifter.join(entry => entry.method == 'entry'), {
+            method: 'entry',
+            request:{ key: 'x', value: 1 }
         }, 'reduce')
 
         okay(participants[0].kv.get('x'), 1, 'set')
@@ -114,13 +124,10 @@ require('proof')(4, async okay => {
         participants.push(await Participant.create(census.shifter()))
         census.push([ participants[0].url, participants[1].url ])
 
-        console.log('waiting')
         okay(await participants[0].shifter.join(entry => {
             console.log(entry)
             return entry.method == 'acclimated'
         }), { method: 'acclimated' }, 'acclimated')
-
-        console.log('waiting')
 
         census.push(null)
         destructible.destroy()
