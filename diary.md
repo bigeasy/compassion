@@ -1,3 +1,17 @@
+## Thu Sep 30 07:00:05 CDT 2021
+
+Writing an application and I'm pretty certain that I do not want the map and
+reduce built into it, that this should be external.
+
+Okay, now it is external. You used to build it in, so that you had a `map` and
+`reduce` function in your controller. Now to do map/reduce you use Conference.
+
+The controller functions are blocking and I'd like to keep it that way, but
+often times we want to perform an asychronous action then indicate we are done
+while allowing other messages to be processed. When you want this you start
+creating additional queues to queue up actions and that's complicated. We
+already have asynchronous queues with the network requests.
+
 ## Thu Jul 29 12:55:15 CDT 2021
 
 I don't believe there is a lot to gain by making this more functional. There may
