@@ -176,7 +176,7 @@ class Conference {
                     government: this._government
                 })
             } else if (entry.body.departed) {
-                await this.application.dispatch({
+                await this.application.depart({
                     self: {
                         id: this.id,
                         arrived: this._government.arrived.promise[this.id]

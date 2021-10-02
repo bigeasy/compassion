@@ -1,4 +1,4 @@
-require('proof')(4, async okay => {
+require('proof')(6, async okay => {
     const { Future } = require('perhaps')
     const Destructible = require('destructible')
     const { Queue } = require('avenue')
@@ -50,19 +50,10 @@ require('proof')(4, async okay => {
             await this._future.promise
             this.events.push({ method: 'entry', request })
             this._values[request.key] = request.value
-            return true
         }
 
-        async map ({ request }) {
-            await this._future.promise
-            this.events.push({ method: 'map', request })
-            this._values[request.key] = request.value
-            return true
-        }
-
-        async reduce ({ arrayed }) {
-            await this._future.promise
-            this.events.push({ method: 'reduce', arrayed })
+        async depart (message) {
+            this.events.push({ method: 'depart' })
         }
 
         pause (future) {
@@ -82,20 +73,25 @@ require('proof')(4, async okay => {
     const Compassion = require('..')
 
     class Participant {
-        constructor (kv, { address, port }) {
+        static count = 0
+
+        constructor (destructible, kv, { address, port }) {
             this.kv = kv
             this.shifter = kv.events.shifter()
             this.url = `http://127.0.0.1:${port}`
+            this.destructible = destructible
         }
 
         static async create (census) {
             const kv = new KeyValueStore
-            const address = await Compassion.listen(destructible.durable('compassion'), {
+            const subDestructible = destructible.ephemeral(`compassion.${Participant.count++}`)
+            subDestructible.destruct(() => census.destroy())
+            const address = await Compassion.listen(subDestructible, {
                 census: census,
                 applications: { kv },
                 bind: { host: '127.0.0.1', port: 0 }
             })
-            return new Participant(kv, address)
+            return new Participant(subDestructible, kv, address)
         }
     }
 
@@ -122,12 +118,28 @@ require('proof')(4, async okay => {
         okay(participants[0].kv.get('x'), 1, 'set')
 
         participants.push(await Participant.create(census.shifter()))
-        census.push([ participants[0].url, participants[1].url ])
+        census.push(participants.map(participant => participant.url))
 
         okay(await participants[0].shifter.join(entry => {
             console.log(entry)
             return entry.method == 'acclimated'
         }), { method: 'acclimated' }, 'acclimated')
+
+        participants.push(await Participant.create(census.shifter()))
+        census.push(participants.map(participant => participant.url))
+
+        okay(await participants[0].shifter.join(entry => {
+            console.log(entry)
+            return entry.method == 'acclimated'
+        }), { method: 'acclimated' }, 'acclimated')
+
+        participants[2].destructible.destroy()
+        participants.pop()
+        census.push(participants.map(participant => participant.url))
+
+        okay(await participants[0].shifter.join(entry => {
+            return entry.method == 'depart'
+        }), { method: 'depart' }, 'departed')
 
         census.push(null)
         destructible.destroy()
