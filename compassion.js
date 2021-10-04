@@ -74,6 +74,9 @@ class Conference {
         // Current Paxos government.
         this._government = null
 
+        // Prevent calling application snapshot until after arrival.
+        this.snapshots = new Cubbyhole
+
         // Mark ourselves as destroyed on destruction.
         this.destructible.destruct(() => this.destroyed = true)
 
@@ -175,7 +178,9 @@ class Conference {
                     arrival: entry.body,
                     government: this._government
                 })
+                this.snapshots.resolve(entry.promise, true)
             } else if (entry.body.departed) {
+                this.snapshots.remove(entry.body.departed.promise)
                 await this.application.depart({
                     self: {
                         id: this.id,
@@ -417,7 +422,9 @@ class Compassion {
     }
 
     async _snapshot ({ params, body: { promise } }, reply) {
-        const application = this._getApplication404(params.application).application
+        const got = this._getApplication404(params.application)
+        const application = got.application
+        await got.conference.snapshots.get(promise)
         const snapshot = new Queue().shifter().paired
         const subDestructible = this.destructible.ephemeral(`snapshot.send.${params.application}.${promise.replace('/', '.')}`)
         const through = new stream.PassThrough({ emitClose: true })
