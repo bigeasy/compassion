@@ -28,9 +28,9 @@ require('proof')(6, async okay => {
             queue.push(null)
         }
 
-        async join ({ snapshot }) {
-            this._values = await snapshot.shift()
-            await snapshot.shift()
+        async join ({ shifter }) {
+            this._values = await shifter.shift()
+            await shifter.shift()
         }
 
         async arrive ({ arrival }) {

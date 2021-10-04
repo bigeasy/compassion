@@ -155,7 +155,7 @@ class Conference {
                     await this.application.join({
                         method: 'join',
                         self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
-                        snapshot: snapshot.shifter,
+                        shifter: snapshot.shifter,
                         entry: entry.body,
                         government: this._government
                     })
