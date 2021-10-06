@@ -223,6 +223,7 @@ class Conference {
             const envelope = entry.body.body
             assert.equal(envelope.method, 'entry', 'expected entry method')
             await this.application.entry({
+                promise: entry.promise,
                 self: { id: this.id, arrived: this._government.arrived.promise[this.id] },
                 method: 'entry',
                 from: envelope.from,
