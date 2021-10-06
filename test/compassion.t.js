@@ -46,10 +46,10 @@ require('proof')(6, async okay => {
             return true
         }
 
-        async entry ({ request }) {
+        async entry ({ entry }) {
             await this._future.promise
-            this.events.push({ method: 'entry', request })
-            this._values[request.key] = request.value
+            this.events.push({ method: 'entry', entry })
+            this._values[entry.key] = entry.value
         }
 
         async depart (message) {
@@ -112,7 +112,7 @@ require('proof')(6, async okay => {
 
         okay(await participants[0].shifter.join(entry => entry.method == 'entry'), {
             method: 'entry',
-            request:{ key: 'x', value: 1 }
+            entry:{ key: 'x', value: 1 }
         }, 'reduce')
 
         okay(participants[0].kv.get('x'), 1, 'set')

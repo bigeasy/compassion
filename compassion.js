@@ -122,6 +122,10 @@ class Conference {
         if (entry.method == 'government') {
             this._government = entry.government
             const properties = entry.properties
+            // TODO What about a goverment that is neither an arrival or
+            // departure? What if in the future we rebalance and change the
+            // leader somehow. Governments already do change after arrival as
+            // members enter the government.
             if (entry.body.arrive) {
                 const arrival = entry.body.arrive
                 console.log(arrival, this.id, entry.body)
@@ -190,6 +194,8 @@ class Conference {
                     body: entry.body,
                     government: this._government
                 })
+            } else {
+                // TODO Here is where we would do an optional government change.
             }
             if (entry.body.acclimate != null) {
                 await this.application.acclimated({
@@ -221,7 +227,7 @@ class Conference {
                 method: 'entry',
                 from: envelope.from,
                 government: this._government,
-                request: envelope.body
+                entry: envelope.body
             })
         }
         this.consumed.push(entry)
