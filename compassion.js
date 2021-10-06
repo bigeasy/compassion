@@ -105,7 +105,7 @@ class Conference {
 
     enqueue (body) {
         this._messages.queue.push({
-            module:   'conference',
+            module:   'compassion',
             method:   'entry',
             from:     {
                 id: this.id,
