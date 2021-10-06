@@ -128,7 +128,6 @@ class Conference {
             // members enter the government.
             if (entry.body.arrive) {
                 const arrival = entry.body.arrive
-                console.log(arrival, this.id, entry.body)
                 if (entry.body.promise == '1/0') {
                     await this.application.bootstrap({
                         self: { id: this.id, arrived: this._government.arrived.promise[this. id] },
@@ -171,7 +170,6 @@ class Conference {
                 if (arrival.id == this.id) {
                     this.destructible.durable('enqueue', async () => {
                         for await (const message of this._messages.shifter) {
-                            console.log(message)
                             this._kibitzer.publish(message)
                         }
                     })
