@@ -47,12 +47,15 @@ const Verbatim = require('verbatim')
 // immutability, but this code is righteous and pure.
 
 //
-class Conference {
-    // Construct a `Conference`.
+class Compassion {
+    static Error = Interrupt.create('Compassion.Error', {
+        SNAPSHOT_STREAM_ERROR: 'error occurred while processing snapshot stream'
+    })
+    // Construct a `Compassion`.
 
     //
     constructor (destructible, { id, entry, kibitzer, ua, consumer }) {
-        // A bouquet of `Promise`s monitored by this `Conference` instance.
+        // A bouquet of `Promise`s monitored by this `Compassion` instance.
         this.destructible = destructible
 
         this.id = id
@@ -62,13 +65,13 @@ class Conference {
         // The Paxos event log.
         this.log = new Queue
 
-        // Network events received by this `Conference` instance.
+        // Network events received by this `Compassion` instance.
         this.events = new Queue
 
-        // Network events consumed by this `Conference` instance.
+        // Network events consumed by this `Compassion` instance.
         this.consumed = new Queue
 
-        // Whether or not this `Conference` instance has destructed.
+        // Whether or not this `Compassion` instance has destructed.
         this.destroyed = false
 
         // Current Paxos government.
@@ -211,7 +214,7 @@ class Conference {
         } else {
             // Bombs on a flush!
 
-            // Paxos body, Islander body, Conference body, user body.
+            // Paxos body, Islander body, Compassion body, user body.
             assert(entry.body.body.body)
             // Reminder that if you ever want to do queued instead async then the
             // queue should be external and a property of the object the conference
@@ -229,14 +232,12 @@ class Conference {
                 entry: envelope.body
             })
         }
+
         this.consumed.push(entry)
     }
 }
 
-class Compassion {
-    static Error = Interrupt.create('Compassion.Error', {
-        SNAPSHOT_STREAM_ERROR: 'error occurred while processing snapshot stream'
-    })
+class Chaperon {
 
     constructor () {
         this.destructible = null
@@ -267,7 +268,7 @@ class Compassion {
                     }
                 }
             })
-            const conference = new Conference(subDestructible.durable('conference'), {
+            const conference = new Compassion(subDestructible.durable('conference'), {
                 id: id,
                 ua: ua,
                 kibitzer: kibitzer,
@@ -461,7 +462,7 @@ class Compassion {
 }
 
 exports.listen = async function (destructible, options) {
-    const compassion = new Compassion(destructible, options)
+    const compassion = new Chaperon(destructible, options)
     const reactor = new Reactor([{
         path: '/',
         method: 'get',
