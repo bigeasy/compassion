@@ -217,8 +217,8 @@ class Compassion {
             // Paxos body, Islander body, Compassion body, user body.
             assert(entry.body.body.body)
             // Reminder that if you ever want to do queued instead async then the
-            // queue should be external and a property of the object the conference
-            // operates.
+            // queue should be external and a property of the object the
+            // compassion operates.
 
             //
             const envelope = entry.body.body
@@ -268,7 +268,7 @@ class Chaperon {
                     }
                 }
             })
-            const conference = new Compassion(subDestructible.durable('conference'), {
+            const compassion = new Compassion(subDestructible.durable('compassion'), {
                 id: id,
                 ua: ua,
                 kibitzer: kibitzer,
@@ -283,7 +283,7 @@ class Chaperon {
             })
             this._applications[application] = {
                 application: applications[application],
-                conference:  conference,
+                compassion:  compassion,
                 kibitzer:    kibitzer
             }
             this._events = new Queue
@@ -430,7 +430,7 @@ class Chaperon {
     async _snapshot ({ params, body: { promise } }, reply) {
         const got = this._getApplication404(params.application)
         const application = got.application
-        await got.conference.snapshots.get(promise)
+        await got.compassion.snapshots.get(promise)
         const snapshot = new Queue().shifter().paired
         const subDestructible = this.destructible.ephemeral(`snapshot.send.${params.application}.${promise.replace('/', '.')}`)
         const through = new stream.PassThrough({ emitClose: true })
