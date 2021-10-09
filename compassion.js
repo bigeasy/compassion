@@ -2,7 +2,7 @@ const url = require('url')
 const stream = require('stream')
 
 const Reactor = require('reactor')
-const { Timer, Scheduler } = require('happenstance')
+const { Timer, Calendar } = require('happenstance')
 const Kibitzer = require('kibitz')
 const Keyify = require('keyify')
 
@@ -250,13 +250,13 @@ class Chaperon {
         this.destructible = destructible
         this._createdAt = Date.now()
         this._applications = applications
-        this._scheduler = new Scheduler
+        this._calender = new Calendar
         // TODO For now, we can crash restart on unrecoverable.
         for (const application in applications) {
             const id = `${application}/${address}:${port}`
             const scheduleKey = Keyify.stringify({ application, id })
             const subDestructible = destructible.durable(`application.${application}`)
-            subDestructible.destruct(() => this._scheduler.unschedule(scheduleKey))
+            subDestructible.destruct(() => this._calender.unschedule(scheduleKey))
             const kibitzer = new Kibitzer(destructible.durable('kibitz'), {
                 id: id,
                 // TODO Make configurable.
@@ -287,14 +287,14 @@ class Chaperon {
                 kibitzer:    kibitzer
             }
             this._events = new Queue
-            this._scheduler.on('data', data => this._events.push(data.body))
-            const timer = new Timer(this._scheduler)
+            this._calender.on('data', data => this._events.push(data.body))
+            const timer = new Timer(this._calender)
             destructible.destruct(() => timer.destroy())
-            destructible.destruct(() => this._scheduler.clear())
+            destructible.destruct(() => this._calender.clear())
             destructible.destruct(() => this._events.push(null))
             destructible.durable('chaperon', this._chaperon(this._events.shifter()))
             const properties = applications[application].application.properties || {}
-            this._scheduler.schedule(Date.now(), scheduleKey, {
+            this._calender.schedule(Date.now(), scheduleKey, {
                 // TODO Configure location for proxies and such.
                 name: 'discover', application, id, properties
             })
@@ -310,8 +310,8 @@ class Chaperon {
     async _chaperon (events) {
         for await (const event of events) {
             if (event.name == 'census') {
-                for (const { key, body } of this._scheduler.calendar()) {
-                    this._scheduler.schedule(Date.now(), key, body)
+                for (const { key, body } of this._calender.calendar()) {
+                    this._calender.schedule(Date.now(), key, body)
                 }
                 continue
             }
@@ -353,7 +353,7 @@ class Chaperon {
             case 'join': {
                     this._applications[application].kibitzer.join(action.republic)
                     const properties = { ...event.properties, url: action.url }
-                    this._scheduler.schedule(Date.now(), scheduleKey, {
+                    this._calender.schedule(Date.now(), scheduleKey, {
                         name: 'embark',
                         application: event.application,
                         id: event.id,
@@ -367,7 +367,7 @@ class Chaperon {
                     // Schedule a subsequent embarkation. Once our Paxos object
                     // starts receiving message, the embarkation is cleared and
                     // replaced with a recoverable check.
-                    this._scheduler.schedule(Date.now() + 5000 /* this._ping.chaperon */, scheduleKey, event)
+                    this._calender.schedule(Date.now() + 5000 /* this._ping.chaperon */, scheduleKey, event)
                     // If this fails, we don't care. Embarkation is designed to be
                     // asynchronous in the macro. You send a message. Maybe it gets
                     // there, maybe it doesn't. You'll know when the Paxos object
@@ -383,7 +383,7 @@ class Chaperon {
                 }
                 break
             case 'retry': {
-                    this._scheduler.schedule(Date.now() + 5000 /* this._ping.chaperon */, event.key, event)
+                    this._calender.schedule(Date.now() + 5000 /* this._ping.chaperon */, event.key, event)
                 }
                 break
             case 'unrecoverable': {
