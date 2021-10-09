@@ -28,7 +28,7 @@
                             "happenstance":                 "^13.0.0-alpha.0",
                             "interrupt":                    "11.0.0-alpha.25",
                             "keyify":                       "^3.0.0",
-                            "kibitz":                       "^3.0.0-alpha.15",
+                            "kibitz":                       "^3.0.0-alpha.16",
                             "prolific.logger":              "^11.0.0",
                             "reactor":                      "^17.0.0-alpha.14",
                             "staccato":                     "13.0.0-alpha.12",
