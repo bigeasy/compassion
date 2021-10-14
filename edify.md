@@ -31,7 +31,7 @@ generally looks like this.
 
 ```javascript
 //{ "code": { "tests": 1 }, "text": { "tests": 4  } }
-require('proof')(%(tests)d, okay => {
+require('proof')(%(tests)d, async okay => {
     //{ "include": "test", "mode": "code" }
     //{ "include": "proof" }
 })
@@ -59,6 +59,144 @@ node test/readme.t.js
 ## Overview
 
 ```javascript
-//{ "name": "test" }
-okay('TODO')
+//{ "name": "test", "code": { "path": "'..'" }, "text": { "path": "'compassion'" } }
+const Compassion = require(%(path)s)
 ```
+
+```javascript
+//{ "name": "test" }
+const Destructible = require('destructible')
+const { Queue } = require('avenue')
+```
+
+```javascript
+//{ "name": "test" }
+class KeyValueStore {
+    constructor () {
+        this.ready = new Promise(resolve => this.arrived = resolve)
+        this.cookie = 0
+        this.snapshots = {}
+        this.resolutions = {}
+        this.compassion = null
+        this.store = null
+    }
+
+    initialize (compassion) {
+        this.compassion = compassion
+    }
+
+    async bootstrap ({ self }) {
+        this.promise = self.arrived
+        this.store = {}
+    }
+
+    async snapshot ({ promise, queue }) {
+        queue.push(this.snapshots[promise])
+    }
+
+    async join ({ self, shifter }) {
+        this.promise = self.arrived
+        this.store = await shifter.shift()
+    }
+
+    async arrive ({ arrival }) {
+        this.arrived.call()
+        this.snapshots[arrival.promise] = JSON.parse(JSON.stringify(this.store))
+    }
+
+    async acclimated ({ promise }) {
+        this.snapshots[promise]
+    }
+
+    async entry ({ entry }) {
+        this.store[entry.key] = entry.value
+        const resolution = this.resolutions[entry.cookie]
+        if (resolution != null) {
+            delete this.resolutions[entry.cookie]
+            resolution.call(null)
+        }
+    }
+
+    async depart ({ promise }) {
+        this.snapshots[promise]
+    }
+
+    set (key, value) {
+        return new Promise(resolve => {
+            const cookie = `${this.promise}?${this.cookie++}`
+            this.resolutions[cookie] = resolve
+            this.compassion.enqueue({ cookie, key, value })
+        })
+    }
+
+    get (key) {
+        return this.store[key]
+    }
+}
+```
+
+```javascript
+//{ "name": "test", "mode": "code" }
+{
+    //{ "include": "setup" }
+}
+```
+
+```
+//{ "name": "setup" }
+const destructible = new Destructible('compassion')
+```
+
+Construct a census. Usually you'll use Mingle, but we'll create a dummy census
+and fake the service discovery. We have to be sure to terminate the queue on
+shutdown, so we register a destruct handler.
+
+```
+//{ "name": "setup" }
+const census = new Queue
+destructible.destruct(() => census.push(null))
+```
+
+```
+//{ "name": "setup" }
+const kv = new KeyValueStore
+const { address, port } = await Compassion.listen(destructible, {
+    census: census.shifter(),
+    applications: { kv },
+    bind: { host: '127.0.0.1', port: 0 }
+})
+```
+
+```javascript
+//{ "name": "setup" }
+census.push([ `http://${address}:${port}` ])
+
+await kv.ready
+await kv.set('x', 1)
+okay(kv.get('x'), 1, 'set and get')
+```
+
+```
+//{ "name": "setup" }
+destructible.destroy()
+
+await destructible.promise
+```
+
+What do we need to discuss? Simple outline. Be sure to link to people to
+[Conference](https://github.com/bigeasy/conference). Uh, oh. I also have to
+document [Mingle](https://github.com/bigeasy/mingle).
+
+## Initialize
+
+## Bootstrap
+
+## Join and Snapshot
+
+## Arrive
+
+## Acclimated
+
+## Entry
+
+## Depart

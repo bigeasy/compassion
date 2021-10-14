@@ -29,7 +29,7 @@ Proof `okay` function to assert out statements in the readme. A Proof unit test
 generally looks like this.
 
 ```javascript
-require('proof')(4, okay => {
+require('proof')(4, async okay => {
     okay('always okay')
     okay(true, 'okay if true')
     okay(1, 1, 'okay if equal')
@@ -50,5 +50,129 @@ node test/readme.t.js
 ## Overview
 
 ```javascript
-okay('TODO')
+const Compassion = require('compassion')
 ```
+
+```javascript
+const Destructible = require('destructible')
+const { Queue } = require('avenue')
+```
+
+```javascript
+class KeyValueStore {
+    constructor () {
+        this.ready = new Promise(resolve => this.arrived = resolve)
+        this.cookie = 0
+        this.snapshots = {}
+        this.resolutions = {}
+        this.compassion = null
+        this.store = null
+    }
+
+    initialize (compassion) {
+        this.compassion = compassion
+    }
+
+    async bootstrap ({ self }) {
+        this.promise = self.arrived
+        this.store = {}
+    }
+
+    async snapshot ({ promise, queue }) {
+        queue.push(this.snapshots[promise])
+    }
+
+    async join ({ self, shifter }) {
+        this.promise = self.arrived
+        this.store = await shifter.shift()
+    }
+
+    async arrive ({ arrival }) {
+        this.arrived.call()
+        this.snapshots[arrival.promise] = JSON.parse(JSON.stringify(this.store))
+    }
+
+    async acclimated ({ promise }) {
+        this.snapshots[promise]
+    }
+
+    async entry ({ entry }) {
+        this.store[entry.key] = entry.value
+        const resolution = this.resolutions[entry.cookie]
+        if (resolution != null) {
+            delete this.resolutions[entry.cookie]
+            resolution.call(null)
+        }
+    }
+
+    async depart ({ promise }) {
+        this.snapshots[promise]
+    }
+
+    set (key, value) {
+        return new Promise(resolve => {
+            const cookie = `${this.promise}?${this.cookie++}`
+            this.resolutions[cookie] = resolve
+            this.compassion.enqueue({ cookie, key, value })
+        })
+    }
+
+    get (key) {
+        return this.store[key]
+    }
+}
+```
+
+```
+const destructible = new Destructible('compassion')
+```
+
+Construct a census. Usually you'll use Mingle, but we'll create a dummy census
+and fake the service discovery. We have to be sure to terminate the queue on
+shutdown, so we register a destruct handler.
+
+```
+const census = new Queue
+destructible.destruct(() => census.push(null))
+```
+
+```
+const kv = new KeyValueStore
+const { address, port } = await Compassion.listen(destructible, {
+    census: census.shifter(),
+    applications: { kv },
+    bind: { host: '127.0.0.1', port: 0 }
+})
+```
+
+```javascript
+census.push([ `http://${address}:${port}` ])
+
+await kv.ready
+await kv.set('x', 1)
+okay(kv.get('x'), 1, 'set and get')
+```
+
+```
+destructible.destroy()
+
+await destructible.promise
+```
+
+What do we need to discuss? Simple outline. Be sure to link to people to
+[Conference](https://github.com/bigeasy/conference). Uh, oh. I also have to
+document [Mingle](https://github.com/bigeasy/mingle).
+
+## Initialize
+
+## Bootstrap
+
+## Join and Snapshot
+
+## Arrive
+
+## Acclimated
+
+## Entry
+
+## Depart
