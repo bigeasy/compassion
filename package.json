@@ -24,7 +24,6 @@
                             "axios":                        "0.24.0",
                             "cubbyhole":                    "^4.0.8",
                             "extant":                       "^2.0.0-alpha.4",
-                            "fastify":                      "3.23.1",
                             "happenstance":                 "^13.0.0-alpha.0",
                             "interrupt":                    "11.0.0-alpha.25",
                             "keyify":                       "^3.0.0",
@@ -38,6 +37,7 @@
     "devDependencies":
     {
                             "destructible":                 "7.0.0-alpha.71",
+                            "fastify":                      "3.23.1",
                             "perhaps":                      "0.0.12",
                             "proof":                        "^9.0.3"
     },
