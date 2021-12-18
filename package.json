@@ -37,7 +37,7 @@
     "devDependencies":
     {
                             "destructible":                 "7.0.0-alpha.71",
-                            "fastify":                      "3.24.1",
+                            "fastify":                      "3.25.0",
                             "perhaps":                      "0.0.12",
                             "proof":                        "^9.0.3"
     },
