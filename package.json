@@ -25,7 +25,7 @@
                             "cubbyhole":                    "^4.0.8",
                             "extant":                       "^2.0.0-alpha.4",
                             "happenstance":                 "^13.0.0-alpha.0",
-                            "interrupt":                    "11.0.0-alpha.25",
+                            "interrupt":                    "11.0.0-alpha.26",
                             "keyify":                       "^3.0.0",
                             "kibitz":                       "^3.0.0-alpha.17",
                             "prolific.logger":              "^11.0.0",
