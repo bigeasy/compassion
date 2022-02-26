@@ -21,7 +21,7 @@
     "dependencies":
     {
                             "avenue":                       "^0.6.17",
-                            "axios":                        "0.25.0",
+                            "axios":                        "0.26.0",
                             "cubbyhole":                    "^4.0.8",
                             "extant":                       "^2.0.0-alpha.4",
                             "happenstance":                 "^13.0.0-alpha.0",
